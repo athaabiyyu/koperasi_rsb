@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/card-login-regis.dart';
 import 'package:koperasi_rsb/widgets-global/textFormField.dart';
+import 'package:koperasi_rsb/widgets-global/green-button.dart';
+
 class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -31,17 +32,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   deviceWidth: _deviceWidth,
                 ),
               ),
-              
+
               // Form section
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
                 child: Form(
-                  key: _formKey, 
+                  key: _formKey,
                   child: Column(
                     children: [
                       const SizedBox(height: 30),
-                      
                       CustomTextFormField(
                         label: "No. Handphone",
                         hint: "+62 xxx-xxxx-xxxx",
@@ -55,9 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      
                       const SizedBox(height: 35),
-                      
                       CustomTextFormField(
                         label: "Kata Sandi",
                         hint: "Kata Sandi",
@@ -71,26 +69,49 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-
-                      const SizedBox(height: 40),
-
+                      const SizedBox(height: 50),
                       SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
+                        width: _deviceWidth * 0.75,
+                        height: 55,
+                        child: CustomButton(
+                          text: "Masuk",
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               print("Form valid, lanjut login");
                             }
                           },
-                          child: const Text(
-                            "Login",
-                            style: TextStyle(fontSize: 16),
-                          ),
                         ),
                       ),
+
+                      const SizedBox(height: 25),
                       
-                      SizedBox(height: _deviceHeight), // Bottom spacing
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Belum punya akun? ',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {},
+                            child: const Text(
+                              'Daftar disini',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.green, // warna hijau
+                                decoration:
+                                    TextDecoration.underline, // garis bawah
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: _deviceHeight),
                     ],
                   ),
                 ),
