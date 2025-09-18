@@ -5,7 +5,7 @@ Widget cardLoginRegisWidget({required String title,required String subtitle,requ
   return Container(
     width: deviceWidth,
     color: lightGreen,
-    padding: EdgeInsets.symmetric(horizontal: deviceWidth * 0.06),
+    padding: EdgeInsets.symmetric(horizontal: deviceWidth * 0.07),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
