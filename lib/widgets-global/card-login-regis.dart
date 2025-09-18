@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
-Widget cardLoginRegisWidget({required String title,required String subtitle,required double deviceWidth}) {
+Widget cardLoginRegisWidget(
+    {required String title,
+    required String subtitle,
+    required double deviceWidth}) {
   return Container(
     width: deviceWidth,
     color: lightGreen,
@@ -15,14 +18,14 @@ Widget cardLoginRegisWidget({required String title,required String subtitle,requ
           title,
           style: const TextStyle(
             fontSize: 30,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w900,
             color: black,
           ),
         ),
         Text(
           subtitle,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 13,
             color: grayFont,
           ),
         ),

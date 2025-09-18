@@ -3,12 +3,12 @@ import 'package:koperasi_rsb/widgets-global/card-login-regis.dart';
 import 'package:koperasi_rsb/widgets-global/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/green-button.dart';
 
-class LoginScreen extends StatefulWidget {
+class RegisterScreen1 extends StatefulWidget {
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen1> createState() => _RegisterScreen1State();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreen1State extends State<RegisterScreen1> {
   late double _deviceHeight;
   late double _deviceWidth;
 
@@ -27,8 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 height: _deviceHeight * 0.25,
                 child: cardLoginRegisWidget(
-                  title: "Selamat Datang!",
-                  subtitle: "Silahkan masuk untuk melanjutkan",
+                  title: "Buat Akun",
+                  subtitle: "Silahkan mengisi formulir ini untuk buat akun anda",
                   deviceWidth: _deviceWidth,
                 ),
               ),
@@ -45,6 +45,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 30),
 
                       CustomTextFormField(
+                        label: "Nama (Sesuai KTP)",
+                        hint: "Nama Anda",
+                        keyboardType: TextInputType.text,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Nama wajib diisi";
+                          } else if (!value.contains(RegExp(r'^[a-zA-Z\s]+$'))) {
+                            return "Format nomor tidak valid";
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 35),
+
+                      CustomTextFormField(
                         label: "No. Handphone",
                         hint: "+62 xxx-xxxx-xxxx",
                         keyboardType: TextInputType.phone,
@@ -59,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
 
                       const SizedBox(height: 35),
-                      
+
                       CustomTextFormField(
                         label: "Kata Sandi",
                         hint: "Kata Sandi",
@@ -73,7 +89,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
+
+                      const SizedBox(height: 35),
+
+                      CustomTextFormField(
+                        label: "Konfirmasi Kata Sandi",
+                        hint: "Kata Sandi",
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Password wajib diisi";
+                          } else if (value.length < 6) {
+                            return "Password minimal 6 karakter";
+                          }
+                          return null;
+                        },
+                      ),
+
                       const SizedBox(height: 50),
+
                       SizedBox(
                         width: _deviceWidth * 0.75,
                         height: 55,
@@ -86,35 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                       ),
-
-                      const SizedBox(height: 25),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Belum punya akun? ',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: const Text(
-                              'Daftar disini',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.green, // warna hijau
-                                decoration:
-                                    TextDecoration.underline, // garis bawah
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
+                      
                       SizedBox(height: _deviceHeight),
                     ],
                   ),

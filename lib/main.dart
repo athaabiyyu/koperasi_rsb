@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/login/view/login.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/regis/register-page1.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 void main() {
@@ -17,9 +18,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: lightGreen),
         useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(),
+         textTheme: GoogleFonts.montserratTextTheme(),
       ),
-      home: LoginScreen(),
+      home: RegisterScreen1(),
     );
   }
 }
