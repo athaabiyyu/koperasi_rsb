@@ -1,37 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
-class CustomTextFormField extends StatefulWidget {
+class CustomDropdownFormField extends StatefulWidget {
   final String label;
   final String hint;
-  final TextInputType keyboardType;
-  final bool obscureText;
+  final List<String> items;
   final String? Function(String?)? validator;
-  final int maxLines;
+  final void Function(String?)? onChanged;
 
-  const CustomTextFormField({
+  const CustomDropdownFormField({
     Key? key,
     required this.label,
     required this.hint,
-    this.keyboardType = TextInputType.text,
-    this.obscureText = false,
+    required this.items,
     this.validator,
-    this.maxLines = 1,
+    this.onChanged,
   }) : super(key: key);
 
   @override
-  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
+  State<CustomDropdownFormField> createState() =>
+      _CustomDropdownFormFieldState();
 }
 
-class _CustomTextFormFieldState extends State<CustomTextFormField> {
-  late bool _isObscured;
-
-  @override
-  void initState() {
-    super.initState();
-    _isObscured = widget.obscureText;
-  }
+class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
+  String? _selectedValue;
 
   @override
   Widget build(BuildContext context) {
@@ -62,19 +54,16 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           ),
         ),
         const SizedBox(height: 6),
-        TextFormField(
-          keyboardType: widget.keyboardType,
-          obscureText: _isObscured,
-          validator: widget.validator,
-          maxLines: widget.maxLines,
+        DropdownButtonFormField<String>(
+          value: _selectedValue,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: const TextStyle(
               color: strokeGray,
               fontSize: 14,
             ),
-            contentPadding: EdgeInsets.symmetric(
-              vertical: widget.maxLines > 1 ? 16 : 12,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 12,
               horizontal: 12,
             ),
             border: OutlineInputBorder(
@@ -98,21 +87,22 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                 width: 1.5,
               ),
             ),
-            suffixIcon: widget.obscureText
-                ? IconButton(
-                    icon: Icon(
-                      _isObscured ? Icons.visibility_off : Icons.visibility,
-                      color: grayFont,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
-                  )
-                : null,
           ),
+          validator: widget.validator,
+          items: widget.items
+              .map((item) => DropdownMenuItem(
+                    value: item,
+                    child: Text(item),
+                  ))
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedValue = value;
+            });
+            if (widget.onChanged != null) {
+              widget.onChanged!(value);
+            }
+          },
         ),
       ],
     );

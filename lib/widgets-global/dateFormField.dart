@@ -1,36 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
-class CustomTextFormField extends StatefulWidget {
+class CustomDateFormField extends StatefulWidget {
   final String label;
   final String hint;
-  final TextInputType keyboardType;
-  final bool obscureText;
   final String? Function(String?)? validator;
-  final int maxLines;
 
-  const CustomTextFormField({
+  const CustomDateFormField({
     Key? key,
     required this.label,
     required this.hint,
-    this.keyboardType = TextInputType.text,
-    this.obscureText = false,
     this.validator,
-    this.maxLines = 1,
   }) : super(key: key);
 
   @override
-  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
+  State<CustomDateFormField> createState() => _CustomDateFormFieldState();
 }
 
-class _CustomTextFormFieldState extends State<CustomTextFormField> {
-  late bool _isObscured;
+class _CustomDateFormFieldState extends State<CustomDateFormField> {
+  final TextEditingController _controller = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _isObscured = widget.obscureText;
+  Future<void> _pickDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000), // default
+      firstDate: DateTime(1900), // batas bawah
+      lastDate: DateTime.now(), // maksimal hari ini
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        _controller.text =
+            "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+      });
+    }
   }
 
   @override
@@ -63,18 +66,17 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         ),
         const SizedBox(height: 6),
         TextFormField(
-          keyboardType: widget.keyboardType,
-          obscureText: _isObscured,
+          controller: _controller,
+          readOnly: true,
           validator: widget.validator,
-          maxLines: widget.maxLines,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: const TextStyle(
               color: strokeGray,
               fontSize: 14,
             ),
-            contentPadding: EdgeInsets.symmetric(
-              vertical: widget.maxLines > 1 ? 16 : 12,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 12,
               horizontal: 12,
             ),
             border: OutlineInputBorder(
@@ -98,21 +100,19 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                 width: 1.5,
               ),
             ),
-            suffixIcon: widget.obscureText
-                ? IconButton(
-                    icon: Icon(
-                      _isObscured ? Icons.visibility_off : Icons.visibility,
-                      color: grayFont,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
-                  )
-                : null,
+            suffixIcon: GestureDetector(
+              onTap: () => _pickDate(context),
+              child: const Padding(
+                padding: EdgeInsets.all(10),
+                child: Icon(
+                  Icons.calendar_today,
+                  color: grayFont,
+                  size: 20,
+                ),
+              ),
+            ),
           ),
+          onTap: () => _pickDate(context),
         ),
       ],
     );

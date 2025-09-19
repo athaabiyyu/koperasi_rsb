@@ -58,7 +58,7 @@ class _RegisterScreen1State extends State<RegisterScreen1> {
                         },
                       ),
 
-                      const SizedBox(height: 35),
+                      const SizedBox(height: 30),
 
                       CustomTextFormField(
                         label: "No. Handphone",
@@ -74,7 +74,7 @@ class _RegisterScreen1State extends State<RegisterScreen1> {
                         },
                       ),
 
-                      const SizedBox(height: 35),
+                      const SizedBox(height: 30),
 
                       CustomTextFormField(
                         label: "Kata Sandi",
@@ -90,7 +90,7 @@ class _RegisterScreen1State extends State<RegisterScreen1> {
                         },
                       ),
 
-                      const SizedBox(height: 35),
+                      const SizedBox(height: 30),
 
                       CustomTextFormField(
                         label: "Konfirmasi Kata Sandi",
@@ -112,7 +112,7 @@ class _RegisterScreen1State extends State<RegisterScreen1> {
                         width: _deviceWidth * 0.75,
                         height: 55,
                         child: CustomButton(
-                          text: "Masuk",
+                          text: "Selanjutnya",
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               print("Form valid, lanjut login");

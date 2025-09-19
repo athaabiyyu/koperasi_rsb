@@ -58,8 +58,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
 
-                      const SizedBox(height: 35),
-                      
+                      const SizedBox(height: 30),
+
                       CustomTextFormField(
                         label: "Kata Sandi",
                         hint: "Kata Sandi",
