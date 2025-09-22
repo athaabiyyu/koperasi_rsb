@@ -3,7 +3,7 @@ import 'package:koperasi_rsb/widgets-global/pop-up-alert.dart';
 import 'package:koperasi_rsb/widgets-global/card-detail-pembayaran.dart';
 
 class DetailPembayaranBiasa extends StatelessWidget {
-  const DetailPembayaranBiasa({Key? key}) : super(key: key);
+  const DetailPembayaranBiasa({super.key});
 
   @override
   Widget build(BuildContext context) {
