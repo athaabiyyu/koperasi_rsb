@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PopUpAlert extends StatelessWidget {
+  final String? title; // optional
   final String message;
   final VoidCallback? onClose;
 
   const PopUpAlert({
     Key? key,
+    this.title, // nullable
     required this.message,
     this.onClose,
   }) : super(key: key);
@@ -27,37 +30,54 @@ class PopUpAlert extends StatelessWidget {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    // Warning triangle icon
+    Container(
+      width: 40,
+      height: 40,
+      child: Center(
+        child: Image.asset(
+          "assets/icons/warning-icon.png",
+          fit: BoxFit.contain,
+        ),
+      ),
+    ),
+    const SizedBox(width: 16),
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Warning triangle icon
-          Container(
-            width: 40,
-            height: 40,
-            child: Center(
-              child: Image.asset(
-                "assets/icons/warning-icon.png",
-                fit: BoxFit.contain,
+          if (title != null)
+            Text(
+              title!,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
               ),
             ),
-          ),
-          const SizedBox(width: 20),
-          Flexible(
-            child: Text(
-              message,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+          if (title != null) const SizedBox(height: 4),
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
             ),
           ),
         ],
       ),
+    ),
+  ],
+),
+
     );
   }
 
   // Static method untuk menampilkan popup sebagai overlay
-  static void show(BuildContext context, String message) {
+  static void show(BuildContext context, String message, {String? title}) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -67,6 +87,7 @@ class PopUpAlert extends StatelessWidget {
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.all(0),
           child: PopUpAlert(
+            title: title,
             message: message,
             onClose: () => Navigator.of(context).pop(),
           ),

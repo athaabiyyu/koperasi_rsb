@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/login/view/login.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/member-biasa/pembayaran-awal/muncul-rekening.dart';
 import 'package:koperasi_rsb/regis/view/register-page1.dart';
 import 'package:koperasi_rsb/regis/view/register-page2.dart';
 import 'package:koperasi_rsb/regis/view/register-page3.dart';
@@ -22,9 +23,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: lightGreen),
         useMaterial3: true,
-         textTheme: GoogleFonts.robotoTextTheme(),
+         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: DetailPembayaranBiasa(),
+      home: MunculRekening(),
     );
   }
 }
