@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/pop-up-alert.dart';
-import 'package:koperasi_rsb/widgets-global/card-detail-pembayaran.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/pop-up-alert.dart';
+import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 
 class DetailPembayaranBiasa extends StatelessWidget {
   const DetailPembayaranBiasa({super.key});

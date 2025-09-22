@@ -43,16 +43,16 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         RichText(
           text: TextSpan(
             text: widget.label,
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w500,
               fontSize: 16,
               color: Colors.black,
             ),
             children: isRequired
-                ? const [
+                ? [
                     TextSpan(
                       text: " *",
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                       ),
@@ -69,7 +69,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           maxLines: widget.maxLines,
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: const TextStyle(
+            hintStyle: GoogleFonts.poppins(
               color: strokeGray,
               fontSize: 14,
             ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // untuk clipboard
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:koperasi_rsb/widgets-global/green-button.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 
 class CardPembayaranBank extends StatelessWidget {
   final String bankName;

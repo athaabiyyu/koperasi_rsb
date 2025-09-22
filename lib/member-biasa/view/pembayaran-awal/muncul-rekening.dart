@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:koperasi_rsb/widgets-global/card-muncul-rekening.dart';
-import 'package:koperasi_rsb/widgets-global/pop-up-alert.dart';
+import 'package:koperasi_rsb/widgets-global/card/card-muncul-rekening.dart';
+import 'package:koperasi_rsb/widgets-global/template-page/pembayaran-section.dart';
 
 class MunculRekening extends StatefulWidget {
   @override
@@ -26,39 +26,14 @@ class _MunculRekeningState extends State<MunculRekening> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Gambar ilustrasi
-                Image.asset(
-                  'assets/images/ava-payment.png',
-                  height: 150,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 16),
-
-                // Text instruksi
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
-                  child: Text(
-                    "Silahkan transfer ke nomor rekening berikut agar transaksi anda dapat segera kami proses",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Box alert
-                const PopUpAlert(
-                  title: "Informasi Penting",
-                  message: "•   Selesaikan pembayaran di nomor rekening kami.\n"
+                const PembayaranSection(
+                  imagePath: 'assets/images/ava-payment.png',
+                  text:
+                      "Silahkan transfer ke nomor rekening berikut agar transaksi anda dapat segera kami proses",
+                  alertTitle: "Informasi Penting !",
+                  alertMessage: "•   Selesaikan pembayaran di nomor rekening kami.\n"
                       "•   Mohon transfer sesuai jumlah hingga 3 digit terakhir.",
                 ),
-
-                const SizedBox(height: 20),
 
                 // Card rekening bank
                 CardPembayaranBank(

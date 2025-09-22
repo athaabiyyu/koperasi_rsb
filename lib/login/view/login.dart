@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/card-login-regis.dart';
-import 'package:koperasi_rsb/widgets-global/textFormField.dart';
-import 'package:koperasi_rsb/widgets-global/green-button.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/widgets-global/template-page/login-regis-section.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -25,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               SizedBox(
-                height: _deviceHeight * 0.25,
                 child: cardLoginRegisWidget(
                   title: "Selamat Datang!",
                   subtitle: "Silahkan masuk untuk melanjutkan",
@@ -41,9 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-
                       const SizedBox(height: 30),
-
                       CustomTextFormField(
                         label: "No. Handphone",
                         hint: "+62 xxx-xxxx-xxxx",
@@ -57,9 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-
                       const SizedBox(height: 30),
-
                       CustomTextFormField(
                         label: "Kata Sandi",
                         hint: "Kata Sandi",
@@ -78,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: _deviceWidth * 0.75,
                         height: 55,
                         child: CustomButton(
-                          text: "Masuk",
+                          text: "MASUK",
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               print("Form valid, lanjut login");
@@ -86,35 +83,33 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                       ),
-
                       const SizedBox(height: 25),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             'Belum punya akun? ',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.black,
                             ),
                           ),
                           GestureDetector(
                             onTap: () {},
-                            child: const Text(
+                            child: Text(
                               'Daftar disini',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                color: Colors.green,
-                                decoration:
-                                    TextDecoration.underline,
+                                color: darkGreen,
+                                decoration: TextDecoration.underline,
+                                decorationColor: darkGreen,
+                                decorationThickness: 1.5,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                         ],
                       ),
-
                       SizedBox(height: _deviceHeight),
                     ],
                   ),

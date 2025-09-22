@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/card-login-regis.dart';
-import 'package:koperasi_rsb/widgets-global/textFormField.dart';
-import 'package:koperasi_rsb/widgets-global/green-button.dart';
-import 'package:koperasi_rsb/widgets-global/dateFormField.dart';
-import 'package:koperasi_rsb/widgets-global/dropDownFormField.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/widgets-global/template-page/login-regis-section.dart';
+import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
+import 'package:koperasi_rsb/widgets-global/form/dateFormField.dart';
+import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:koperasi_rsb/widgets-global/dialogJoinPenyertaan.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 
 class RegisterScreen3 extends StatefulWidget {
   @override
@@ -29,7 +30,6 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
           child: Column(
             children: [
               SizedBox(
-                height: _deviceHeight * 0.25,
                 child: cardLoginRegisWidget(
                   title: "Lengkapi Data!",
                   subtitle:
@@ -66,7 +66,7 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                         width: _deviceWidth * 0.75,
                         height: 55,
                         child: CustomButton(
-                          text: "Daftar",
+                          text: "DAFTAR",
                           onPressed: () {
                             showDialogJoinPenyertaan(
                               context: context,
@@ -84,18 +84,18 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             'Sudah punya akun? ',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.black,
                             ),
                           ),
                           GestureDetector(
                             onTap: () {},
-                            child: const Text(
+                            child: Text(
                               'Masuk',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.green, // warna hijau
                                 decoration:

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/card-login-regis.dart';
-import 'package:koperasi_rsb/widgets-global/textFormField.dart';
-import 'package:koperasi_rsb/widgets-global/green-button.dart';
-import 'package:koperasi_rsb/widgets-global/dateFormField.dart';
-import 'package:koperasi_rsb/widgets-global/dropDownFormField.dart';
+import 'package:koperasi_rsb/widgets-global/template-page/login-regis-section.dart';
+import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
+import 'package:koperasi_rsb/widgets-global/form/dateFormField.dart';
+import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 
 class RegisterScreen2 extends StatefulWidget {
   @override
@@ -27,7 +27,6 @@ class _RegisterScreen2State extends State<RegisterScreen2> {
           child: Column(
             children: [
               SizedBox(
-                height: _deviceHeight * 0.25,
                 child: cardLoginRegisWidget(
                   title: "Lengkapi Data!",
                   subtitle:
@@ -158,7 +157,7 @@ class _RegisterScreen2State extends State<RegisterScreen2> {
                         width: _deviceWidth * 0.75,
                         height: 55,
                         child: CustomButton(
-                          text: "Selanjutnya",
+                          text: "SELANJUTNYA",
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               print("Form valid, lanjut login");
