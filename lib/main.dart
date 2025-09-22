@@ -5,6 +5,7 @@ import 'package:koperasi_rsb/regis/view/register-page1.dart';
 import 'package:koperasi_rsb/regis/view/register-page2.dart';
 import 'package:koperasi_rsb/regis/view/register-page3.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/login/view/pembayaran/detail-pembayaran-biasa.dart';
 
 
 void main() {
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
          textTheme: GoogleFonts.robotoTextTheme(),
       ),
-      home: RegisterScreen3(),
+      home: DetailPembayaranBiasa(),
     );
   }
 }

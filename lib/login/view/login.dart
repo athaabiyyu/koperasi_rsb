@@ -105,9 +105,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Daftar disini',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.green, // warna hijau
+                                color: Colors.green,
                                 decoration:
-                                    TextDecoration.underline, // garis bawah
+                                    TextDecoration.underline,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
