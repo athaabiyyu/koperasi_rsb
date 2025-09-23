@@ -35,8 +35,8 @@ class PopUpAlert extends StatelessWidget {
   children: [
     // Warning triangle icon
     Container(
-      width: 50,
-      height: 50,
+      width: 40,
+      height: 40,
       child: Center(
         child: Image.asset(
           "assets/icons/warning-icon.png",
@@ -63,9 +63,9 @@ class PopUpAlert extends StatelessWidget {
             message,
             style: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
               color: Colors.black87,
-            ),
+            )
           ),
         ],
       ),
