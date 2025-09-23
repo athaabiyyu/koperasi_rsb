@@ -28,17 +28,17 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
               children: [
                 const PembayaranSection(
                   imagePath: 'assets/images/ava-payment.png',
-                  alertMessage: "Isi data nama, nomor rekening, dan bank, lalu unggah bukti pembayaran Anda.",
+                  alertMessage:
+                      "Isi data nama, nomor rekening, dan bank, lalu unggah bukti pembayaran Anda.",
                 ),
 
                 // Card rekening bank
                 KonfirmasiPembayaranForm(
-  onSubmit: (data) {
-    print(data); 
-    // lakukan request API di sini
-  },
-),
-
+                  onSubmit: (data) {
+                    print(data);
+                    // lakukan request API di sini
+                  },
+                ),
               ],
             ),
           ),

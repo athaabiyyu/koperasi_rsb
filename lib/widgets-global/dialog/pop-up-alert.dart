@@ -35,8 +35,8 @@ class PopUpAlert extends StatelessWidget {
   children: [
     // Warning triangle icon
     Container(
-      width: 40,
-      height: 40,
+      width: 50,
+      height: 50,
       child: Center(
         child: Image.asset(
           "assets/icons/warning-icon.png",

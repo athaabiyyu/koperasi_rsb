@@ -60,7 +60,9 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                           return null;
                         },
                       ),
+                      
                       const SizedBox(height: 30),
+
                       FileUploadForm(
                         label: 'Dokumen Pendukung',
                         descriptions: const [
