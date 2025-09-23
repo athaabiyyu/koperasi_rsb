@@ -267,7 +267,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Image.asset(
-                              "assets/icons/fluent_box-16-filled.png",
+                              "assets/icons/join_penyertaan.png",
                               width: 28,
                               height: 28,
                               fit: BoxFit.contain,
