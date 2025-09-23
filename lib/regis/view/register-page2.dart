@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/template-page/login-regis-section.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/form/dateFormField.dart';

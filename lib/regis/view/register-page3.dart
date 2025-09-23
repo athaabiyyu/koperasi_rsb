@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:koperasi_rsb/widgets-global/template-page/login-regis-section.dart';
+import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
@@ -60,9 +62,7 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                           return null;
                         },
                       ),
-                      
                       const SizedBox(height: 30),
-
                       FileUploadForm(
                         label: 'Dokumen Pendukung',
                         descriptions: const [
@@ -74,9 +74,7 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                           print('File yang dipilih: ${file?.name}');
                         },
                       ),
-
                       const SizedBox(height: 40),
-
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
@@ -98,8 +96,7 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                                 decorationColor: darkGreen,
                                 decorationThickness: 1.5,
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {},
+                              recognizer: TapGestureRecognizer()..onTap = () {},
                             ),
                             const TextSpan(text: ' serta '),
                             TextSpan(
@@ -112,16 +109,13 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                                 decorationColor: darkGreen,
                                 decorationThickness: 1.5,
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {},
+                              recognizer: TapGestureRecognizer()..onTap = () {},
                             ),
                             const TextSpan(text: ' kami.'),
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 25),
-
                       SizedBox(
                         width: _deviceWidth * 0.75,
                         height: 55,
@@ -134,7 +128,32 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                                 print("User joined penyertaan");
                               },
                               onCancel: () {
-                                print("User canceled joined penyertaan");
+                                DetailPembayaranAwalMember.show(
+                                  context,
+                                  alertTitle: "Detail Pembayaran",
+                                  alertMessage:
+                                      "Pastikan data pembayaran sudah benar.",
+                                  paymentTitle: "Detail Pembayaran",
+                                  paymentHeader: "Informasi Pembayaran",
+                                  paymentItems: [
+                                    PaymentItem(
+                                        title: "Setoran Awal",
+                                        price: "Rp 50.000"),
+                                    PaymentItem(
+                                        title:
+                                            "Simpanan Wajib 1 Tahun Member UMKM",
+                                        price: "Rp 120.000"),
+                                  ],
+                                  totalPrice: "Rp 170.000",
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // tutup dialog
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text("Pembayaran dikonfirmasi")),
+                                    );
+                                  },
+                                );
                               },
                             );
                           },

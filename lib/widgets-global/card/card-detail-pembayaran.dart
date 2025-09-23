@@ -96,7 +96,7 @@ class CardDetailPembayaran extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment
-                              .start, // penting biar rata atas
+                              .start,
                           children: [
                             Expanded(
                               // 👈 biar teks bisa wrap
@@ -109,7 +109,7 @@ class CardDetailPembayaran extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8), // kasih jarak dikit
+                            const SizedBox(width: 8),
                             Text(
                               item.price,
                               style: const TextStyle(

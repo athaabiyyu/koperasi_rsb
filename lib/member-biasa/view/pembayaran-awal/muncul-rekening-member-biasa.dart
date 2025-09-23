@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-muncul-rekening.dart';
-import 'package:koperasi_rsb/widgets-global/template-page/pembayaran-section.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 
-class MunculRekening extends StatefulWidget {
+class MunculRekeningMemberBiasa extends StatefulWidget {
   @override
-  State<MunculRekening> createState() => _MunculRekeningState();
+  State<MunculRekeningMemberBiasa> createState() => _MunculRekeningMemberBiasaState();
 }
 
-class _MunculRekeningState extends State<MunculRekening> {
+class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
   late double _deviceHeight;
   late double _deviceWidth;
 

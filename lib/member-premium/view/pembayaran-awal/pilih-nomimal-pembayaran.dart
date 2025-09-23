@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
+import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
-import 'package:koperasi_rsb/widgets-global/template-page/pembayaran-section.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 
 class PilihNominalPembayaran extends StatefulWidget {
   @override
@@ -109,7 +111,38 @@ class _PilihNominalPembayaranFormState extends State<PilihNominalPembayaran> {
                                 height: 55,
                                 child: CustomButton(
                                   text: "LANJUTKAN PEMBAYARAN",
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    DetailPembayaranAwalMember.show(
+                                      context,
+                                      alertTitle: "Detail Pembayaran",
+                                      alertMessage:
+                                          "Pastikan data pembayaran sudah benar.",
+                                      paymentTitle: "Detail Pembayaran",
+                                      paymentHeader: "Informasi Pembayaran",
+                                      paymentItems: [
+                                        PaymentItem(
+                                            title: "Setoran Awal",
+                                            price: "Rp 50.000"),
+                                        PaymentItem(
+                                            title: "Simpanan Wajib 1 Tahun Member UMKM",
+                                            price: "Rp 120.000"),
+                                        PaymentItem(
+                                            title: "Gabung Penyertaan",
+                                            price: "Rp 500.000"),
+                                      ],
+                                      totalPrice: "Rp 670.000",
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(); // tutup dialog
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  "Pembayaran dikonfirmasi")),
+                                        );
+                                      },
+                                    );
+                                  },
                                 ),
                               ),
                             ),
