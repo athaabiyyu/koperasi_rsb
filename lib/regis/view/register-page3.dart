@@ -1,12 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/template-page/login-regis-section.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
-import 'package:koperasi_rsb/widgets-global/form/dateFormField.dart';
-import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
-import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
+import 'package:koperasi_rsb/widgets-global/form/uploadFile-Form.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 class RegisterScreen3 extends StatefulWidget {
   @override
@@ -61,7 +61,65 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                         },
                       ),
                       const SizedBox(height: 30),
-                      const SizedBox(height: 50),
+                      FileUploadForm(
+                        label: 'Dokumen Pendukung',
+                        descriptions: const [
+                          '• Upload foto KTP',
+                          '• Maksimum size file 10 MB',
+                        ],
+                        maxFileSizeMB: 10,
+                        onFilePicked: (file) {
+                          print('File yang dipilih: ${file?.name}');
+                        },
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
+                          children: [
+                            const TextSpan(
+                                text:
+                                    'Dengan mengklik tombol “Daftar” anda setuju dengan '),
+                            TextSpan(
+                              text: 'Syarat & Ketentuan',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: darkGreen,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor: darkGreen,
+                                decorationThickness: 1.5,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {},
+                            ),
+                            const TextSpan(text: ' serta '),
+                            TextSpan(
+                              text: 'Kebijakan Privasi',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: darkGreen,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor: darkGreen,
+                                decorationThickness: 1.5,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {},
+                            ),
+                            const TextSpan(text: ' kami.'),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
                       SizedBox(
                         width: _deviceWidth * 0.75,
                         height: 55,
@@ -97,16 +155,17 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                               'Masuk',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                color: Colors.green, // warna hijau
-                                decoration:
-                                    TextDecoration.underline, // garis bawah
+                                color: darkGreen,
                                 fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor: darkGreen,
+                                decorationThickness: 1.5,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: _deviceHeight),
+                      const SizedBox(height: 50),
                     ],
                   ),
                 ),

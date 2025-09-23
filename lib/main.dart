@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
          textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: RegisterScreen2(),
+      home: RegisterScreen3(),
     );
   }
 }
