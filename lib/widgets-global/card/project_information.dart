@@ -83,7 +83,7 @@ class ProjectHeaderInfo extends StatelessWidget {
         LinearProgressIndicator(
           value: progress,
           backgroundColor: Colors.grey.shade300,
-          color: Colors.green,
+          color: Colors.orange,
           minHeight: 10,
           borderRadius: BorderRadius.circular(6),
         ),

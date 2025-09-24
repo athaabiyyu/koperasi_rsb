@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_list_card.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // TODO: Membuat Agar Card Bisa Di Klik dan Menuju ke Detail Proyek
 class ProjectListPage extends StatelessWidget {
@@ -13,6 +14,18 @@ class ProjectListPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: lightGreen,
+        elevation: 0,
+        title: Text(
+          "Daftar Proyek",
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w700,
+            color: Colors.black,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -26,28 +39,7 @@ class ProjectListPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  //  judul dan back button
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back_ios_outlined,
-                          color: Colors.green,
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Text(
-                        "Daftar Proyek",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: _deviceHeight * 0.01,
-                  ),
+                  // Search bar
                   // Search bar
                   TextField(
                     decoration: InputDecoration(
@@ -113,7 +105,7 @@ class ProjectListPage extends StatelessWidget {
                     imageUrl:
                         "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
                     status: "Pendanaan Dibuka",
-                  title: "Pendanaan Kolam Ikan Lele Bioflok",
+                    title: "Pendanaan Kolam Ikan Lele Bioflok",
                     owner: "Marlina Siahaan",
                     collectedToken: 75,
                     remainingDays: 10,
