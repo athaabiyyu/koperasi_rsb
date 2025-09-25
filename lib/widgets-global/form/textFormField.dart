@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
@@ -9,6 +10,8 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
   final int maxLines;
+  // Optional: when true and keyboardType is number, format with thousands separator (e.g., 1.000.000)
+  final bool formatRupiah;
 
   const CustomTextFormField({
     Key? key,
@@ -18,6 +21,7 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.validator,
     this.maxLines = 1,
+    this.formatRupiah = false,
   }) : super(key: key);
 
   @override
@@ -36,6 +40,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     final bool isRequired = widget.validator != null;
+    final bool isNumberOnly = widget.keyboardType == TextInputType.number;
+    final List<TextInputFormatter>? inputFormatters = isNumberOnly
+        ? <TextInputFormatter>[
+            FilteringTextInputFormatter.digitsOnly,
+            if (widget.formatRupiah) ThousandsSeparatorInputFormatter(),
+          ]
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,36 +78,25 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           obscureText: _isObscured,
           validator: widget.validator,
           maxLines: widget.maxLines,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: GoogleFonts.poppins(
-              color: strokeGray,
-              fontSize: 14,
-            ),
+            hintStyle: GoogleFonts.poppins(color: strokeGray, fontSize: 14),
             contentPadding: EdgeInsets.symmetric(
               vertical: widget.maxLines > 1 ? 16 : 12,
               horizontal: 12,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: strokeGray,
-                width: 1.0,
-              ),
+              borderSide: const BorderSide(color: strokeGray, width: 1.0),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: strokeGray,
-                width: 1.0,
-              ),
+              borderSide: const BorderSide(color: strokeGray, width: 1.0),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: grayFont,
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: grayFont, width: 1.5),
             ),
             suffixIcon: widget.obscureText
                 ? IconButton(
@@ -116,5 +116,40 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         ),
       ],
     );
+  }
+}
+
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll('.', '');
+    if (digits.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+    final formatted = _formatWithDots(digits);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  String _formatWithDots(String digits) {
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = digits.length - 1; i >= 0; i--) {
+      buffer.write(digits[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    return buffer.toString().split('').reversed.join();
   }
 }
