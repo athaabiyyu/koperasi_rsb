@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 class ProjectHeaderInfo extends StatelessWidget {
   final String imageUrl;
@@ -47,13 +48,13 @@ class ProjectHeaderInfo extends StatelessWidget {
                     vertical: _deviceHeight * 0.008,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: lightGreen,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     status,
                     style: const TextStyle(
-                      color: Colors.green,
+                      color: darkGreen,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

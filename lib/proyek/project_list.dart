@@ -3,7 +3,6 @@ import 'package:koperasi_rsb/widgets-global/card/project_list_card.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// TODO: Membuat Agar Card Bisa Di Klik dan Menuju ke Detail Proyek
 class ProjectListPage extends StatelessWidget {
   const ProjectListPage({super.key});
 
