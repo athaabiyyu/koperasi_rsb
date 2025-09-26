@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/colors.dart';
+// Removed unused colors import; status colors are defined inline here to match MyProjectCard
 
 class ProjectHeaderInfo extends StatelessWidget {
   final String imageUrl;
@@ -26,6 +26,7 @@ class ProjectHeaderInfo extends StatelessWidget {
     final _deviceWidth = MediaQuery.of(context).size.width;
     final _deviceHeight = MediaQuery.of(context).size.height;
     final progress = (collectedToken / maxToken).clamp(0.0, 1.0);
+    final style = _getStatusStyle(status);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,13 +49,13 @@ class ProjectHeaderInfo extends StatelessWidget {
                     vertical: _deviceHeight * 0.008,
                   ),
                   decoration: BoxDecoration(
-                    color: lightGreen,
+                    color: style["bg"],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     status,
-                    style: const TextStyle(
-                      color: darkGreen,
+                    style: TextStyle(
+                      color: style["fg"],
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -104,7 +105,9 @@ class ProjectHeaderInfo extends StatelessWidget {
                 Text(
                   "$collectedToken Token",
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -118,7 +121,9 @@ class ProjectHeaderInfo extends StatelessWidget {
                 Text(
                   "$remainingDays",
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -128,7 +133,11 @@ class ProjectHeaderInfo extends StatelessWidget {
 
         // Info detail target/token/dll
         _buildInfoRow("Target Dana", "Rp 250.000.000", _deviceHeight),
-        _buildInfoRow("Token Rilis", "${maxToken - collectedToken}", _deviceHeight),
+        _buildInfoRow(
+          "Token Rilis",
+          "${maxToken - collectedToken}",
+          _deviceHeight,
+        ),
         _buildInfoRow("Jumlah Token", "$maxToken", _deviceHeight),
         _buildInfoRow("Harga per Token", "Rp 250.000", _deviceHeight),
         _buildInfoRow("Min Pembelian", "2 atau Rp 500.000", _deviceHeight),
@@ -143,13 +152,31 @@ class ProjectHeaderInfo extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 14, color: Colors.grey)),
-          Text(value,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
     );
+  }
+
+  // Match status color styles with MyProjectCard
+  Map<String, Color> _getStatusStyle(String status) {
+    switch (status) {
+      case "Pendanaan Dibuka":
+        return {"bg": const Color(0xFFE7FFF4), "fg": const Color(0xFF0D804A)};
+      case "Proyek Berjalan":
+        return {"bg": const Color(0xFFEDF8FF), "fg": const Color(0xFF1D8AD9)};
+      case "Proyek Selesai":
+        return {"bg": const Color(0xFFE7FFF4), "fg": const Color(0xFF0D804A)};
+      case "Proyek Dibatalkan":
+        return {"bg": const Color(0xFFFFDDD6), "fg": const Color(0xFF922922)};
+      case "Draft Proyek":
+        return {"bg": const Color(0xFFF8F8F8), "fg": const Color(0xFF000000)};
+      default:
+        return {"bg": Colors.grey.shade200, "fg": Colors.grey.shade700};
+    }
   }
 }

@@ -9,6 +9,7 @@ class MyProjectCard extends StatelessWidget {
   final int terkumpul;
   final int sisaHari;
   final bool isDraft;
+  final VoidCallback? onTap;
 
   const MyProjectCard({
     super.key,
@@ -20,41 +21,24 @@ class MyProjectCard extends StatelessWidget {
     required this.terkumpul,
     required this.sisaHari,
     this.isDraft = false,
+    this.onTap,
   });
 
   // Fungsi untuk ambil warna sesuai status
   Map<String, dynamic> _getStatusStyle() {
     switch (status) {
       case "Pendanaan Dibuka":
-        return {
-          "bg": const Color(0xFFE7FFF4),
-          "fg": const Color(0xFF0D804A),
-        };
+        return {"bg": const Color(0xFFE7FFF4), "fg": const Color(0xFF0D804A)};
       case "Proyek Berjalan":
-        return {
-          "bg": const Color(0xFFEDF8FF),
-          "fg": const Color(0xFF1D8AD9),
-        };
+        return {"bg": const Color(0xFFEDF8FF), "fg": const Color(0xFF1D8AD9)};
       case "Proyek Selesai":
-        return {
-          "bg": const Color(0xFFE7FFF4),
-          "fg": const Color(0xFF0D804A),
-        };
+        return {"bg": const Color(0xFFE7FFF4), "fg": const Color(0xFF0D804A)};
       case "Proyek Dibatalkan":
-        return {
-          "bg": const Color(0xFFFFDDD6),
-          "fg": const Color(0xFF922922),
-        };
+        return {"bg": const Color(0xFFFFDDD6), "fg": const Color(0xFF922922)};
       case "Draft Proyek":
-        return {
-          "bg": const Color(0xFFF8F8F8),
-          "fg": const Color(0xFF000000),
-        };
+        return {"bg": const Color(0xFFF8F8F8), "fg": const Color(0xFF000000)};
       default:
-        return {
-          "bg": Colors.grey.shade200,
-          "fg": Colors.grey.shade700,
-        };
+        return {"bg": Colors.grey.shade200, "fg": Colors.grey.shade700};
     }
   }
 
@@ -75,173 +59,177 @@ class MyProjectCard extends StatelessWidget {
       return isDraft ? "-" : "$value";
     }
 
-    return Card(
-      elevation: 1,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_deviceWidth * 0.03),
-      ),
-      margin: EdgeInsets.symmetric(
-        vertical: _deviceHeight * 0.01,
-        horizontal: _deviceWidth * 0.02,
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: _deviceWidth * 0.06,
-          vertical: _deviceHeight * 0.025,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(_deviceWidth * 0.03),
+      child: Card(
+        elevation: 1,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_deviceWidth * 0.03),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Baris pertama: Gambar + Status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CircleAvatar(
-                  radius: _deviceWidth * 0.07,
-                  backgroundImage: NetworkImage(imageUrl),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _deviceWidth * 0.025,
-                    vertical: _deviceHeight * 0.004,
+        margin: EdgeInsets.symmetric(
+          vertical: _deviceHeight * 0.01,
+          horizontal: _deviceWidth * 0.02,
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: _deviceWidth * 0.06,
+            vertical: _deviceHeight * 0.025,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Baris pertama: Gambar + Status
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CircleAvatar(
+                    radius: _deviceWidth * 0.07,
+                    backgroundImage: NetworkImage(imageUrl),
                   ),
-                  decoration: BoxDecoration(
-                    color: style["bg"],
-                    borderRadius: BorderRadius.circular(_deviceWidth * 0.05),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: _deviceWidth * 0.03,
-                      color: style["fg"],
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _deviceWidth * 0.025,
+                      vertical: _deviceHeight * 0.004,
+                    ),
+                    decoration: BoxDecoration(
+                      color: style["bg"],
+                      borderRadius: BorderRadius.circular(_deviceWidth * 0.05),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: _deviceWidth * 0.03,
+                        color: style["fg"],
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: _deviceHeight * 0.02),
-
-            // Title
-            Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+                ],
               ),
-            ),
 
-            SizedBox(height: _deviceHeight * 0.018),
+              SizedBox(height: _deviceHeight * 0.02),
 
-            // Token Ditawarkan & Min Beli
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayValue(tokenDitawarkan),
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.04,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      "Token Ditawarkan",
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.03,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+              // Title
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      displayValue(minBeli),
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.04,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: _deviceHeight * 0.002),
-                    Text(
-                      "Min. Beli",
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.03,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
 
-            SizedBox(height: _deviceHeight * 0.015),
+              SizedBox(height: _deviceHeight * 0.018),
 
-            // Progress Bar
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade200,
-              color: Colors.orange,
-              minHeight: 10,
-              borderRadius: BorderRadius.circular(4),
-            ),
+              // Token Ditawarkan & Min Beli
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayValue(tokenDitawarkan),
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.04,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        "Token Ditawarkan",
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.03,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        displayValue(minBeli),
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.04,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: _deviceHeight * 0.002),
+                      Text(
+                        "Min. Beli",
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.03,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
 
-            SizedBox(height: _deviceHeight * 0.01),
+              SizedBox(height: _deviceHeight * 0.015),
 
-            // Terkumpul & Sisa Hari
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Terkumpul",
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.03,
-                        color: Colors.grey,
+              // Progress Bar
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey.shade200,
+                color: Colors.orange,
+                minHeight: 10,
+                borderRadius: BorderRadius.circular(4),
+              ),
+
+              SizedBox(height: _deviceHeight * 0.01),
+
+              // Terkumpul & Sisa Hari
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Terkumpul",
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.03,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: _deviceHeight * 0.002),
-                    Text(
-                      displayValue(terkumpul),
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.035,
-                        fontWeight: FontWeight.w500,
+                      SizedBox(height: _deviceHeight * 0.002),
+                      Text(
+                        displayValue(terkumpul),
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.035,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Sisa Hari",
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.03,
-                        color: Colors.grey,
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Sisa Hari",
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.03,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-                    Text(
-                      displayValue(sisaHari),
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.035,
-                        fontWeight: FontWeight.w500,
+                      Text(
+                        displayValue(sisaHari),
+                        style: TextStyle(
+                          fontSize: _deviceWidth * 0.035,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

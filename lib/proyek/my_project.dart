@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
+import 'package:koperasi_rsb/proyek/add_project.dart';
+import 'package:koperasi_rsb/proyek/project_detail.dart';
 
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});
@@ -295,7 +297,12 @@ class _MyProjectPageState extends State<MyProjectPage>
                       borderRadius: BorderRadius.circular(_deviceHeight * 0.01),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AddProjectPage()),
+                    );
+                  },
                   child: const Text(
                     "Buat Proyek Baru",
                     style: TextStyle(color: Colors.white, fontSize: 16),
@@ -343,6 +350,36 @@ class _MyProjectPageState extends State<MyProjectPage>
           minBeli: project["minBeli"],
           terkumpul: project["terkumpul"],
           sisaHari: project["sisaHari"],
+          isDraft: project["isDraft"] == true,
+          onTap: () {
+            final bool isDraft = project["isDraft"] == true;
+            if (isDraft) {
+              // Open AddProjectPage with draft prefill
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AddProjectPage(isEditingDraft: true, draftData: project),
+                ),
+              );
+            } else {
+              // Open ProjectDetailPage for non-draft items
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProjectDetailPage(
+                    imageUrl: project["imageUrl"],
+                    status: project["status"],
+                    title: project["title"],
+                    owner: "Anda",
+                    collectedToken: project["terkumpul"],
+                    remainingDays: project["sisaHari"],
+                    maxToken: project["tokenDitawarkan"],
+                  ),
+                ),
+              );
+            }
+          },
         );
       },
     );

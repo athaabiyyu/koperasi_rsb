@@ -10,6 +10,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
   final int maxLines;
+  final String? initialValue;
   // Optional: when true and keyboardType is number, format with thousands separator (e.g., 1.000.000)
   final bool formatRupiah;
 
@@ -21,6 +22,7 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.validator,
     this.maxLines = 1,
+    this.initialValue,
     this.formatRupiah = false,
   }) : super(key: key);
 
@@ -78,6 +80,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           obscureText: _isObscured,
           validator: widget.validator,
           maxLines: widget.maxLines,
+          initialValue: widget.initialValue,
           inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: widget.hint,
