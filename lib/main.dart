@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:koperasi_rsb/kontak%20admin/kontak-admin.dart';
 import 'package:koperasi_rsb/login/view/login.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/member-biasa/view/dompet/dompet.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
          textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: const DompetPage(),
+      home: const KontakAdminPage(),
     );
   }
 }
