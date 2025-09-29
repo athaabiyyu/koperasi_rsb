@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Tambahkan import ini
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
@@ -9,6 +10,8 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
   final int maxLines;
+  final TextEditingController? controller;
+  final List<TextInputFormatter>? inputFormatters; // Tambahkan parameter ini
 
   const CustomTextFormField({
     Key? key,
@@ -18,6 +21,8 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.validator,
     this.maxLines = 1,
+    this.controller,
+    this.inputFormatters, // Tambahkan parameter ini
   }) : super(key: key);
 
   @override
@@ -63,10 +68,12 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         ),
         const SizedBox(height: 6),
         TextFormField(
+          controller: widget.controller,
           keyboardType: widget.keyboardType,
           obscureText: _isObscured,
           validator: widget.validator,
           maxLines: widget.maxLines,
+          inputFormatters: widget.inputFormatters, // Tambahkan ini
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: GoogleFonts.poppins(

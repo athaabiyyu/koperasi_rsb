@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/top-up-card.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-topUp-saldo-simpanan-wajib.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
 
 class DompetPage extends StatefulWidget {
@@ -158,7 +159,12 @@ class _DompetPageState extends State<DompetPage>
                           title: "Simpanan Wajib",
                           amount: "Rp 500.000",
                           onPressed: () {
-                            print("Top Up Simpanan Wajib");
+                            showTopUpSimpananWajibDialog(
+                              context: context,
+                              namaAnggota: "Andi Hidayat",
+                              tagihan: "April 2025",
+                              nominalTagihan: "Rp 120.000",
+                            );
                           },
                         ),
                         const TopUpCard(
