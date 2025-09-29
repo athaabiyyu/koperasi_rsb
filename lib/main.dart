@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/login/view/login.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/member-biasa/view/dompet/dompet.dart';
 import 'package:koperasi_rsb/member-biasa/view/pembayaran-awal/muncul-rekening-member-biasa.dart';
 import 'package:koperasi_rsb/member-premium/view/pembayaran-awal/muncul-rekening-member-premium.dart';
 import 'package:koperasi_rsb/member-premium/view/pembayaran-awal/pilih-nomimal-pembayaran.dart';
@@ -10,7 +11,7 @@ import 'package:koperasi_rsb/regis/view/register-page3.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/member-premium/view/pembayaran-awal/pilih-nomimal-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/konfirmasi-pembayaran.dart';
-
+import 'package:koperasi_rsb/member-biasa/view/dompet/dompet.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
          textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: KonfirmasiPembayaran(),
+      home: const DompetPage(),
     );
   }
 }
