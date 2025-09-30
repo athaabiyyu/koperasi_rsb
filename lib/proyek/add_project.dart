@@ -7,7 +7,14 @@ import 'package:koperasi_rsb/proyek/add_project/sections/model_rencana_bisnis_se
 import 'package:koperasi_rsb/proyek/add_project/sections/pembagian_hasil_section.dart';
 
 class AddProjectPage extends StatefulWidget {
-  const AddProjectPage({super.key});
+  final bool isEditingDraft;
+  final Map<String, dynamic>? draftData;
+
+  const AddProjectPage({
+    super.key,
+    this.isEditingDraft = false,
+    this.draftData,
+  });
 
   @override
   State<AddProjectPage> createState() => _AddProjectPageState();
@@ -25,7 +32,6 @@ class _AddProjectPageState extends State<AddProjectPage> {
     (_) => GlobalKey<FormState>(),
   );
 
-  // Controllers (optional if later needed to pass data forward)
   final TextEditingController _judulCtrl = TextEditingController();
   final TextEditingController _deskripsiCtrl = TextEditingController();
 
@@ -38,7 +44,6 @@ class _AddProjectPageState extends State<AddProjectPage> {
   }
 
   void _simpanDraft() {
-    // For now just show snackbar; integrate persistence later
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Draft disimpan (sementara).')),
     );
@@ -63,8 +68,6 @@ class _AddProjectPageState extends State<AddProjectPage> {
     }
   }
 
-  // Removed custom dropdown decoration helper (now handled inside component)
-
   @override
   Widget build(BuildContext context) {
     final _deviceHeight = MediaQuery.of(context).size.height;
@@ -77,7 +80,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
-          'Buat Proyek',
+          widget.isEditingDraft ? 'Lanjutkan Draft' : 'Buat Proyek',
           style: GoogleFonts.roboto(
             fontWeight: FontWeight.w700,
             fontSize: 20,
@@ -93,13 +96,25 @@ class _AddProjectPageState extends State<AddProjectPage> {
             index: 0,
             title: 'Proyek',
             subtitle: 'Berisi informasi proyek anda',
-            children: const [ProyekSection()],
+            children: [
+              ProyekSection(
+                initialJudul: widget.draftData != null
+                    ? widget.draftData!['title'] as String?
+                    : null,
+              ),
+            ],
           ),
           _sectionWrapper(
             index: 1,
             title: 'Pendanaan',
             subtitle: 'Berisi informasi pengajuan pendanaan anda',
-            children: const [PendanaanSection()],
+            children: [
+              PendanaanSection(
+                initialNominal: widget.draftData != null
+                    ? widget.draftData!['tokenDitawarkan'] as int?
+                    : null,
+              ),
+            ],
           ),
           _sectionWrapper(
             index: 2,
@@ -216,6 +231,4 @@ class _AddProjectPageState extends State<AddProjectPage> {
       ),
     );
   }
-
-  // Removed inline builders; now using separate section widgets above.
 }

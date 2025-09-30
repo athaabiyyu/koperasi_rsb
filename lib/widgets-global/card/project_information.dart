@@ -162,7 +162,6 @@ class ProjectHeaderInfo extends StatelessWidget {
     );
   }
 
-  // Match status color styles with MyProjectCard
   Map<String, Color> _getStatusStyle(String status) {
     switch (status) {
       case "Pendanaan Dibuka":

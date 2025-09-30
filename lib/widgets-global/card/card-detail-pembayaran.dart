@@ -99,7 +99,6 @@ class CardDetailPembayaran extends StatelessWidget {
                               .start,
                           children: [
                             Expanded(
-                              // 👈 biar teks bisa wrap
                               child: Text(
                                 item.title,
                                 style: const TextStyle(

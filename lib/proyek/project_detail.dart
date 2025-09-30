@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_information.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import '../widgets-global/reusable-page/timeline_widgets.dart';
 // TODO: Memecah Timeline menjadi File Baru, Membuat file yang di upload menjadi clickable dan bisa di preview
 
 class ProjectDetailPage extends StatelessWidget {
@@ -73,8 +74,15 @@ class ProjectDetailPage extends StatelessWidget {
       {"step": "Proses Penggalangan Penyertaan Modal", "events": []},
     ];
 
+    final bool isRunning = status == 'Proyek Berjalan';
+    final tabs = <Tab>[
+      const Tab(text: 'Informasi Proyek'),
+      const Tab(text: 'Status Pengajuan'),
+      if (isRunning) const Tab(text: 'Penanam Modal'),
+      if (isRunning) const Tab(text: 'Riwayat Pendanaan Dari Koperasi'),
+    ];
     return DefaultTabController(
-      length: 2,
+      length: tabs.length,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -84,14 +92,12 @@ class ProjectDetailPage extends StatelessWidget {
             "Detail Proyek",
             style: GoogleFonts.roboto(fontWeight: FontWeight.w700),
           ),
-          bottom: const TabBar(
+          bottom: TabBar(
             indicatorColor: darkGreen,
             labelColor: darkGreen,
             unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: "Informasi Proyek"),
-              Tab(text: "Status Pengajuan"),
-            ],
+            isScrollable: isRunning, // allow scroll when many tabs
+            tabs: tabs,
           ),
         ),
         body: TabBarView(
@@ -120,7 +126,6 @@ class ProjectDetailPage extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                   ),
                   SizedBox(height: _deviceHeight * 0.012),
-
                   const Text(
                     "Saya membutuhkan modal untuk mendirikan sebuah stand pisang nugget di Green Terrace. "
                     "Dana akan digunakan untuk bahan baku, alat, dan perlengkapan. "
@@ -149,6 +154,7 @@ class ProjectDetailPage extends StatelessWidget {
                         "Laporan Laba Rugi Diupdate Setiap: ",
                         style: TextStyle(color: Colors.black),
                       ),
+                      SizedBox(width: 4),
                       Text(
                         "6 Bulan",
                         style: TextStyle(
@@ -287,7 +293,7 @@ class ProjectDetailPage extends StatelessWidget {
                             alignment: Alignment.topLeft,
                             child: SizedBox(
                               width: 1,
-                              child: _DashedLineVertical(
+                              child: DashedLineVertical(
                                 color: const Color(0xFFBBBBBB),
                                 thickness: 1,
                               ),
@@ -298,7 +304,7 @@ class ProjectDetailPage extends StatelessWidget {
                       Column(
                         children: List.generate(
                           timeline.length,
-                          (index) => _TimelineStepItem(
+                          (index) => TimelineStepItem(
                             index: index,
                             isLast: index == timeline.length - 1,
                             title: timeline[index]["step"],
@@ -313,6 +319,57 @@ class ProjectDetailPage extends StatelessWidget {
                 ],
               ),
             ),
+            if (isRunning)
+              // ================= PENANAM MODAL =================
+              SingleChildScrollView(
+                padding: EdgeInsets.all(_deviceWidth * 0.06),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Project Info (requested to show also here)
+                    ProjectHeaderInfo(
+                      imageUrl: imageUrl,
+                      status: status,
+                      title: title,
+                      owner: owner,
+                      collectedToken: collectedToken,
+                      remainingDays: remainingDays,
+                      maxToken: maxToken,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Penanam Modal',
+                      style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _InvestorList(),
+                  ],
+                ),
+              ),
+            if (isRunning)
+              // ================= RIWAYAT PENDANAAN DARI KOPERASI =================
+              SingleChildScrollView(
+                padding: EdgeInsets.all(_deviceWidth * 0.06),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Riwayat Pendanaan Dari Koperasi',
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Belum ada riwayat pendanaan koperasi (dummy placeholder).',
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -321,279 +378,166 @@ class ProjectDetailPage extends StatelessWidget {
 }
 
 // Box Timeline
-class _TimelineStepItem extends StatelessWidget {
-  final int index;
-  final bool isLast;
-  final String title;
-  final List<Map<String, dynamic>> events;
+// ================= PENANAM MODAL LIST WIDGET =================
+class _InvestorList extends StatelessWidget {
+  _InvestorList();
 
-  const _TimelineStepItem({
-    required this.index,
-    required this.isLast,
-    required this.title,
-    required this.events,
-  });
-
-  bool get isDone => events.isNotEmpty;
+  final List<Map<String, dynamic>> _investors = const [
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=1',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=2',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=3',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=4',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=5',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.of(context).size.width;
-    final deviceHeight = MediaQuery.of(context).size.height;
-    const lineColor = lightGreen;
-    const successColor = Color(0xFF12B76A);
-    const neutralColor = Color(0xFF98A2B3);
-    const dangerColor = Colors.red;
+    return Column(
+      children: [
+        for (int i = 0; i < _investors.length; i++) ...[
+          _InvestorTile(data: _investors[i]),
+          if (i != _investors.length - 1)
+            const Divider(height: 20, thickness: 0.7, color: Color(0xFFE5E7EB)),
+        ],
+      ],
+    );
+  }
+}
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: deviceHeight * 0.02),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left column: indicator only; connecting dashed line is drawn behind via Stack
-          SizedBox(
-            width: 32,
-            child: Center(
-              child: isDone
-                  ? Container(
-                      width: 26,
-                      height: 26,
-                      decoration: const BoxDecoration(
-                        color: successColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    )
-                  : Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF0F0F0),
-                        border: Border.all(color: lineColor),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(  
-                        "${index + 1}",
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          color: neutralColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-            ),
-          ),
+class _InvestorTile extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const _InvestorTile({required this.data});
 
-          SizedBox(width: deviceWidth * 0.02),
+  @override
+  Widget build(BuildContext context) {
+    final _deviceWidth = MediaQuery.of(context).size.width;
+    final name = data['name'] as String? ?? '-';
+    final avatar = data['avatar'] as String?;
+    final tokens = data['tokens'] as int? ?? 0;
+    final amount = data['amount'] as int? ?? 0;
+    final date = data['date'] as String? ?? '';
 
-          // Right: content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.roboto(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: successColor,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "22 Januari, 2022 4:23 PM by",
-                  style: GoogleFonts.roboto(fontSize: 12, color: neutralColor),
-                ),
-                const SizedBox(height: 10),
-
-                ...events.map((event) {
-                  final type = event['type'] as String? ?? 'info';
-                  Color borderColor;
-                  switch (type) {
-                    case 'success':
-                      borderColor = successColor;
-                      break;
-                    case 'error':
-                      borderColor = dangerColor;
-                      break;
-                    default:
-                      borderColor = const Color(0xFFD0D5DD); // abu muda
-                  }
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: ShapeDecoration(
-                      color: Colors.white,
-                      shape: _DashedBorderShape(
-                        color: borderColor,
-                        strokeWidth: 1.2,
-                        dashLength: 6,
-                        gapLength: 4,
-                        borderRadius: 8,
-                      ),
-                    ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 22,
+          backgroundColor: const Color(0xFFE5E7EB),
+          backgroundImage: avatar != null ? NetworkImage(avatar) : null,
+          child: avatar == null
+              ? const Icon(Icons.person, color: Colors.grey)
+              : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          event['message'] ?? '',
+                          name,
                           style: GoogleFonts.roboto(
-                            fontSize: 13,
-                            color: borderColor,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF101828),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          date,
+                          style: GoogleFonts.roboto(
+                            fontSize: 12,
+                            color: const Color(0xFF667085),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        if (event['date'] != null)
-                          Text(
-                            event['date'],
-                            style: GoogleFonts.roboto(
-                              fontSize: 12,
-                              color: neutralColor,
-                            ),
-                          ),
-                        if (event['actionLabel'] != null) ...[
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: successColor),
-                                foregroundColor: successColor,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              onPressed: () {},
-                              child: Text(event['actionLabel']),
-                            ),
-                          ),
-                        ],
                       ],
                     ),
-                  );
-                }).toList(),
-              ],
-            ),
+                  ),
+                  SizedBox(width: _deviceWidth * 0.02),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$tokens Koin',
+                        style: GoogleFonts.roboto(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF101828),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatRupiah(amount),
+                        style: GoogleFonts.roboto(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF027A48),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  String _formatRupiah(int amount) {
+    final s = amount.toString();
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buffer.write(s[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    return 'Rp ' + buffer.toString().split('').reversed.join();
   }
 }
 
 // Garis Vertikal Putus-putus
-class _DashedLineVertical extends StatelessWidget {
-  final double thickness;
-  final Color color;
-
-  const _DashedLineVertical({this.thickness = 1, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const double dashLength = 4;
-        const double gapLength = 4;
-        final height = constraints.maxHeight;
-        final dashCount = (height / (dashLength + gapLength)).floor();
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(dashCount, (index) {
-            return SizedBox(
-              height: dashLength,
-              child: Center(
-                child: Container(width: thickness, color: color),
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
-}
-
-// Garis Putus-putus Border
-class _DashedBorderShape extends OutlinedBorder {
-  final Color color;
-  final double strokeWidth;
-  final double dashLength;
-  final double gapLength;
-  final double borderRadius;
-
-  const _DashedBorderShape({
-    required this.color,
-    this.strokeWidth = 1,
-    this.dashLength = 6,
-    this.gapLength = 4,
-    this.borderRadius = 8,
-  });
-
-  @override
-  OutlinedBorder copyWith({
-    BorderSide? side,
-    BorderRadiusGeometry? borderRadius,
-  }) {
-    return _DashedBorderShape(
-      color: color,
-      strokeWidth: strokeWidth,
-      dashLength: dashLength,
-      gapLength: gapLength,
-      borderRadius: this.borderRadius,
-    );
-  }
-
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
-    return Path()
-      ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)));
-  }
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    return Path()
-      ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)));
-  }
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
-    final path = Path()..addRRect(rrect);
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = color;
-
-    // create dashed path
-    final dashedPath = _createDashedPath(path, dashLength, gapLength);
-    canvas.drawPath(dashedPath, paint);
-  }
-
-  Path _createDashedPath(Path source, double dashLength, double gapLength) {
-    final Path dashedPath = Path();
-    for (final metric in source.computeMetrics()) {
-      double distance = 0.0;
-      while (distance < metric.length) {
-        final double next = distance + dashLength;
-        dashedPath.addPath(
-          metric.extractPath(distance, next.clamp(0.0, metric.length)),
-          Offset.zero,
-        );
-        distance = next + gapLength;
-      }
-    }
-    return dashedPath;
-  }
-
-  @override
-  ShapeBorder scale(double t) => this;
-}
+// (timeline widgets & dashed utilities moved to widgets/timeline_widgets.dart)
