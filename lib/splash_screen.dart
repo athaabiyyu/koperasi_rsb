@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/login/view/login.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -18,12 +17,8 @@ class _SplashPageState extends State<SplashPage> {
 
     // set durasi perpindahan layar ke login screen
     Timer(const Duration(seconds: 3), () {
-
       // navigasi ke login screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
+      Navigator.pushReplacementNamed(context, '/login');
     });
   }
 
