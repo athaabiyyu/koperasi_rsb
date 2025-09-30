@@ -16,12 +16,10 @@ class PilihNominalPembayaran extends StatefulWidget {
 
 class _PilihNominalPembayaranFormState extends State<PilihNominalPembayaran> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late double _deviceHeight;
   late double _deviceWidth;
 
   @override
   Widget build(BuildContext context) {
-    _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
