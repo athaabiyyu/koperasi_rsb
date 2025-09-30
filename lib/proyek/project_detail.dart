@@ -129,11 +129,14 @@ class ProjectDetailPage extends StatelessWidget {
                   const Text(
                     "Saya membutuhkan modal untuk mendirikan sebuah stand pisang nugget di Green Terrace. "
                     "Dana akan digunakan untuk bahan baku, alat, dan perlengkapan. "
-                    "Saya yakin produk ini memiliki permintaan tinggi dan akan menguntungkan.",
+                    "Saya yakin produk ini memiliki permintaan tinggi dan akan menguntungkan.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                    "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+                    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+                    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+                    "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                     textAlign: TextAlign.justify,
                   ),
                   SizedBox(height: _deviceHeight * 0.025),
-
                   // ===== Pembagian Keuntungan =====
                   const Text(
                     "Pembagian Keuntungan",
@@ -451,7 +454,7 @@ class _InvestorTile extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CircleAvatar(
-          radius: 22,
+          radius: _deviceWidth * 0.07,
           backgroundColor: const Color(0xFFE5E7EB),
           backgroundImage: avatar != null ? NetworkImage(avatar) : null,
           child: avatar == null
