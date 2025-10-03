@@ -5,20 +5,20 @@ import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/form/dateFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 
-class RegisterScreen2 extends StatefulWidget {
+class RegistrationPage2 extends StatefulWidget {
+  const RegistrationPage2({super.key});
+
   @override
-  State<RegisterScreen2> createState() => _RegisterScreen2State();
+  State<RegistrationPage2> createState() => _RegistrationPage2State();
 }
 
-class _RegisterScreen2State extends State<RegisterScreen2> {
-  late double _deviceHeight;
+class _RegistrationPage2State extends State<RegistrationPage2> {
   late double _deviceWidth;
 
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -160,12 +160,12 @@ class _RegisterScreen2State extends State<RegisterScreen2> {
                           text: "SELANJUTNYA",
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              print("Form valid, lanjut login");
+                              Navigator.pushNamed(context, '/registration3');
                             }
                           },
                         ),
                       ),
-                      SizedBox(height: _deviceHeight),
+                      const SizedBox(height: 50),
                     ],
                   ),
                 ),

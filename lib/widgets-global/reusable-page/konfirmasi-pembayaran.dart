@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/card/card-muncul-rekening.dart';
 import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 
@@ -9,13 +8,8 @@ class KonfirmasiPembayaran extends StatefulWidget {
 }
 
 class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
-  late double _deviceHeight;
-  late double _deviceWidth;
-
   @override
   Widget build(BuildContext context) {
-    _deviceHeight = MediaQuery.of(context).size.height;
-    _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.white,
