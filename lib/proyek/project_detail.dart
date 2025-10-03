@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_information.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import '../widgets-global/reusable-page/timeline_widgets.dart';
+import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
 // TODO: Memecah Timeline menjadi File Baru, Membuat file yang di upload menjadi clickable dan bisa di preview
 
 class ProjectDetailPage extends StatelessWidget {
@@ -72,6 +73,40 @@ class ProjectDetailPage extends StatelessWidget {
       },
       {"step": "Kontrak Perjanjian", "events": []},
       {"step": "Proses Penggalangan Penyertaan Modal", "events": []},
+    ];
+
+    // ===== Dummy data riwayat pendanaan koperasi =====
+    final List<Map<String, String>> fundingHistory = [
+      {
+        'tanggal': '15-04-2024\n13:28:08',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 1.000.000',
+      },
+      {
+        'tanggal': '15-04-2024\n10:05:22',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 2.500.000',
+      },
+      {
+        'tanggal': '14-04-2024\n18:40:11',
+        'metode': 'VA BSI',
+        'nominal': 'Rp. 750.000',
+      },
+      {
+        'tanggal': '14-04-2024\n09:12:47',
+        'metode': 'VA BSI',
+        'nominal': 'Rp. 1.250.000',
+      },
+      {
+        'tanggal': '13-04-2024\n16:30:05',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 5.000.000',
+      },
+      {
+        'tanggal': '13-04-2024\n08:22:33',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 3.000.000',
+      },
     ];
 
     final bool isRunning = status == 'Proyek Berjalan';
@@ -359,16 +394,34 @@ class ProjectDetailPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header project info
+                    ProjectHeaderInfo(
+                      imageUrl: imageUrl,
+                      status: status,
+                      title: title,
+                      owner: owner,
+                      collectedToken: collectedToken,
+                      remainingDays: remainingDays,
+                      maxToken: maxToken,
+                    ),
+                    const SizedBox(height: 24),
+
                     Text(
-                      'Riwayat Pendanaan Dari Koperasi',
+                      'Riwayat Pendanaan',
                       style: GoogleFonts.roboto(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Belum ada riwayat pendanaan koperasi (dummy placeholder).',
+                    const SizedBox(height: 12),
+
+                    // Wrapper agar Expanded di TransactionTable punya tinggi bounded
+                    SizedBox(
+                      height: _deviceHeight * 0.50,
+                      child: TransactionTable(
+                        status: status,
+                        data: fundingHistory,
+                      ),
                     ),
                   ],
                 ),
@@ -542,5 +595,3 @@ class _InvestorTile extends StatelessWidget {
   }
 }
 
-// Garis Vertikal Putus-putus
-// (timeline widgets & dashed utilities moved to widgets/timeline_widgets.dart)
