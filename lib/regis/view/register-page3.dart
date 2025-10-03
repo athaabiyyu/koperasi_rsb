@@ -10,20 +10,18 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/form/uploadFile-Form.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
-class RegisterScreen3 extends StatefulWidget {
+class RegistrationPage3 extends StatefulWidget {
   @override
-  State<RegisterScreen3> createState() => _RegisterScreen3State();
+  State<RegistrationPage3> createState() => _RegistrationPage3State();
 }
 
-class _RegisterScreen3State extends State<RegisterScreen3> {
-  late double _deviceHeight;
+class _RegistrationPage3State extends State<RegistrationPage3> {
   late double _deviceWidth;
 
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -171,7 +169,12 @@ class _RegisterScreen3State extends State<RegisterScreen3> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,'/login',
+                                (Route<dynamic> route) => false,
+                              );
+                            },
                             child: Text(
                               'Masuk',
                               style: GoogleFonts.poppins(
