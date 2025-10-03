@@ -7,6 +7,7 @@ class CustomDropdownFormField extends StatefulWidget {
   final List<String> items;
   final String? Function(String?)? validator;
   final void Function(String?)? onChanged;
+  final String? value;
 
   const CustomDropdownFormField({
     Key? key,
@@ -15,6 +16,7 @@ class CustomDropdownFormField extends StatefulWidget {
     required this.items,
     this.validator,
     this.onChanged,
+    this.value,
   }) : super(key: key);
 
   @override
@@ -24,6 +26,22 @@ class CustomDropdownFormField extends StatefulWidget {
 
 class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
   String? _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedValue = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomDropdownFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      setState(() {
+        _selectedValue = widget.value;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,42 +76,27 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
           value: _selectedValue,
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: const TextStyle(
-              color: strokeGray,
-              fontSize: 14,
-            ),
+            hintStyle: const TextStyle(color: strokeGray, fontSize: 14),
             contentPadding: const EdgeInsets.symmetric(
               vertical: 12,
               horizontal: 12,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: strokeGray,
-                width: 1.0,
-              ),
+              borderSide: const BorderSide(color: strokeGray, width: 1.0),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: strokeGray,
-                width: 1.0,
-              ),
+              borderSide: const BorderSide(color: strokeGray, width: 1.0),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: grayFont,
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: grayFont, width: 1.5),
             ),
           ),
           validator: widget.validator,
           items: widget.items
-              .map((item) => DropdownMenuItem(
-                    value: item,
-                    child: Text(item),
-                  ))
+              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
               .toList(),
           onChanged: (value) {
             setState(() {

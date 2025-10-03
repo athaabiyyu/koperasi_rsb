@@ -8,6 +8,7 @@ class FileUploadForm extends StatefulWidget {
   final List<String>? descriptions;
   final int maxFileSizeMB;
   final void Function(PlatformFile?)? onFilePicked;
+  final bool isRequired;
 
   const FileUploadForm({
     super.key,
@@ -15,6 +16,7 @@ class FileUploadForm extends StatefulWidget {
     this.descriptions,
     this.maxFileSizeMB = 10,
     this.onFilePicked,
+    this.isRequired = false,
   });
 
   @override
@@ -40,7 +42,9 @@ class _FileUploadFormState extends State<FileUploadForm> {
       } else {
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ukuran file maksimal ${widget.maxFileSizeMB} MB')),
+          SnackBar(
+            content: Text('Ukuran file maksimal ${widget.maxFileSizeMB} MB'),
+          ),
         );
       }
     }
@@ -51,12 +55,25 @@ class _FileUploadFormState extends State<FileUploadForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-            color: Colors.black,
+        RichText(
+          text: TextSpan(
+            text: widget.label,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+              color: Colors.black,
+            ),
+            children: widget.isRequired
+                ? [
+                    TextSpan(
+                      text: ' *',
+                      style: GoogleFonts.poppins(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ]
+                : const [],
           ),
         ),
         const SizedBox(height: 6),
@@ -72,14 +89,21 @@ class _FileUploadFormState extends State<FileUploadForm> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.insert_drive_file, color: Color(0xFF00C853), size: 30),
+                const Icon(
+                  Icons.insert_drive_file,
+                  color: Color(0xFF00C853),
+                  size: 30,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    _pickedFile?.name ?? 'Tarik file di sini atau klik untuk mengunggah.',
+                    _pickedFile?.name ??
+                        'Tarik file di sini atau klik untuk mengunggah.',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: _pickedFile != null ? Colors.grey[600] : Colors.black,
+                      color: _pickedFile != null
+                          ? Colors.grey[600]
+                          : Colors.black,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

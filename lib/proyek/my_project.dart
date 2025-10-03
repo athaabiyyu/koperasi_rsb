@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
+import 'package:koperasi_rsb/proyek/add_project.dart';
+import 'package:koperasi_rsb/proyek/project_detail.dart';
 
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});
@@ -29,9 +31,9 @@ class _MyProjectPageState extends State<MyProjectPage>
       "status": "Proyek Berjalan",
       "title": "Perkebunan Jagung Desa Makmur, Jawa Barat",
       "tokenDitawarkan": 2000,
-      "minBeli": 200,
-      "terkumpul": 1000,
-      "sisaHari": 20,
+      "minBeli": 20,
+      "terkumpul": 2000,
+      "sisaHari": 0,
     },
     {
       "imageUrl": "https://picsum.photos/200",
@@ -247,7 +249,7 @@ class _MyProjectPageState extends State<MyProjectPage>
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: EdgeInsets.symmetric(vertical: _deviceHeight * 0.015),
                           alignment: Alignment.center,
                           child: Text(
                             "Terlama",
@@ -295,7 +297,12 @@ class _MyProjectPageState extends State<MyProjectPage>
                       borderRadius: BorderRadius.circular(_deviceHeight * 0.01),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AddProjectPage()),
+                    );
+                  },
                   child: const Text(
                     "Buat Proyek Baru",
                     style: TextStyle(color: Colors.white, fontSize: 16),
@@ -331,7 +338,10 @@ class _MyProjectPageState extends State<MyProjectPage>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.of(context).size.width * 0.01,
+        vertical: MediaQuery.of(context).size.height * 0.015,
+      ),
       itemCount: filteredProjects.length,
       itemBuilder: (context, index) {
         final project = filteredProjects[index];
@@ -343,6 +353,36 @@ class _MyProjectPageState extends State<MyProjectPage>
           minBeli: project["minBeli"],
           terkumpul: project["terkumpul"],
           sisaHari: project["sisaHari"],
+          isDraft: project["isDraft"] == true,
+          onTap: () {
+            final bool isDraft = project["isDraft"] == true;
+            if (isDraft) {
+              // Open AddProjectPage with draft prefill
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AddProjectPage(isEditingDraft: true, draftData: project),
+                ),
+              );
+            } else {
+              // Open ProjectDetailPage for non-draft items
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProjectDetailPage(
+                    imageUrl: project["imageUrl"],
+                    status: project["status"],
+                    title: project["title"],
+                    owner: "Anda",
+                    collectedToken: project["terkumpul"],
+                    remainingDays: project["sisaHari"],
+                    maxToken: project["tokenDitawarkan"],
+                  ),
+                ),
+              );
+            }
+          },
         );
       },
     );

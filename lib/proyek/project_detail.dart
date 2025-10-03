@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_information.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:timeline_tile/timeline_tile.dart';
+import '../widgets-global/reusable-page/timeline_widgets.dart';
+import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
+// TODO: Memecah Timeline menjadi File Baru, Membuat file yang di upload menjadi clickable dan bisa di preview
 
 class ProjectDetailPage extends StatelessWidget {
   final String imageUrl;
@@ -72,16 +75,64 @@ class ProjectDetailPage extends StatelessWidget {
       {"step": "Proses Penggalangan Penyertaan Modal", "events": []},
     ];
 
+    // ===== Dummy data riwayat pendanaan koperasi =====
+    final List<Map<String, String>> fundingHistory = [
+      {
+        'tanggal': '15-04-2024\n13:28:08',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 1.000.000',
+      },
+      {
+        'tanggal': '15-04-2024\n10:05:22',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 2.500.000',
+      },
+      {
+        'tanggal': '14-04-2024\n18:40:11',
+        'metode': 'VA BSI',
+        'nominal': 'Rp. 750.000',
+      },
+      {
+        'tanggal': '14-04-2024\n09:12:47',
+        'metode': 'VA BSI',
+        'nominal': 'Rp. 1.250.000',
+      },
+      {
+        'tanggal': '13-04-2024\n16:30:05',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 5.000.000',
+      },
+      {
+        'tanggal': '13-04-2024\n08:22:33',
+        'metode': 'Transfer Bank',
+        'nominal': 'Rp. 3.000.000',
+      },
+    ];
+
+    final bool isRunning = status == 'Proyek Berjalan';
+    final tabs = <Tab>[
+      const Tab(text: 'Informasi Proyek'),
+      const Tab(text: 'Status Pengajuan'),
+      if (isRunning) const Tab(text: 'Penanam Modal'),
+      if (isRunning) const Tab(text: 'Riwayat Pendanaan Dari Koperasi'),
+    ];
     return DefaultTabController(
-      length: 2,
+      length: tabs.length,
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text("Detail Proyek"),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: "Informasi Proyek"),
-              Tab(text: "Status Pengajuan"),
-            ],
+          backgroundColor: lightGreen,
+          elevation: 0,
+          title: Text(
+            "Detail Proyek",
+            style: GoogleFonts.roboto(fontWeight: FontWeight.w700),
+          ),
+          bottom: TabBar(
+            indicatorColor: darkGreen,
+            labelColor: darkGreen,
+            unselectedLabelColor: Colors.grey,
+            isScrollable: isRunning, // allow scroll when many tabs
+            tabs: tabs,
           ),
         ),
         body: TabBarView(
@@ -110,15 +161,17 @@ class ProjectDetailPage extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                   ),
                   SizedBox(height: _deviceHeight * 0.012),
-
                   const Text(
                     "Saya membutuhkan modal untuk mendirikan sebuah stand pisang nugget di Green Terrace. "
                     "Dana akan digunakan untuk bahan baku, alat, dan perlengkapan. "
-                    "Saya yakin produk ini memiliki permintaan tinggi dan akan menguntungkan.",
+                    "Saya yakin produk ini memiliki permintaan tinggi dan akan menguntungkan.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                    "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+                    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+                    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+                    "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                     textAlign: TextAlign.justify,
                   ),
                   SizedBox(height: _deviceHeight * 0.025),
-
                   // ===== Pembagian Keuntungan =====
                   const Text(
                     "Pembagian Keuntungan",
@@ -139,10 +192,11 @@ class ProjectDetailPage extends StatelessWidget {
                         "Laporan Laba Rugi Diupdate Setiap: ",
                         style: TextStyle(color: Colors.black),
                       ),
+                      SizedBox(width: 4),
                       Text(
                         "6 Bulan",
                         style: TextStyle(
-                          color: Colors.green,
+                          color: darkGreen,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -174,15 +228,18 @@ class ProjectDetailPage extends StatelessWidget {
                         title: const Text(
                           "Foto Produk Pisang Nugget.jpg",
                           style: TextStyle(
-                            color: Colors.green,
+                            fontSize: 14,
+                            color: darkGreen,
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: const Text("2.3 MB"),
                       ),
                       ListTile(
                         leading: Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(_deviceWidth * 0.03),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade200,
                             borderRadius: BorderRadius.circular(8),
@@ -195,15 +252,18 @@ class ProjectDetailPage extends StatelessWidget {
                         title: const Text(
                           "Konsep Stand.jpg",
                           style: TextStyle(
-                            color: Colors.green,
+                            fontSize: 14,
+                            color: darkGreen,
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: const Text("2.3 MB"),
                       ),
                       ListTile(
                         leading: Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(_deviceWidth * 0.03),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade200,
                             borderRadius: BorderRadius.circular(8),
@@ -216,9 +276,12 @@ class ProjectDetailPage extends StatelessWidget {
                         title: const Text(
                           "Dokumen Proyeksi Proyek.xls",
                           style: TextStyle(
-                            color: Colors.green,
+                            fontSize: 14,
+                            color: darkGreen,
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: const Text("2.3 MB"),
                       ),
@@ -247,98 +310,288 @@ class ProjectDetailPage extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // Judul Timeline
-                  const Text(
+                  Text(
                     "Progres Status Pengajuan Project",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   SizedBox(height: _deviceHeight * 0.02),
 
-                  // Render timeline
-                  ...List.generate(timeline.length, (index) {
-                    final step = timeline[index];
-                    final isFirst = index == 0;
-                    final isLast = index == timeline.length - 1;
-
-                    return TimelineTile(
-                      alignment: TimelineAlign.start,
-                      isFirst: isFirst,
-                      isLast: isLast,
-                      indicatorStyle: IndicatorStyle(
-                        width: 30,
-                        color: step["events"].isEmpty
-                            ? Colors.grey
-                            : step["events"].any((e) => e["type"] == "error")
-                            ? Colors.red
-                            : Colors.green,
-                        iconStyle: IconStyle(
-                          color: Colors.white,
-                          iconData: step["events"].isEmpty
-                              ? Icons.lock
-                              : Icons.check,
-                        ),
-                      ),
-                      endChild: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              step["step"],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                  // Render custom dashed timeline with a full-height dashed line behind steps
+                  Stack(
+                    children: [
+                      // Background dashed vertical line aligned to dot center
+                      Positioned.fill(
+                        child: Padding(
+                          // Center of the 32px indicator column
+                          padding: const EdgeInsets.only(left: 16),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                              width: 1,
+                              child: DashedLineVertical(
+                                color: const Color(0xFFBBBBBB),
+                                thickness: 1,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            ...step["events"].map<Widget>((event) {
-                              Color borderColor;
-                              switch (event["type"]) {
-                                case "success":
-                                  borderColor = Colors.green;
-                                  break;
-                                case "error":
-                                  borderColor = Colors.red;
-                                  break;
-                                default:
-                                  borderColor = Colors.grey;
-                              }
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: borderColor),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      event["message"],
-                                      style: TextStyle(color: borderColor),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      event["date"],
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ],
+                          ),
                         ),
                       ),
-                    );
-                  }),
+                      Column(
+                        children: List.generate(
+                          timeline.length,
+                          (index) => TimelineStepItem(
+                            index: index,
+                            isLast: index == timeline.length - 1,
+                            title: timeline[index]["step"],
+                            events: List<Map<String, dynamic>>.from(
+                              timeline[index]["events"],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
+            if (isRunning)
+              // ================= PENANAM MODAL =================
+              SingleChildScrollView(
+                padding: EdgeInsets.all(_deviceWidth * 0.06),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Project Info (requested to show also here)
+                    ProjectHeaderInfo(
+                      imageUrl: imageUrl,
+                      status: status,
+                      title: title,
+                      owner: owner,
+                      collectedToken: collectedToken,
+                      remainingDays: remainingDays,
+                      maxToken: maxToken,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Penanam Modal',
+                      style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _InvestorList(),
+                  ],
+                ),
+              ),
+            if (isRunning)
+              // ================= RIWAYAT PENDANAAN DARI KOPERASI =================
+              SingleChildScrollView(
+                padding: EdgeInsets.all(_deviceWidth * 0.06),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header project info
+                    ProjectHeaderInfo(
+                      imageUrl: imageUrl,
+                      status: status,
+                      title: title,
+                      owner: owner,
+                      collectedToken: collectedToken,
+                      remainingDays: remainingDays,
+                      maxToken: maxToken,
+                    ),
+                    const SizedBox(height: 24),
+
+                    Text(
+                      'Riwayat Pendanaan',
+                      style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Wrapper agar Expanded di TransactionTable punya tinggi bounded
+                    SizedBox(
+                      height: _deviceHeight * 0.50,
+                      child: TransactionTable(
+                        status: status,
+                        data: fundingHistory,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 }
+
+// Box Timeline
+// ================= PENANAM MODAL LIST WIDGET =================
+class _InvestorList extends StatelessWidget {
+  _InvestorList();
+
+  final List<Map<String, dynamic>> _investors = const [
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=1',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=2',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=3',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=4',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+    {
+      'name': 'Albertina Caseus',
+      'avatar': 'https://i.pravatar.cc/150?img=5',
+      'tokens': 100,
+      'amount': 2000000,
+      'date': '29 Mar 2025 10:00 WIB',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (int i = 0; i < _investors.length; i++) ...[
+          _InvestorTile(data: _investors[i]),
+          if (i != _investors.length - 1)
+            const Divider(height: 20, thickness: 0.7, color: Color(0xFFE5E7EB)),
+        ],
+      ],
+    );
+  }
+}
+
+class _InvestorTile extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const _InvestorTile({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final _deviceWidth = MediaQuery.of(context).size.width;
+    final name = data['name'] as String? ?? '-';
+    final avatar = data['avatar'] as String?;
+    final tokens = data['tokens'] as int? ?? 0;
+    final amount = data['amount'] as int? ?? 0;
+    final date = data['date'] as String? ?? '';
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: _deviceWidth * 0.07,
+          backgroundColor: const Color(0xFFE5E7EB),
+          backgroundImage: avatar != null ? NetworkImage(avatar) : null,
+          child: avatar == null
+              ? const Icon(Icons.person, color: Colors.grey)
+              : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: GoogleFonts.roboto(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF101828),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          date,
+                          style: GoogleFonts.roboto(
+                            fontSize: 12,
+                            color: const Color(0xFF667085),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: _deviceWidth * 0.02),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$tokens Koin',
+                        style: GoogleFonts.roboto(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF101828),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatRupiah(amount),
+                        style: GoogleFonts.roboto(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF027A48),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatRupiah(int amount) {
+    final s = amount.toString();
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buffer.write(s[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    return 'Rp ' + buffer.toString().split('').reversed.join();
+  }
+}
+
