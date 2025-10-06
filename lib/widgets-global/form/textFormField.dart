@@ -13,6 +13,8 @@ class CustomTextFormField extends StatefulWidget {
   final String? initialValue;
   // Optional: when true and keyboardType is number, format with thousands separator (e.g., 1.000.000)
   final bool formatRupiah;
+  final TextEditingController? controller;
+  final List<TextInputFormatter>? inputFormatters; // Tambahkan parameter ini
 
   const CustomTextFormField({
     Key? key,
@@ -24,6 +26,8 @@ class CustomTextFormField extends StatefulWidget {
     this.maxLines = 1,
     this.initialValue,
     this.formatRupiah = false,
+    this.controller,
+    this.inputFormatters, // Tambahkan parameter ini
   }) : super(key: key);
 
   @override
@@ -76,12 +80,14 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         ),
         const SizedBox(height: 6),
         TextFormField(
+          controller: widget.controller,
           keyboardType: widget.keyboardType,
           obscureText: _isObscured,
           validator: widget.validator,
           maxLines: widget.maxLines,
           initialValue: widget.initialValue,
           inputFormatters: inputFormatters,
+          inputFormatters: widget.inputFormatters, // Tambahkan ini
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: GoogleFonts.poppins(color: strokeGray, fontSize: 14),

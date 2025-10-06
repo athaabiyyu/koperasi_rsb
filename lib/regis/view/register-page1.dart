@@ -3,20 +3,18 @@ import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.da
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 
-class RegisterScreen1 extends StatefulWidget {
+class RegistrationPage1 extends StatefulWidget {
   @override
-  State<RegisterScreen1> createState() => _RegisterScreen1State();
+  State<RegistrationPage1> createState() => _RegistrationPage1State();
 }
 
-class _RegisterScreen1State extends State<RegisterScreen1> {
-  late double _deviceHeight;
+class _RegistrationPage1State extends State<RegistrationPage1> {
   late double _deviceWidth;
 
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -61,12 +59,12 @@ class _RegisterScreen1State extends State<RegisterScreen1> {
 
                       CustomTextFormField(
                         label: "No. Handphone",
-                        hint: "+62 xxx-xxxx-xxxx",
+                        hint: "081 xxx-xxxx-xxxx",
                         keyboardType: TextInputType.phone,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Nomor wajib diisi";
-                          } else if (!value.contains("+62")) {
+                          } else if (!value.contains("08")) {
                             return "Format nomor tidak valid";
                           }
                           return null;
@@ -114,13 +112,13 @@ class _RegisterScreen1State extends State<RegisterScreen1> {
                           text: "SELANJUTNYAA",
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              print("Form valid, lanjut login");
+                              Navigator.pushNamed(context, '/registration2');
                             }
                           },
                         ),
                       ),
                       
-                      SizedBox(height: _deviceHeight),
+                      const SizedBox(height: 50),
                     ],
                   ),
                 ),

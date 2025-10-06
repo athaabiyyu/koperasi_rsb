@@ -8,3 +8,4 @@ const Color strokeGray = Color(0xFFCFCFCF);
 const Color darkGreen = Color(0xFF12B76A);
 const Color orange = Color(0xFFF38E09);
 const Color secGrayFont = Color(0xFF9DA4B4);
+const Color grayTable = Color(0xFFF9F9F9);
