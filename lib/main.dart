@@ -6,10 +6,10 @@ import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page3.dart';
-import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart';
 import 'package:koperasi_rsb/otp/verify_otp.dart';
 import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/screens/dashboard/dashboard.dart'; // ⭐ IMPORT DASHBOARD
 
 void main() {
   runApp(const MyApp());
@@ -40,8 +40,7 @@ class MyApp extends StatelessWidget {
           '/registration1': (context) => RegistrationPage1(),
           '/registration2': (context) => const RegistrationPage2(),
           '/registration3': (context) => RegistrationPage3(),
-          // Tambahkan route lain sesuai kebutuhan
-          // '/home': (context) => HomePage(),
+          '/dashboard': (context) => const DashboardPage(), // ⭐ TAMBAHKAN ROUTE HOME
         },
         // ⭐ Tambahkan onGenerateRoute untuk handle route dengan parameter
         onGenerateRoute: (settings) {

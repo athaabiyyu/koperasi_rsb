@@ -6,8 +6,9 @@ import 'package:koperasi_rsb/config/api_config.dart';
 import 'package:koperasi_rsb/config/api_endpoint/api_endpoints.dart';
 import 'package:koperasi_rsb/models/user_model.dart';
 import 'package:koperasi_rsb/models/payment-member_model.dart';
+import 'package:koperasi_rsb/utils/shared_preferences_helper.dart'; // ⭐ IMPORT HELPER
 
-// ⭐ Helper function untuk decode JWT token - FIXED VERSION
+// Helper function untuk decode JWT token (existing code)
 Map<String, dynamic>? _decodeJwt(String token) {
   try {
     final parts = token.split('.');
@@ -16,14 +17,9 @@ Map<String, dynamic>? _decodeJwt(String token) {
       return null;
     }
 
-    // Decode payload (bagian ke-2 dari JWT)
     String payload = parts[1];
-    
-    // Normalize base64 string
-    // JWT menggunakan base64url encoding, perlu di-normalize
     payload = payload.replaceAll('-', '+').replaceAll('_', '/');
     
-    // Tambahkan padding jika diperlukan
     switch (payload.length % 4) {
       case 0:
         break;
@@ -38,12 +34,8 @@ Map<String, dynamic>? _decodeJwt(String token) {
         return null;
     }
     
-    // Decode base64
     final decoded = utf8.decode(base64.decode(payload));
-    
     print('🔍 JWT Payload (decoded): $decoded');
-    
-    // Parse JSON
     final Map<String, dynamic> result = jsonDecode(decoded);
     
     return result;
@@ -56,54 +48,90 @@ Map<String, dynamic>? _decodeJwt(String token) {
 class AuthProvider with ChangeNotifier {
   String? _token;
   String? _errorMessage;
-  String? _userStatus; // ⭐ TAMBAHAN: User status
+  String? _userStatus;
   Map<String, dynamic> _registrationData = {};
   bool _isLoading = false;
+  bool _rememberMe = false; // ⭐ TAMBAHAN
 
   String? get token => _token;
   String? get errorMessage => _errorMessage;
-  String? get userStatus => _userStatus; // ⭐ TAMBAHAN: Getter untuk user status
+  String? get userStatus => _userStatus;
   bool get isLoading => _isLoading;
+  bool get rememberMe => _rememberMe; // ⭐ TAMBAHAN
   Map<String, dynamic> get registrationData => _registrationData;
 
-  // Set loading state
+  // ⭐ TAMBAHAN: Initialize dan load saved data saat app start
+  Future<void> initialize() async {
+    await loadSavedData();
+  }
+
+  // ⭐ TAMBAHAN: Load saved token dan credentials
+  Future<void> loadSavedData() async {
+    try {
+      // Load token
+      _token = await SharedPreferencesHelper.getToken();
+      
+      // Load user status
+      _userStatus = await SharedPreferencesHelper.getUserStatus();
+      
+      // Load credentials
+      final credentials = await SharedPreferencesHelper.getSavedCredentials();
+      _rememberMe = credentials['remember_me'] ?? false;
+      
+      print('=== 📂 LOADED SAVED DATA ===');
+      print('Token exists: ${_token != null}');
+      print('User Status: $_userStatus');
+      print('Remember Me: $_rememberMe');
+      print('============================');
+      
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error loading saved data: $e');
+    }
+  }
+
+  // ⭐ TAMBAHAN: Get saved credentials untuk auto-fill
+  Future<Map<String, String?>> getSavedCredentials() async {
+    final credentials = await SharedPreferencesHelper.getSavedCredentials();
+    return {
+      'no_hp': credentials['no_hp'],
+      'password': credentials['password'],
+      'remember_me': credentials['remember_me'].toString(),
+    };
+  }
+
   void setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
-  // Set error message
   void setError(String? message) {
     _errorMessage = message;
     notifyListeners();
   }
 
-  // Set token manually
   void setToken(String token) {
     _token = token;
     notifyListeners();
   }
 
-  // ⭐ TAMBAHAN: Set user status
   void setUserStatus(String? status) {
     _userStatus = status;
     notifyListeners();
   }
 
-  // Save registration step data
   void saveRegistrationStep(Map<String, dynamic> data) {
     _registrationData.addAll(data);
     notifyListeners();
   }
 
-  // Clear registration data
   void clearRegistrationData() {
     _registrationData = {};
     notifyListeners();
   }
 
-  // Login method - ⭐ UPDATED: Decode JWT untuk ambil status (FIXED)
-  Future<bool> login(String noHp, String password) async {
+  // ⭐ UPDATED: Login method dengan save token dan credentials
+  Future<bool> login(String noHp, String password, {bool rememberMe = false}) async {
     setLoading(true);
     setError(null);
 
@@ -126,16 +154,25 @@ class AuthProvider with ChangeNotifier {
         final data = jsonDecode(response.body);
         _token = data['token'];
         
+        // ⭐ Save token to SharedPreferences
+        if (_token != null) {
+          await SharedPreferencesHelper.saveToken(_token!);
+        }
+        
         print('\n🔑 Token received: ${_token?.substring(0, 30)}...\n');
         
-        // ⭐ DECODE JWT untuk mendapatkan status
+        // Decode JWT untuk mendapatkan status
         if (_token != null) {
           print('🔓 Attempting to decode JWT...');
           final decodedToken = _decodeJwt(_token!);
           
           if (decodedToken != null) {
-            // Ambil status dari JWT payload
             _userStatus = decodedToken['status'] as String?;
+            
+            // ⭐ Save user status to SharedPreferences
+            if (_userStatus != null) {
+              await SharedPreferencesHelper.saveUserStatus(_userStatus!);
+            }
             
             print('\n=== ✅ JWT DECODED SUCCESSFULLY ===');
             print('User ID: ${decodedToken['id']}');
@@ -151,11 +188,20 @@ class AuthProvider with ChangeNotifier {
           print('⚠️ Token is null');
         }
         
+        // ⭐ Save credentials jika remember me aktif
+        _rememberMe = rememberMe;
+        await SharedPreferencesHelper.saveCredentials(
+          noHp: noHp,
+          password: password,
+          rememberMe: rememberMe,
+        );
+        
         setLoading(false);
         
         print('=== 🎉 LOGIN SUCCESS ===');
         print('Token: ${_token?.substring(0, 20)}...');
         print('User Status: $_userStatus');
+        print('Remember Me: $rememberMe');
         print('========================\n');
         
         notifyListeners();
@@ -177,8 +223,9 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Step 1: Register user using multipart/form-data
+  // Step 1: Register user (existing code, no changes needed)
   Future<Map<String, dynamic>> registerUser() async {
+    // ... existing code ...
     setLoading(true);
     setError(null);
 
@@ -187,7 +234,6 @@ class AuthProvider with ChangeNotifier {
       print('Raw _registrationData keys: ${_registrationData.keys.toList()}');
       print('================================\n');
 
-      // Create UserModel from registration data
       final userModel = UserModel.fromRegistrationData(_registrationData);
 
       print('\n=== DEBUG USER MODEL ===');
@@ -197,14 +243,12 @@ class AuthProvider with ChangeNotifier {
       print('isValid: ${userModel.isValid()}');
       print('========================\n');
 
-      // Validate model
       if (!userModel.isValid()) {
         setLoading(false);
         setError('Data registrasi tidak lengkap');
         return {'success': false, 'message': 'Data registrasi tidak lengkap'};
       }
 
-      // Get both files from registration data
       File? fotoDiriFile = _registrationData['foto_diri_file'] as File?;
       File? fotoKtpFile = _registrationData['foto_ktp_file'] as File?;
       
@@ -220,13 +264,11 @@ class AuthProvider with ChangeNotifier {
         return {'success': false, 'message': 'File KTP tidak ditemukan'};
       }
 
-      // Create multipart request
       var request = http.MultipartRequest(
         'POST',
         Uri.parse(AuthEndpoints.register),
       );
 
-      // Add text fields
       request.fields['nama'] = userModel.nama.trim();
       request.fields['no_hp'] = userModel.noHp.trim();
       request.fields['password'] = userModel.password.trim();
@@ -239,14 +281,12 @@ class AuthProvider with ChangeNotifier {
       request.fields['nik'] = (userModel.nik ?? '').trim();
       request.fields['role'] = userModel.role;
       
-      // Add foto_diri file
       var fotoDiriMultipart = await http.MultipartFile.fromPath(
         'foto_diri',
         fotoDiriFile.path,
       );
       request.files.add(fotoDiriMultipart);
 
-      // Add foto_ktp file
       var fotoKtpMultipart = await http.MultipartFile.fromPath(
         'foto_ktp',
         fotoKtpFile.path,
@@ -258,7 +298,6 @@ class AuthProvider with ChangeNotifier {
       print('Files: foto_diri, foto_ktp');
       print('===========================');
 
-      // Send request
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
@@ -296,7 +335,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Step 2: Login to get token - ⭐ UPDATED: Decode JWT untuk ambil status (FIXED)
+  // ⭐ UPDATED: Login for token dengan save ke SharedPreferences
   Future<bool> loginForToken() async {
     setLoading(true);
     setError(null);
@@ -315,11 +354,18 @@ class AuthProvider with ChangeNotifier {
         final data = jsonDecode(response.body);
         _token = data['token'];
         
-        // ⭐ DECODE JWT untuk mendapatkan status
+        // ⭐ Save token
         if (_token != null) {
+          await SharedPreferencesHelper.saveToken(_token!);
+          
           final decodedToken = _decodeJwt(_token!);
           if (decodedToken != null) {
             _userStatus = decodedToken['status'] as String?;
+            
+            // ⭐ Save user status
+            if (_userStatus != null) {
+              await SharedPreferencesHelper.saveUserStatus(_userStatus!);
+            }
             
             print('=== ✅ LOGIN FOR TOKEN SUCCESS ===');
             print('Token: ${_token?.substring(0, 20)}...');
@@ -344,10 +390,9 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // ⭐ NEW: Combined Register + Payment Method
+  // Combined Register + Payment (existing code, no changes needed)
   Future<Map<String, dynamic>> registerAndPay(PaymentModel paymentModel) async {
     try {
-      // Step 1: Register user
       print('=== STEP 1: REGISTERING USER ===');
       final registerResult = await registerUser();
 
@@ -355,7 +400,6 @@ class AuthProvider with ChangeNotifier {
         return registerResult;
       }
 
-      // Step 2: Login untuk mendapatkan token
       print('=== STEP 2: LOGIN FOR TOKEN ===');
       final loginSuccess = await loginForToken();
 
@@ -366,7 +410,6 @@ class AuthProvider with ChangeNotifier {
         };
       }
 
-      // Step 3: Submit payment
       print('=== STEP 3: SUBMITTING PAYMENT ===');
       final paymentResult = await payMember(paymentModel);
 
@@ -377,7 +420,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Step 3: Pay member with multipart (Updated to use PaymentModel)
+  // Pay member (existing code, no changes needed)
   Future<Map<String, dynamic>> payMember(PaymentModel paymentModel) async {
     if (_token == null) {
       return {'success': false, 'message': 'Token tidak ditemukan'};
@@ -400,12 +443,10 @@ class AuthProvider with ChangeNotifier {
         'Authorization': 'Bearer $_token',
       });
 
-      // Add payment fields according to backend validation
       request.fields['nama_bank'] = paymentModel.namaBank.trim();
       request.fields['no_rekening'] = paymentModel.noRekening.trim();
       request.fields['nama_pemilik_rekening'] = paymentModel.namaPemilikRekening.trim();
 
-      // Add bukti_pembayaran file
       request.files.add(
         await http.MultipartFile.fromPath(
           'bukti_pembayaran',
@@ -442,13 +483,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Step 4: Verify OTP - ⭐ UPDATED: Pastikan token terkirim dengan benar
+  // ⭐ UPDATED: Verify OTP dengan update status
   Future<Map<String, dynamic>> verifyOtp(String noHp, String password, String otp) async {
     setLoading(true);
     setError(null);
 
     try {
-      // ⭐ PENTING: Login dulu untuk mendapatkan token terbaru
       print('=== STEP 1: LOGIN FOR OTP VERIFICATION ===');
       final loginSuccess = await login(noHp, password);
       
@@ -479,10 +519,13 @@ class AuthProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         
-        // Update user status to AKTIF after successful OTP verification
+        // Update user status to AKTIF
         _userStatus = 'AKTIF';
         
-        // Clear registration data after successful verification
+        // ⭐ Save updated status to SharedPreferences
+        await SharedPreferencesHelper.saveUserStatus('AKTIF');
+        
+        // Clear registration data
         clearRegistrationData();
         
         notifyListeners();
@@ -502,8 +545,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Logout method - ⭐ UPDATED: Clear user status juga
-  Future<bool> logout() async {
+  // ⭐ UPDATED: Logout dengan opsi keep credentials
+  Future<bool> logout({bool keepCredentials = false}) async {
     setLoading(true);
     setError(null);
 
@@ -522,22 +565,42 @@ class AuthProvider with ChangeNotifier {
       setLoading(false);
 
       _token = null;
-      _userStatus = null; // ⭐ Clear user status
+      _userStatus = null;
       _registrationData = {};
       _errorMessage = null;
+      
+      // ⭐ Clear data from SharedPreferences
+      if (keepCredentials && _rememberMe) {
+        // Keep credentials but clear token and status
+        await SharedPreferencesHelper.clearAllExceptCredentials();
+        print('🔓 Logout: Credentials kept');
+      } else {
+        // Clear everything including credentials
+        await SharedPreferencesHelper.clearAll();
+        _rememberMe = false;
+        print('🗑️ Logout: All data cleared');
+      }
+      
       notifyListeners();
       return true;
     } catch (e) {
       _token = null;
-      _userStatus = null; // ⭐ Clear user status
+      _userStatus = null;
       _registrationData = {};
       setError('Terjadi kesalahan: $e');
       setLoading(false);
+      
+      if (keepCredentials && _rememberMe) {
+        await SharedPreferencesHelper.clearAllExceptCredentials();
+      } else {
+        await SharedPreferencesHelper.clearAll();
+        _rememberMe = false;
+      }
+      
       return false;
     }
   }
 
-  // Clear error message
   void clearError() {
     _errorMessage = null;
     notifyListeners();

@@ -60,7 +60,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         // Navigate to home after successful verification
         await Future.delayed(const Duration(seconds: 1));
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/dashboard');
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
