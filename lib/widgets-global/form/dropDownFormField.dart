@@ -36,25 +36,9 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
   @override
   void didUpdateWidget(covariant CustomDropdownFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    // Update selected value jika widget.value berubah
     if (oldWidget.value != widget.value) {
       setState(() {
         _selectedValue = widget.value;
-      });
-    }
-    
-    // CRITICAL FIX: Reset jika selected value tidak ada di items list
-    if (_selectedValue != null && !widget.items.contains(_selectedValue)) {
-      setState(() {
-        _selectedValue = null;
-      });
-    }
-    
-    // CRITICAL FIX: Reset jika items list berubah (misalnya jadi kosong)
-    if (oldWidget.items != widget.items && widget.items.isEmpty) {
-      setState(() {
-        _selectedValue = null;
       });
     }
   }
@@ -62,12 +46,6 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
   @override
   Widget build(BuildContext context) {
     final bool isRequired = widget.validator != null;
-    
-    // CRITICAL FIX: Validasi final sebelum render
-    // Pastikan _selectedValue ada di items, jika tidak set null
-    final String? validValue = (_selectedValue != null && widget.items.contains(_selectedValue))
-        ? _selectedValue
-        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,10 +73,12 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: validValue, // Gunakan validValue bukan _selectedValue
+          isExpanded: true,
+          value: _selectedValue,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: const TextStyle(color: strokeGray, fontSize: 14),
+            // Tambah sedikit padding kanan global (boleh dibiarkan 12 juga, karena kita sudah padding di child)
             contentPadding: const EdgeInsets.symmetric(
               vertical: 12,
               horizontal: 12,
@@ -117,19 +97,45 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
             ),
           ),
           validator: widget.validator,
-          items: widget.items.isEmpty
-              ? null // Return null jika items kosong untuk avoid error
-              : widget.items
-                  .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                  .toList(),
-          onChanged: widget.onChanged == null
-              ? null // Disable dropdown jika onChanged null
-              : (value) {
-                  setState(() {
-                    _selectedValue = value;
-                  });
-                  widget.onChanged!(value);
-                },
+          items: widget.items
+              .map(
+                (item) => DropdownMenuItem(
+                  value: item,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Text(
+                      item,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          selectedItemBuilder: (context) {
+            return widget.items
+                .map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ),
+                  ),
+                )
+                .toList();
+          },
+          onChanged: (value) {
+            setState(() {
+              _selectedValue = value;
+            });
+            widget.onChanged?.call(value);
+          },
         ),
       ],
     );

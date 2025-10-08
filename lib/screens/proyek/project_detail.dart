@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_information.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import '../../widgets-global/reusable-page/timeline_widgets.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/timeline_widgets.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
 // TODO: Memecah Timeline menjadi File Baru, Membuat file yang di upload menjadi clickable dan bisa di preview
 
@@ -109,6 +109,25 @@ class ProjectDetailPage extends StatelessWidget {
       },
     ];
 
+    // ===== Lampiran Proyek (dummy) =====
+    final List<Map<String, String>> attachments = [
+      {
+        'name': 'Foto Produk Pisang Nugget.jpg',
+        'size': '2.3 MB',
+        'url': 'https://picsum.photos/seed/pisang/800/600',
+      },
+      {
+        'name': 'Konsep Stand.jpg',
+        'size': '1.8 MB',
+        'url': 'https://picsum.photos/seed/konsep/800/600',
+      },
+      {
+        'name': 'Dokumen Proyeksi Proyek.xls',
+        'size': '900 KB',
+        'url': '',
+      },
+    ];
+
     final bool isRunning = status == 'Proyek Berjalan';
     final tabs = <Tab>[
       const Tab(text: 'Informasi Proyek'),
@@ -212,80 +231,15 @@ class ProjectDetailPage extends StatelessWidget {
                   SizedBox(height: _deviceHeight * 0.012),
 
                   Column(
-                    children: [
-                      ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(_deviceWidth * 0.03),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(8),
+                    children: attachments
+                        .map(
+                          (file) => _AttachmentTile(
+                            data: file,
+                            deviceWidth: _deviceWidth,
+                            onTap: () => _showAttachmentPreview(context, file),
                           ),
-                          child: const Icon(
-                            Icons.insert_drive_file,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        title: const Text(
-                          "Foto Produk Pisang Nugget.jpg",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: darkGreen,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: const Text("2.3 MB"),
-                      ),
-                      ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(_deviceWidth * 0.03),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.insert_drive_file,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        title: const Text(
-                          "Konsep Stand.jpg",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: darkGreen,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: const Text("2.3 MB"),
-                      ),
-                      ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(_deviceWidth * 0.03),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.insert_drive_file,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        title: const Text(
-                          "Dokumen Proyeksi Proyek.xls",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: darkGreen,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: const Text("2.3 MB"),
-                      ),
-                    ],
+                        )
+                        .toList(),
                   ),
                 ],
               ),
@@ -431,6 +385,163 @@ class ProjectDetailPage extends StatelessWidget {
       ),
     );
   }
+}
+
+// ================= ATTACHMENT TILE & PREVIEW =================
+class _AttachmentTile extends StatelessWidget {
+  final Map<String, String> data;
+  final double deviceWidth;
+  final VoidCallback onTap;
+  const _AttachmentTile({
+    required this.data,
+    required this.deviceWidth,
+    required this.onTap,
+  });
+
+  bool get _isImage {
+    final name = (data['name'] ?? '').toLowerCase();
+    return name.endsWith('.jpg') ||
+        name.endsWith('.jpeg') ||
+        name.endsWith('.png');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        padding: EdgeInsets.all(deviceWidth * 0.03),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          _isImage ? Icons.image : Icons.insert_drive_file,
+          color: Colors.grey,
+        ),
+      ),
+      title: Text(
+        data['name'] ?? '-',
+        style: const TextStyle(
+          fontSize: 14,
+          color: darkGreen,
+          fontWeight: FontWeight.w600,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(data['size'] ?? ''),
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+    );
+  }
+}
+
+void _showAttachmentPreview(BuildContext context, Map<String, String> file) {
+  final name = file['name'] ?? '';
+  final url = file['url'] ?? '';
+  final isImage = name.toLowerCase().endsWith('.jpg') ||
+      name.toLowerCase().endsWith('.jpeg') ||
+      name.toLowerCase().endsWith('.png');
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: darkGreen,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (isImage && url.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.broken_image,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.insert_drive_file,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Preview tidak tersedia untuk tipe file ini.',
+                      style: GoogleFonts.roboto(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Tutup'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 // Box Timeline
@@ -594,4 +705,3 @@ class _InvestorTile extends StatelessWidget {
     return 'Rp ' + buffer.toString().split('').reversed.join();
   }
 }
-

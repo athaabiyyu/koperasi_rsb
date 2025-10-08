@@ -2,8 +2,10 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
-
-// TODO: MEMBUNKUS NAMA DAN STATUS MEMBER AGAR TIDAK OVERFLOW KE AREA AVATAR DAN MEMBATASI JUMLAH KATA/MENYINGKAT NAMA APABILA MEMILIKI JUMLAH KARAKTER YANG BANYAK.
+import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
+import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -15,6 +17,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   late double _deviceHeight;
   late double _deviceWidth;
+  // TODO: Ganti dengan data aktual dari backend / auth provider
+  bool isPremium = false; // sementara diset true untuk demonstrasi
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +62,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: Text(
                             "Riwayat Transaksi",
                             style: TextStyle(
-                              fontSize: _deviceWidth * 0.05,
+                              fontSize: _deviceWidth * 0.04,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -66,21 +70,51 @@ class _DashboardPageState extends State<DashboardPage> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
+                            // Padding lebih kecil termasuk bagian atas sesuai permintaan
                             padding: EdgeInsets.symmetric(
-                              horizontal: _deviceWidth * 0.03,
-                              vertical: _deviceHeight * 0.001,
+                              horizontal: _deviceWidth * 0.015,
+                              vertical: _deviceHeight * 0.004,
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: -1,
+                              vertical:
+                                  -2, // membuat tinggi tombol lebih ringkas
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: () {},
+                          onPressed: () {
+                            // Tampilkan detail pembayaran khusus Simpanan Wajib saja
+                            DetailPembayaranAwalMember.show(
+                              context,
+                              alertTitle: "Detail Pembayaran",
+                              alertMessage:
+                                  "Pastikan data pembayaran sudah benar.",
+                              paymentTitle: "Pembayaran Simpanan Wajib",
+                              paymentHeader: "Informasi Pembayaran",
+                              paymentItems: [
+                                PaymentItem(
+                                    title: "Simpanan Wajib",
+                                    price: "Rp 120.000"),
+                              ],
+                              totalPrice: "Rp 120.000",
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Pembayaran Simpanan Wajib dikonfirmasi")),
+                                );
+                              },
+                            );
+                          },
                           child: AutoSizeText(
                             "Bayar Simpanan Wajib",
                             style: TextStyle(
-                              fontSize: _deviceWidth * 0.025,
-                              color: Colors.white,
-                            ),
+                                fontSize: _deviceWidth * 0.025,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700),
                             minFontSize: 10,
                           ),
                         ),
@@ -177,47 +211,81 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                         SizedBox(height: _deviceHeight * 0.005),
-                        Row(
-                          children: [
-                            AutoSizeText(
-                              "Andi Hidayat",
-                              style: TextStyle(
-                                fontSize: _deviceWidth * 0.04,
-                                fontWeight: FontWeight.w600,
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Kita batasi area nama+status agar tidak memakan space avatar.
+                            // constraints.maxWidth di sini sudah terbatas oleh Expanded di atas.
+                            return ConstrainedBox(
+                              constraints: BoxConstraints(
+                                // Sisakan ruang minimum untuk avatar (kurang lebih radius*2 + margin). Karena avatar berada di luar Expanded, cukup pastikan text truncate.
+                                maxWidth: constraints.maxWidth,
                               ),
-                              maxLines: 1,
-                              
-                            ),
-                            SizedBox(width: _deviceWidth * 0.02),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: _deviceWidth * 0.02,
-                                vertical: _deviceHeight * 0.002,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Nama dibatasi dan ellipsis
+                                  Flexible(
+                                    child: AutoSizeText(
+                                      "Andi Hidayat", // TODO: ganti dengan nama dinamis
+                                      style: TextStyle(
+                                        fontSize: _deviceWidth * 0.04,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      minFontSize: 14,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  SizedBox(width: _deviceWidth * 0.02),
+                                  // Status badge selalu di samping nama selama masih ada ruang, kalau terlalu sempit akan terpotong duluan oleh Flexible name.
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: _deviceWidth * 0.02,
+                                        vertical: _deviceHeight * 0.002,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isPremium
+                                            ? Colors.green
+                                            : const Color(0xFFFFF0E6),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isPremium
+                                              ? Colors.green.shade700
+                                              : Colors.orange,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        isPremium
+                                            ? "Member Premium"
+                                            : "Member Reguler", // TODO: ganti dengan status dinamis
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isPremium
+                                              ? Colors.white
+                                              : Colors.orange,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF0E6),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.orange),
-                              ),
-                              child: const Text(
-                                "Member Reguler",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
-
+                  // Spasi agar tidak terlalu mepet dengan avatar
+                  SizedBox(width: _deviceWidth * 0.075),
                   // Avatar user
                   CircleAvatar(
                     radius: _deviceWidth * 0.08,
-                    backgroundImage: const AssetImage("assets/avatar.png"),
+                    backgroundImage:
+                        const AssetImage("assets/images/avatar.jpg"),
                   ),
                 ],
               ),
@@ -230,9 +298,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Row(
                   children: [
                     _buildSummaryCard("Simpanan Pokok", "Rp 50.000"),
-                    SizedBox(width: _deviceWidth * 0.02), // jarak antar card
+                    SizedBox(width: _deviceWidth * 0.02),
                     _buildSummaryCard("Simpanan Wajib", "Rp 120.000"),
-                    SizedBox(width: _deviceWidth * 0.02), // jarak antar card
+                    SizedBox(width: _deviceWidth * 0.02),
                     // _buildSummaryCard("Sisa Hasil Usaha", "Rp 5.000.000"),
                   ],
                 ),
@@ -279,22 +347,26 @@ class _DashboardPageState extends State<DashboardPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (!isPremium) ...[
+                                  AutoSizeText(
+                                    "Ingin Mengikuti Penyertaan?",
+                                    style: TextStyle(
+                                      fontSize: _deviceWidth * 0.03,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    minFontSize: 10,
+                                  ),
+                                  SizedBox(height: 12), // jarak antar teks
+                                ],
                                 AutoSizeText(
-                                  "Ingin Mengikuti Penyertaan?",
+                                  isPremium
+                                      ? "Top up saldo minimal dimulai dari Rp500.000"
+                                      : "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
                                   style: TextStyle(
                                     fontSize: _deviceWidth * 0.03,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                  minFontSize: 10,
-                                ),
-                                SizedBox(height: 12), // jarak antar teks
-                                AutoSizeText(
-                                  "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
-                                  style: TextStyle(
-                                    fontSize: _deviceWidth * 0.03,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  minFontSize: 10,
+                                  minFontSize: 12,
                                 ),
                               ],
                             ),
@@ -314,10 +386,21 @@ class _DashboardPageState extends State<DashboardPage> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          onPressed: () {},
-                          child: const Text(
-                            "Join Penyertaan",
-                            style: TextStyle(
+                          onPressed: () {
+                            showDialogJoinPenyertaan(
+                              context: context,
+                              onJoin: () {
+                                // Tampilkan dialog pilih nominal pembayaran setelah join tanpa mengubah file dialogJoinPenyertaan.
+                                showDialogPilihNominalPembayaran(context);
+                              },
+                              onCancel: () {
+                                // Opsional: aksi ketika batal
+                              },
+                            );
+                          },
+                          child: Text(
+                            isPremium ? "Top Up Penyertaan" : "Join Penyertaan",
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
