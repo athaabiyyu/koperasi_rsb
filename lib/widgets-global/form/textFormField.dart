@@ -15,6 +15,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool formatRupiah;
   final TextEditingController? controller;
   final List<TextInputFormatter>? inputFormatters; // Tambahkan parameter ini
+  final bool enabled;
 
   const CustomTextFormField({
     Key? key,
@@ -28,6 +29,8 @@ class CustomTextFormField extends StatefulWidget {
     this.formatRupiah = false,
     this.controller,
     this.inputFormatters, // Tambahkan parameter ini
+    this.enabled = true,
+
   }) : super(key: key);
 
   @override
@@ -86,7 +89,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           validator: widget.validator,
           maxLines: widget.maxLines,
           initialValue: widget.initialValue,
-          inputFormatters: inputFormatters,
+          // inputFormatters: inputFormatters,
           inputFormatters: widget.inputFormatters, // Tambahkan ini
           decoration: InputDecoration(
             hintText: widget.hint,

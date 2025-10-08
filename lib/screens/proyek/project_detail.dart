@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_information.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import '../widgets-global/reusable-page/timeline_widgets.dart';
+import '../../widgets-global/reusable-page/timeline_widgets.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
 // TODO: Memecah Timeline menjadi File Baru, Membuat file yang di upload menjadi clickable dan bisa di preview
 

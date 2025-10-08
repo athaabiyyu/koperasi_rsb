@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
-import 'package:koperasi_rsb/proyek/add_project.dart';
-import 'package:koperasi_rsb/proyek/project_detail.dart';
+import 'package:koperasi_rsb/screens/proyek/add_project.dart';
+import 'package:koperasi_rsb/screens/proyek/project_detail.dart';
 
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});

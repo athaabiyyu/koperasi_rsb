@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:koperasi_rsb/login/view/login.dart';
-import 'package:koperasi_rsb/regis/view/register-page1.dart';
-import 'package:koperasi_rsb/regis/view/register-page2.dart';
-import 'package:koperasi_rsb/regis/view/register-page3.dart';
+import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/screens/auth/login/login.dart';
+import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
+import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
+import 'package:koperasi_rsb/screens/auth/regis/register-page3.dart';
+import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart';
+import 'package:koperasi_rsb/otp/verify_otp.dart';
 import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
@@ -16,22 +20,54 @@ class MyApp extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: lightGreen),
-        useMaterial3: true,
-         textTheme: GoogleFonts.poppinsTextTheme(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        // Tambahkan provider lain di sini jika diperlukan
+      ],
+      child: MaterialApp(
+        title: 'Koperasi RSB',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: lightGreen),
+          useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(),
+        ),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const SplashPage(),
+          '/login': (context) => const LoginPage(),
+          '/registration1': (context) => RegistrationPage1(),
+          '/registration2': (context) => const RegistrationPage2(),
+          '/registration3': (context) => RegistrationPage3(),
+          // Tambahkan route lain sesuai kebutuhan
+          // '/home': (context) => HomePage(),
+        },
+        // ⭐ Tambahkan onGenerateRoute untuk handle route dengan parameter
+        onGenerateRoute: (settings) {
+          // Handle /verify-otp dengan arguments
+          if (settings.name == '/verify-otp') {
+            final args = settings.arguments as Map<String, dynamic>?;
+            
+            if (args == null || !args.containsKey('noHp') || !args.containsKey('password')) {
+              // Jika arguments tidak valid, redirect ke login
+              return MaterialPageRoute(
+                builder: (context) => const LoginPage(),
+              );
+            }
+            
+            return MaterialPageRoute(
+              builder: (context) => OtpVerificationPage(
+                noHp: args['noHp'] as String,
+                password: args['password'] as String,
+              ),
+            );
+          }
+          
+          // Return null untuk route yang tidak ditemukan
+          return null;
+        },
       ),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashPage(),
-        '/login': (context) => LoginPage(),
-        '/registration1' : (context) => RegistrationPage1(),
-        '/registration2' : (context) => RegistrationPage2(),
-        '/registration3' : (context) => RegistrationPage3(),
-      },
     );
   }
 }

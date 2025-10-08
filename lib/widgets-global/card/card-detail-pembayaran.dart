@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
+import 'package:koperasi_rsb/screens/member-biasa/pembayaran-awal/muncul-rekening-member-biasa.dart';
 
 class PaymentItem {
   final String title;
@@ -27,6 +28,18 @@ class CardDetailPembayaran extends StatelessWidget {
     required this.totalPrice,
     required this.onPressed,
   }) : super(key: key);
+
+  void _handlePayment(BuildContext context) {
+    // Tutup dialog terlebih dahulu (jika ada)
+    Navigator.of(context).pop();
+    // Navigate ke halaman MunculRekeningMemberBiasa
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MunculRekeningMemberBiasa(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +183,7 @@ class CardDetailPembayaran extends StatelessWidget {
                 height: 55,
                 child: CustomButton(
                   text: "LANJUTKAN PEMBAYARAN",
-                  onPressed: onPressed,
+                  onPressed: () => _handlePayment(context),
                 ),
               ),
             ),

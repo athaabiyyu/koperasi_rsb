@@ -5,12 +5,14 @@ class CustomDateFormField extends StatefulWidget {
   final String label;
   final String hint;
   final String? Function(String?)? validator;
+  final TextEditingController? controller;
 
   const CustomDateFormField({
     Key? key,
     required this.label,
     required this.hint,
     this.validator,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -18,7 +20,23 @@ class CustomDateFormField extends StatefulWidget {
 }
 
 class _CustomDateFormFieldState extends State<CustomDateFormField> {
-  final TextEditingController _controller = TextEditingController();
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Gunakan controller dari parent jika ada, kalau tidak buat baru
+    _controller = widget.controller ?? TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    // Hanya dispose jika controller dibuat lokal (bukan dari parent)
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
 
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -29,10 +47,15 @@ class _CustomDateFormFieldState extends State<CustomDateFormField> {
     );
 
     if (pickedDate != null) {
+      // Format: DD/MM/YYYY (sesuai dengan yang diharapkan di RegistrationPage2)
+      final formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
+      
       setState(() {
-        _controller.text =
-            "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+        _controller.text = formattedDate;
       });
+      
+      // Debug log
+      print('Date picked: $formattedDate');
     }
   }
 

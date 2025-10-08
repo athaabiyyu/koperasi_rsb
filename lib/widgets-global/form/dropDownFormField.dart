@@ -36,9 +36,25 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
   @override
   void didUpdateWidget(covariant CustomDropdownFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
+    
+    // Update selected value jika widget.value berubah
     if (oldWidget.value != widget.value) {
       setState(() {
         _selectedValue = widget.value;
+      });
+    }
+    
+    // CRITICAL FIX: Reset jika selected value tidak ada di items list
+    if (_selectedValue != null && !widget.items.contains(_selectedValue)) {
+      setState(() {
+        _selectedValue = null;
+      });
+    }
+    
+    // CRITICAL FIX: Reset jika items list berubah (misalnya jadi kosong)
+    if (oldWidget.items != widget.items && widget.items.isEmpty) {
+      setState(() {
+        _selectedValue = null;
       });
     }
   }
@@ -46,6 +62,12 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
   @override
   Widget build(BuildContext context) {
     final bool isRequired = widget.validator != null;
+    
+    // CRITICAL FIX: Validasi final sebelum render
+    // Pastikan _selectedValue ada di items, jika tidak set null
+    final String? validValue = (_selectedValue != null && widget.items.contains(_selectedValue))
+        ? _selectedValue
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +95,7 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: _selectedValue,
+          value: validValue, // Gunakan validValue bukan _selectedValue
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: const TextStyle(color: strokeGray, fontSize: 14),
@@ -95,17 +117,19 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
             ),
           ),
           validator: widget.validator,
-          items: widget.items
-              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-              .toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedValue = value;
-            });
-            if (widget.onChanged != null) {
-              widget.onChanged!(value);
-            }
-          },
+          items: widget.items.isEmpty
+              ? null // Return null jika items kosong untuk avoid error
+              : widget.items
+                  .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                  .toList(),
+          onChanged: widget.onChanged == null
+              ? null // Disable dropdown jika onChanged null
+              : (value) {
+                  setState(() {
+                    _selectedValue = value;
+                  });
+                  widget.onChanged!(value);
+                },
         ),
       ],
     );

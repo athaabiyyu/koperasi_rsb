@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,14 +8,12 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialog-proses-verifikasi.dart
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/uploadFile-Form.dart';
+import 'package:koperasi_rsb/models/payment-member_model.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class KonfirmasiPembayaranForm extends StatefulWidget {
-  final void Function(Map<String, dynamic>) onSubmit;
-
-  const KonfirmasiPembayaranForm({
-    Key? key,
-    required this.onSubmit,
-  }) : super(key: key);
+  const KonfirmasiPembayaranForm({Key? key}) : super(key: key);
 
   @override
   State<KonfirmasiPembayaranForm> createState() =>
@@ -27,7 +26,125 @@ class _KonfirmasiPembayaranFormState extends State<KonfirmasiPembayaranForm> {
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _rekeningController = TextEditingController();
   String? _selectedBank;
-  PlatformFile? _buktiPembayaran;
+  File? _buktiPembayaran;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _rekeningController.dispose();
+    super.dispose();
+  }
+
+  // Handle file picked
+  void _handleFilePicked(dynamic file) {
+    if (file != null && file.path != null) {
+      setState(() {
+        _buktiPembayaran = File(file.path);
+      });
+      print('File bukti pembayaran yang dipilih: ${file.name}');
+    }
+  }
+
+  // Submit payment
+  Future<void> _handleSubmitPayment() async {
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Validate file upload
+    if (_buktiPembayaran == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap upload bukti pembayaran'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate bank selection
+    if (_selectedBank == null || _selectedBank!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap pilih bank'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // Create payment model
+      final paymentModel = PaymentModel(
+        namaBank: _selectedBank!,
+        noRekening: _rekeningController.text.trim(),
+        namaPemilikRekening: _namaController.text.trim(),
+        buktiPembayaran: _buktiPembayaran!,
+      );
+
+      print('=== SUBMITTING REGISTRATION & PAYMENT ===');
+      print('Payment Model: $paymentModel');
+
+      // Call combined register + payment method
+      final result = await authProvider.registerAndPay(paymentModel);
+
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+
+      if (result['success']) {
+        // Show success dialog - waiting for admin confirmation
+        showCustomDialog(
+          context: context,
+          title: "Akun Dalam Proses Verifikasi",
+          description:
+              "Akun Anda sedang diverifikasi oleh Admin. Tunggu hingga 2x24 jam.\n\nSetelah admin menerima, Anda akan menerima kode OTP via WhatsApp untuk aktivasi akun.",
+          imagePath: "assets/images/ava-proses-verifikasi.png",
+          buttonText: "Saya Mengerti",
+          onButtonPressed: () {
+            Navigator.of(context).pop(); // Close dialog
+            
+            // Navigate to login page or waiting page
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/login',
+              (Route<dynamic> route) => false,
+            );
+          },
+          bottomText: "Butuh bantuan? Hubungi Admin",
+          onBottomTextTap: () {
+            print("User klik Hubungi Admin");
+            // TODO: Implement chat admin functionality
+          },
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Terjadi kesalahan'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Terjadi kesalahan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +180,13 @@ class _KonfirmasiPembayaranFormState extends State<KonfirmasiPembayaranForm> {
                 ),
               ),
               const SizedBox(height: 10),
+              
               // Atas Nama
               CustomTextFormField(
+                controller: _namaController,
                 label: "Atas Nama",
                 hint: "Cth. Rofid",
+                enabled: !_isLoading,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Atas nama wajib diisi";
@@ -78,9 +198,11 @@ class _KonfirmasiPembayaranFormState extends State<KonfirmasiPembayaranForm> {
 
               // No. Rekening
               CustomTextFormField(
+                controller: _rekeningController,
                 label: "No. Rekening Anda",
                 hint: "Cth. 6328-19292-1029",
                 keyboardType: TextInputType.number,
+                enabled: !_isLoading,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Nomor rekening wajib diisi";
@@ -117,12 +239,7 @@ class _KonfirmasiPembayaranFormState extends State<KonfirmasiPembayaranForm> {
                   '• Maksimal size 10 MB',
                 ],
                 maxFileSizeMB: 10,
-                onFilePicked: (file) {
-                  setState(() {
-                    _buktiPembayaran = file;
-                  });
-                  print('File yang dipilih: ${file?.name}');
-                },
+                onFilePicked: _handleFilePicked,
               ),
               const SizedBox(height: 30),
 
@@ -131,57 +248,16 @@ class _KonfirmasiPembayaranFormState extends State<KonfirmasiPembayaranForm> {
                 child: SizedBox(
                   width: deviceWidth * 0.75,
                   height: 55,
-                  child: CustomButton(
-                    text: "KONFIRMASI PEMBAYARAN",
-                    onPressed: () {
-                      // dialog proses verifikasi
-
-                      // showCustomDialog(
-                      //   context: context,
-                      //   title: "Akun Dalam Proses Verifikasi",
-                      //   description:
-                      //       "Akun Anda sedang diverifikasi. Tunggu hingga 2x24 jam.\nJika belum ada konfirmasi, silakan hubungi Admin.",
-                      //   imagePath: "assets/images/ava-proses-verifikasi.png",
-                      //   buttonText: "Hubungi Admin",
-                      //   onButtonPressed: () {
-                      //     print("User klik Hubungi Admin");
-                      //   },
-                      // );
-
-                      // dialog otp
-                      showCustomDialog(
-                        context: context,
-                        description:
-                            "Silahkan Masukkan Kode OTP yang telah kami kirim",
-                        imagePath: "assets/images/ava-payment.png",
-                        showOtpFields: true,
-                        otpLength: 4,
-                        buttonText: "Masuk",
-                        onButtonPressed: () {
-                          print("User klik Masuk");
-                        },
-                        bottomText:
-                            "OTP error atau tidak menerima OTP? Chat Admin",
-                        onBottomTextTap: () {
-                          print("User klik Chat Admin");
-                        },
-                      );
-
-                      // dialog biasa
-
-                      // showCustomDialog(
-                      //   context: context,
-                      //   title: "Akun Anda Telah Diverifikasi",
-                      //   description:
-                      //       "Kami telah mengirimkan Kode OTP ke Nomor Whatsapp Anda. Silakan periksa dan masukkan kode Otp Setelah ini untuk menyelesaikan proses Registrasi.",
-                      //   imagePath: "assets/images/ava-proses-diverifikasi.png",
-                      //   buttonText: "MASUK",
-                      //   onButtonPressed: () {
-                      //     print("User Berhasil Login");
-                      //   },
-                      // );
-                    },
-                  ),
+                  child: _isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: darkGreen,
+                          ),
+                        )
+                      : CustomButton(
+                          text: "KONFIRMASI PEMBAYARAN",
+                          onPressed: _handleSubmitPayment,
+                        ),
                 ),
               ),
               const SizedBox(height: 16),

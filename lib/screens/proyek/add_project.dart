@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:koperasi_rsb/proyek/add_project/sections/proyek_section.dart';
-import 'package:koperasi_rsb/proyek/add_project/sections/pendanaan_section.dart';
-import 'package:koperasi_rsb/proyek/add_project/sections/model_rencana_bisnis_section.dart';
-import 'package:koperasi_rsb/proyek/add_project/sections/pembagian_hasil_section.dart';
+import 'package:koperasi_rsb/screens/proyek/add_project/sections/proyek_section.dart';
+import 'package:koperasi_rsb/screens/proyek/add_project/sections/pendanaan_section.dart';
+import 'package:koperasi_rsb/screens/proyek/add_project/sections/model_rencana_bisnis_section.dart';
+import 'package:koperasi_rsb/screens/proyek/add_project/sections/pembagian_hasil_section.dart';
 
 class AddProjectPage extends StatefulWidget {
   final bool isEditingDraft;

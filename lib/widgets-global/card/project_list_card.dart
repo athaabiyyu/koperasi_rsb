@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/proyek/project_detail.dart';
+import 'package:koperasi_rsb/screens/proyek/project_detail.dart';
 
 class ProjectListCard extends StatelessWidget {
   final String imageUrl;

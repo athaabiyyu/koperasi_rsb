@@ -28,10 +28,6 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
 
                 // Card rekening bank
                 KonfirmasiPembayaranForm(
-                  onSubmit: (data) {
-                    print(data);
-                    // lakukan request API di sini
-                  },
                 ),
               ],
             ),
