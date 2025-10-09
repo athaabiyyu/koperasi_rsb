@@ -1,0 +1,123 @@
+import 'package:flutter/material.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
+
+class AppBottomNav extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int>? onItemSelected;
+
+  const AppBottomNav(
+      {super.key, required this.currentIndex, this.onItemSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final double _deviceHeight = MediaQuery.of(context).size.height;
+    final double _deviceWidth = MediaQuery.of(context).size.width;
+    // Responsive sizes per device width (follow the variable style used in dashboard.dart)
+    final double boxSize = (_deviceWidth * 0.11).clamp(34.0, 48.0);
+    final double iconSize = (_deviceWidth * 0.068).clamp(22.0, 28.0);
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: darkGreen,
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, -2))
+          ],
+        ),
+        padding: EdgeInsets.only(
+          left: _deviceWidth * 0.04,
+          right: _deviceWidth * 0.04,
+          top: _deviceHeight * 0.02,
+          bottom: _deviceHeight * 0.012,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _NavItem(
+              icon: Icons.home_rounded,
+              label: 'Beranda',
+              selected: currentIndex == 0,
+              onTap: () => onItemSelected?.call(0),
+              boxSize: boxSize,
+              iconSize: iconSize,
+            ),
+            _NavItem(
+              icon: Icons.assignment_rounded,
+              label: 'Proyek',
+              selected: currentIndex == 1,
+              onTap: () => onItemSelected?.call(1),
+              boxSize: boxSize,
+              iconSize: iconSize,
+            ),
+            _NavItem(
+              icon: Icons.account_balance_wallet_rounded,
+              label: 'Dompet',
+              selected: currentIndex == 2,
+              onTap: () => onItemSelected?.call(2),
+              boxSize: boxSize,
+              iconSize: iconSize,
+            ),
+            _NavItem(
+              icon: Icons.person_rounded,
+              label: 'Profil',
+              selected: currentIndex == 3,
+              onTap: () => onItemSelected?.call(3),
+              boxSize: boxSize,
+              iconSize: iconSize,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+  final double boxSize;
+  final double iconSize;
+
+  const _NavItem(
+      {required this.icon,
+      required this.label,
+      required this.selected,
+      this.onTap,
+      required this.boxSize,
+      required this.iconSize});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: boxSize,
+              height: boxSize,
+              decoration: BoxDecoration(
+                color: selected ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                size: iconSize,
+                color: selected ? darkGreen : Colors.white,
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+        ),
+      ),
+    );
+  }
+}
