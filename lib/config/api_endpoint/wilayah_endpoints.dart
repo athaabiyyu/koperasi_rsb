@@ -1,7 +1,7 @@
 import '../api_config.dart';
 
 class WilayahEndpoints {
-  static const String provinces = '${ApiConfig.baseUrl}/wilayah/provinces';
+  static final String provinces = '${ApiConfig.baseUrl}/wilayah/provinces';
   
   static String regencies(String provinceCode) => 
       '${ApiConfig.baseUrl}/wilayah/regencies/$provinceCode';
