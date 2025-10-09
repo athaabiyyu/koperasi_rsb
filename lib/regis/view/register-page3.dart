@@ -129,7 +129,9 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
                                 DetailPembayaranAwalMember.show(
                                   context,
                                   alertTitle: "Detail Pembayaran",
-                                  alertMessage:
+                                  alertMessage: 
+
+                                  
                                       "Pastikan data pembayaran sudah benar.",
                                   paymentTitle: "Detail Pembayaran",
                                   paymentHeader: "Informasi Pembayaran",
