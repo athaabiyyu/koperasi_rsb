@@ -52,8 +52,7 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
 
   // Load provinces
   Future<void> _loadProvinces() async {
-    setState(() {
-    });
+    setState(() {});
 
     try {
       final provinces = await _wilayahService.getProvinces();
@@ -61,8 +60,7 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
         _provinces = provinces;
       });
     } catch (e) {
-      setState(() {
-      });
+      setState(() {});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -89,8 +87,7 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
         _regencies = regencies;
       });
     } catch (e) {
-      setState(() {
-      });
+      setState(() {});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -115,8 +112,7 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
         _districts = districts;
       });
     } catch (e) {
-      setState(() {
-      });
+      setState(() {});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -133,7 +129,9 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
     if (!_formKey.currentState!.validate()) return;
 
     // Validasi dropdown
-    if (_selectedProvinsi == null || _selectedKota == null || _selectedKecamatan == null) {
+    if (_selectedProvinsi == null ||
+        _selectedKota == null ||
+        _selectedKecamatan == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Harap lengkapi semua dropdown'),
@@ -155,12 +153,12 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
     // Simpan data ke provider
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.saveRegistrationStep({
-    'tempat_lahir': _tempatLahirController.text.trim(),
-    'tanggal_lahir': formattedDate,
-    'provinsi': _selectedProvinsi!.code,      // ✅ Ubah dari .name ke .code
-    'kota': _selectedKota!.code,              // ✅ Ubah dari .name ke .code
-    'kecamatan': _selectedKecamatan!.code,    // ✅ Ubah dari .name ke .code
-    'detail_alamat': _detailAlamatController.text.trim(),
+      'tempat_lahir': _tempatLahirController.text.trim(),
+      'tanggal_lahir': formattedDate,
+      'provinsi': _selectedProvinsi!.code, // ✅ Ubah dari .name ke .code
+      'kota': _selectedKota!.code, // ✅ Ubah dari .name ke .code
+      'kecamatan': _selectedKecamatan!.code, // ✅ Ubah dari .name ke .code
+      'detail_alamat': _detailAlamatController.text.trim(),
     });
 
     // Navigate ke page 3
@@ -179,7 +177,8 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
               SizedBox(
                 child: cardLoginRegisWidget(
                   title: "Lengkapi Data!",
-                  subtitle: "Silahkan lengkapi formulir ini untuk verivikasi akun anda",
+                  subtitle:
+                      "Silahkan lengkapi formulir ini untuk verivikasi akun anda",
                   deviceWidth: _deviceWidth,
                 ),
               ),
@@ -188,151 +187,162 @@ class _RegistrationPage2State extends State<RegistrationPage2> {
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 30),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context)
+                        .size
+                        .height, // 🔥 minimal setinggi layar
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 30),
 
-                      Row(
-                        children: [
-                          // Tempat Lahir
-                          Expanded(
-                            flex: 5,
-                            child: CustomTextFormField(
-                              controller: _tempatLahirController,
-                              label: "Tempat Lahir",
-                              hint: "Tempat Lahir Anda",
-                              keyboardType: TextInputType.text,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Tempat lahir wajib diisi";
-                                } else if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-                                  return "Format tidak valid";
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-
-                          const SizedBox(width: 16),
-
-                          // Tanggal Lahir
-                          Expanded(
-                            flex: 5,
-                            child: CustomDateFormField(
-                              controller: _tanggalLahirController,
-                              label: "Tanggal Lahir",
-                              hint: "Pilih tanggal lahir",
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Tanggal lahir wajib diisi";
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 30),
-                      // Provinsi Dropdown
-                            CustomDropdownFormField(
-                              label: "Provinsi",
-                              hint: "Pilih Provinsi",
-                              items: _provinces.map((p) => p.name).toList(),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Harus dipilih";
-                                }
-                                return null;
-                              },
-                              onChanged: (value) {
-                                final selected = _provinces.firstWhere((p) => p.name == value);
-                                setState(() {
-                                  _selectedProvinsi = selected;
-                                });
-                                _loadRegencies(selected.code);
-                              },
+                        Row(
+                          children: [
+                            // Tempat Lahir
+                            Expanded(
+                              flex: 5,
+                              child: CustomTextFormField(
+                                controller: _tempatLahirController,
+                                label: "Tempat Lahir",
+                                hint: "Tempat Lahir Anda",
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Tempat lahir wajib diisi";
+                                  } else if (!RegExp(r'^[a-zA-Z\s]+$')
+                                      .hasMatch(value)) {
+                                    return "Format tidak valid";
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
 
-                      const SizedBox(height: 30),
-                      // Kota/Kabupaten Dropdown
-                          CustomDropdownFormField(
-                              label: "Kota/Kabupaten",
-                              hint: _selectedProvinsi == null 
-                                  ? "Pilih provinsi terlebih dahulu"
-                                  : "Pilih Kota/Kabupaten",
-                              items: _regencies.map((r) => r.name).toList(),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Harus dipilih";
-                                }
-                                return null;
-                              },
-                              onChanged: _selectedProvinsi == null 
-                                  ? null 
-                                  : (value) {
-                                      final selected = _regencies.firstWhere((r) => r.name == value);
-                                      setState(() {
-                                        _selectedKota = selected;
-                                      });
-                                      _loadDistricts(selected.code);
-                                    },
+                            const SizedBox(width: 16),
+
+                            // Tanggal Lahir
+                            Expanded(
+                              flex: 5,
+                              child: CustomDateFormField(
+                                controller: _tanggalLahirController,
+                                label: "Tanggal Lahir",
+                                hint: "Pilih tanggal lahir",
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Tanggal lahir wajib diisi";
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
-
-                      const SizedBox(height: 30),
-                      // Kecamatan Dropdown
-                            CustomDropdownFormField(
-                              label: "Kecamatan",
-                              hint: _selectedKota == null 
-                                  ? "Pilih kota terlebih dahulu"
-                                  : "Pilih Kecamatan",
-                              items: _districts.map((d) => d.name).toList(),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Harus dipilih";
-                                }
-                                return null;
-                              },
-                              onChanged: _selectedKota == null 
-                                  ? null 
-                                  : (value) {
-                                      final selected = _districts.firstWhere((d) => d.name == value);
-                                      setState(() {
-                                        _selectedKecamatan = selected;
-                                      });
-                                    },
-                            ),
-
-                      const SizedBox(height: 30),
-
-                      CustomTextFormField(
-                        controller: _detailAlamatController,
-                        label: "Detail Alamat",
-                        hint: "Cth. Jl. Abdul Gani Atas No. 23",
-                        keyboardType: TextInputType.text,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Detail alamat wajib diisi";
-                          }
-                          return null;
-                        },
-                        maxLines: 2,
-                      ),
-
-                      const SizedBox(height: 50),
-
-                      SizedBox(
-                        width: _deviceWidth * 0.75,
-                        height: 55,
-                        child: CustomButton(
-                          text: "SELANJUTNYA",
-                          onPressed: _handleNext,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 50),
-                    ],
+
+                        const SizedBox(height: 30),
+                        // Provinsi Dropdown
+                        CustomDropdownFormField(
+                          label: "Provinsi",
+                          hint: "Pilih Provinsi",
+                          items: _provinces.map((p) => p.name).toList(),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Harus dipilih";
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            final selected =
+                                _provinces.firstWhere((p) => p.name == value);
+                            setState(() {
+                              _selectedProvinsi = selected;
+                            });
+                            _loadRegencies(selected.code);
+                          },
+                        ),
+
+                        const SizedBox(height: 30),
+                        // Kota/Kabupaten Dropdown
+                        CustomDropdownFormField(
+                          label: "Kota/Kabupaten",
+                          hint: _selectedProvinsi == null
+                              ? "Pilih provinsi terlebih dahulu"
+                              : "Pilih Kota/Kabupaten",
+                          items: _regencies.map((r) => r.name).toList(),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Harus dipilih";
+                            }
+                            return null;
+                          },
+                          onChanged: _selectedProvinsi == null
+                              ? null
+                              : (value) {
+                                  final selected = _regencies
+                                      .firstWhere((r) => r.name == value);
+                                  setState(() {
+                                    _selectedKota = selected;
+                                  });
+                                  _loadDistricts(selected.code);
+                                },
+                        ),
+
+                        const SizedBox(height: 30),
+                        // Kecamatan Dropdown
+                        CustomDropdownFormField(
+                          label: "Kecamatan",
+                          hint: _selectedKota == null
+                              ? "Pilih kota terlebih dahulu"
+                              : "Pilih Kecamatan",
+                          items: _districts.map((d) => d.name).toList(),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Harus dipilih";
+                            }
+                            return null;
+                          },
+                          onChanged: _selectedKota == null
+                              ? null
+                              : (value) {
+                                  final selected = _districts
+                                      .firstWhere((d) => d.name == value);
+                                  setState(() {
+                                    _selectedKecamatan = selected;
+                                  });
+                                },
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        CustomTextFormField(
+                          controller: _detailAlamatController,
+                          label: "Detail Alamat",
+                          hint: "Cth. Jl. Abdul Gani Atas No. 23",
+                          keyboardType: TextInputType.text,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Detail alamat wajib diisi";
+                            }
+                            return null;
+                          },
+                          maxLines: 2,
+                        ),
+
+                        const SizedBox(height: 50),
+
+                        SizedBox(
+                          width: _deviceWidth * 0.75,
+                          height: 55,
+                          child: CustomButton(
+                            text: "SELANJUTNYA",
+                            onPressed: _handleNext,
+                          ),
+                        ),
+                        const SizedBox(height: 50),
+                      ],
+                    ),
                   ),
                 ),
               ),

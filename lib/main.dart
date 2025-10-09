@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
+import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
@@ -9,7 +11,7 @@ import 'package:koperasi_rsb/screens/auth/regis/register-page3.dart';
 import 'package:koperasi_rsb/otp/verify_otp.dart';
 import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:koperasi_rsb/screens/dashboard/dashboard.dart'; // ⭐ IMPORT DASHBOARD
+import 'package:koperasi_rsb/screens/dashboard/dashboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,9 +42,10 @@ class MyApp extends StatelessWidget {
           '/registration1': (context) => RegistrationPage1(),
           '/registration2': (context) => const RegistrationPage2(),
           '/registration3': (context) => RegistrationPage3(),
-          '/dashboard': (context) => const DashboardPage(), // ⭐ TAMBAHKAN ROUTE HOME
+          '/dashboard': (context) => const DashboardPage(),
+          '/profile': (context) => const DataDiriPage(), 
         },
-        // ⭐ Tambahkan onGenerateRoute untuk handle route dengan parameter
+        // Tambahkan onGenerateRoute untuk handle route dengan parameter
         onGenerateRoute: (settings) {
           // Handle /verify-otp dengan arguments
           if (settings.name == '/verify-otp') {

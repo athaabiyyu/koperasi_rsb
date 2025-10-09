@@ -96,7 +96,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
         // User memilih join penyertaan
         print("User joined penyertaan");
         Navigator.of(context).pop(); // Tutup dialog
-        
+
         // Tampilkan detail pembayaran dengan penyertaan
         DetailPembayaranAwalMember.show(
           context,
@@ -110,8 +110,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
                 title: "Simpanan Wajib 1 Tahun Member UMKM",
                 price: "Rp 120.000"),
             PaymentItem(
-                title: "Simpanan Penyertaan Modal",
-                price: "Rp 500.000"),
+                title: "Simpanan Penyertaan Modal", price: "Rp 500.000"),
           ],
           totalPrice: "Rp 670.000",
           onPressed: () {
@@ -169,161 +168,169 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 30),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context)
+                        .size
+                        .height, // 🔥 minimal setinggi layar
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 30),
 
-                      CustomTextFormField(
-                        controller: _nikController,
-                        label: "NIK",
-                        hint: "Nomor Induk Anda",
-                        keyboardType: TextInputType.number,
-                        enabled: !_isLoading,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "NIK wajib diisi";
-                          } else if (!RegExp(r'^[0-9]{16}$').hasMatch(value)) {
-                            return "NIK harus 16 digit angka";
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // Upload Foto Diri
-                      FileUploadForm(
-                        label: 'Foto Diri',
-                        descriptions: const [
-                          '• Upload foto diri (selfie)',
-                          '• Pastikan wajah terlihat jelas',
-                          '• Maksimum size file 10 MB',
-                        ],
-                        maxFileSizeMB: 10,
-                        onFilePicked: _handleFotoDiriPicked,
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // Upload Foto KTP
-                      FileUploadForm(
-                        label: 'Foto KTP',
-                        descriptions: const [
-                          '• Upload foto KTP',
-                          '• Pastikan data KTP terlihat jelas',
-                          '• Maksimum size file 10 MB',
-                        ],
-                        maxFileSizeMB: 10,
-                        onFilePicked: _handleFotoKtpPicked,
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                          children: [
-                            const TextSpan(
-                                text:
-                                    'Dengan mengklik tombol "Daftar" anda setuju dengan '),
-                            TextSpan(
-                              text: 'Syarat & Ketentuan',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: darkGreen,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                decorationColor: darkGreen,
-                                decorationThickness: 1.5,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  // TODO: Navigate to terms page
-                                },
-                            ),
-                            const TextSpan(text: ' serta '),
-                            TextSpan(
-                              text: 'Kebijakan Privasi',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: darkGreen,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                decorationColor: darkGreen,
-                                decorationThickness: 1.5,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  // TODO: Navigate to privacy policy page
-                                },
-                            ),
-                            const TextSpan(text: ' kami.'),
-                          ],
+                        CustomTextFormField(
+                          controller: _nikController,
+                          label: "NIK",
+                          hint: "Nomor Induk Anda",
+                          keyboardType: TextInputType.number,
+                          enabled: !_isLoading,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "NIK wajib diisi";
+                            } else if (!RegExp(r'^[0-9]{16}$')
+                                .hasMatch(value)) {
+                              return "NIK harus 16 digit angka";
+                            }
+                            return null;
+                          },
                         ),
-                      ),
 
-                      const SizedBox(height: 25),
+                        const SizedBox(height: 30),
 
-                      SizedBox(
-                        width: _deviceWidth * 0.75,
-                        height: 55,
-                        child: _isLoading
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                  color: darkGreen,
-                                ),
-                              )
-                            : CustomButton(
-                                text: "DAFTAR",
-                                onPressed: _onDaftarButtonPressed,
-                              ),
-                      ),
+                        // Upload Foto Diri
+                        FileUploadForm(
+                          label: 'Foto Diri',
+                          descriptions: const [
+                            '• Upload foto diri (selfie)',
+                            '• Pastikan wajah terlihat jelas',
+                            '• Maksimum size file 10 MB',
+                          ],
+                          maxFileSizeMB: 10,
+                          onFilePicked: _handleFotoDiriPicked,
+                        ),
 
-                      const SizedBox(height: 25),
+                        const SizedBox(height: 30),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Sudah punya akun? ',
+                        // Upload Foto KTP
+                        FileUploadForm(
+                          label: 'Foto KTP',
+                          descriptions: const [
+                            '• Upload foto KTP',
+                            '• Pastikan data KTP terlihat jelas',
+                            '• Maksimum size file 10 MB',
+                          ],
+                          maxFileSizeMB: 10,
+                          onFilePicked: _handleFotoKtpPicked,
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
+                              fontSize: 12,
                               color: Colors.black,
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: _isLoading
-                                ? null
-                                : () {
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      context,
-                                      '/login',
-                                      (Route<dynamic> route) => false,
-                                    );
+                            children: [
+                              const TextSpan(
+                                  text:
+                                      'Dengan mengklik tombol "Daftar" anda setuju dengan '),
+                              TextSpan(
+                                text: 'Syarat & Ketentuan',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: darkGreen,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: darkGreen,
+                                  decorationThickness: 1.5,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    // TODO: Navigate to terms page
                                   },
-                            child: Text(
-                              'Masuk',
+                              ),
+                              const TextSpan(text: ' serta '),
+                              TextSpan(
+                                text: 'Kebijakan Privasi',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: darkGreen,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: darkGreen,
+                                  decorationThickness: 1.5,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    // TODO: Navigate to privacy policy page
+                                  },
+                              ),
+                              const TextSpan(text: ' kami.'),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        SizedBox(
+                          width: _deviceWidth * 0.75,
+                          height: 55,
+                          child: _isLoading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: darkGreen,
+                                  ),
+                                )
+                              : CustomButton(
+                                  text: "DAFTAR",
+                                  onPressed: _onDaftarButtonPressed,
+                                ),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Sudah punya akun? ',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                color: _isLoading ? Colors.grey : darkGreen,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                decorationColor:
-                                    _isLoading ? Colors.grey : darkGreen,
-                                decorationThickness: 1.5,
+                                color: Colors.black,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 50),
-                    ],
+                            GestureDetector(
+                              onTap: _isLoading
+                                  ? null
+                                  : () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        '/login',
+                                        (Route<dynamic> route) => false,
+                                      );
+                                    },
+                              child: Text(
+                                'Masuk',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: _isLoading ? Colors.grey : darkGreen,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor:
+                                      _isLoading ? Colors.grey : darkGreen,
+                                  decorationThickness: 1.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 50),
+                      ],
+                    ),
                   ),
                 ),
               ),

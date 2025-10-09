@@ -20,9 +20,9 @@ class ProfileHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 32,
-            backgroundImage: const AssetImage('assets/images/avatar.jpg'),
+            backgroundImage: AssetImage('assets/images/avatar.jpg'),
           ),
           const SizedBox(width: 16),
           Expanded(

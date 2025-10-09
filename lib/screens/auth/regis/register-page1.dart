@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
@@ -18,7 +19,8 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -68,7 +70,8 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
               SizedBox(
                 child: cardLoginRegisWidget(
                   title: "Buat Akun",
-                  subtitle: "Silahkan mengisi formulir ini untuk buat akun anda",
+                  subtitle:
+                      "Silahkan mengisi formulir ini untuk buat akun anda",
                   deviceWidth: _deviceWidth,
                 ),
               ),
@@ -77,95 +80,94 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 30),
-
-                      CustomTextFormField(
-                        controller: _namaController,
-                        label: "Nama (Sesuai KTP)",
-                        hint: "Nama Anda",
-                        keyboardType: TextInputType.text,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Nama wajib diisi";
-                          } else if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-                            return "Nama hanya boleh berisi huruf";
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      CustomTextFormField(
-                        controller: _phoneController,
-                        label: "No. Handphone",
-                        hint: "081 xxx-xxxx-xxxx",
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Nomor wajib diisi";
-                          } else if (!value.startsWith("08") && !value.startsWith("62")) {
-                            return "Format nomor tidak valid";
-                          } else if (value.length < 10) {
-                            return "Nomor terlalu pendek";
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      CustomTextFormField(
-                        controller: _passwordController,
-                        label: "Kata Sandi",
-                        hint: "Kata Sandi",
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Password wajib diisi";
-                          } else if (value.length < 6) {
-                            return "Password minimal 6 karakter";
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      CustomTextFormField(
-                        controller: _confirmPasswordController,
-                        label: "Konfirmasi Kata Sandi",
-                        hint: "Kata Sandi",
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Konfirmasi password wajib diisi";
-                          } else if (value.length < 6) {
-                            return "Password minimal 6 karakter";
-                          } else if (value != _passwordController.text) {
-                            return "Password tidak sama";
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 50),
-
-                      SizedBox(
-                        width: _deviceWidth * 0.75,
-                        height: 55,
-                        child: CustomButton(
-                          text: "SELANJUTNYA",
-                          onPressed: _handleNext,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 30),
+                        CustomTextFormField(
+                          controller: _namaController,
+                          label: "Nama (Sesuai KTP)",
+                          hint: "Nama Anda",
+                          keyboardType: TextInputType.text,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Nama wajib diisi";
+                            } else if (!RegExp(r'^[a-zA-Z\s]+$')
+                                .hasMatch(value)) {
+                              return "Nama hanya boleh berisi huruf";
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-
-                      const SizedBox(height: 50),
-                    ],
+                        const SizedBox(height: 30),
+                        CustomTextFormField(
+                          controller: _phoneController,
+                          label: "No. Handphone",
+                          hint: "081 xxx-xxxx-xxxx",
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Nomor wajib diisi";
+                            } else if (!value.startsWith("62")) {
+                              return "Format nomor tidak valid";
+                            } else if (value.length < 10) {
+                              return "Nomor terlalu pendek";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        CustomTextFormField(
+                          controller: _passwordController,
+                          label: "Kata Sandi",
+                          hint: "Kata Sandi",
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Password wajib diisi";
+                            } else if (value.length < 6) {
+                              return "Password minimal 6 karakter";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        CustomTextFormField(
+                          controller: _confirmPasswordController,
+                          label: "Konfirmasi Kata Sandi",
+                          hint: "Kata Sandi",
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Konfirmasi password wajib diisi";
+                            } else if (value.length < 6) {
+                              return "Password minimal 6 karakter";
+                            } else if (value != _passwordController.text) {
+                              return "Password tidak sama";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 50),
+                        SizedBox(
+                          width: _deviceWidth * 0.75,
+                          height: 55,
+                          child: CustomButton(
+                            text: "SELANJUTNYA",
+                            onPressed: _handleNext,
+                          ),
+                        ),
+                        const SizedBox(height: 50),
+                      ],
+                    ),
                   ),
                 ),
               ),

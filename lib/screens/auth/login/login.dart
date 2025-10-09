@@ -1,21 +1,22 @@
-  import 'package:flutter/material.dart';
-  import 'package:google_fonts/google_fonts.dart';
-  import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.dart';
-  import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
-  import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
-  import 'package:koperasi_rsb/widgets-global/colors.dart';
-  import 'package:koperasi_rsb/providers/auth_provider.dart';
-  import 'package:koperasi_rsb/otp/verify_otp.dart';
-  import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.dart';
+import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/otp/verify_otp.dart';
+import 'package:provider/provider.dart';
 
-  class LoginPage extends StatefulWidget {
-    const LoginPage({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
-    @override
-    State<LoginPage> createState() => _LoginPageState();
-  }
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
 
-  class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
   late double _deviceWidth;
   final _formKey = GlobalKey<FormState>();
 
@@ -42,14 +43,14 @@
   Future<void> _loadSavedCredentials() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final credentials = await authProvider.getSavedCredentials();
-    
+
     if (credentials['no_hp'] != null && credentials['password'] != null) {
       setState(() {
         _phoneController.text = credentials['no_hp']!;
         _passwordController.text = credentials['password']!;
         _rememberMe = credentials['remember_me'] == 'true';
       });
-      
+
       print('✅ Credentials loaded from storage');
     }
   }
@@ -61,12 +62,13 @@
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       final noHp = _phoneController.text.trim();
       final password = _passwordController.text.trim();
-      
+
       // ⭐ Pass rememberMe ke login method
-      final success = await authProvider.login(noHp, password, rememberMe: _rememberMe);
+      final success =
+          await authProvider.login(noHp, password, rememberMe: _rememberMe);
 
       setState(() => _isLoading = false);
 
@@ -74,7 +76,7 @@
 
       if (success) {
         final userStatus = authProvider.userStatus;
-        
+
         print('=== LOGIN SUCCESS ===');
         print('User Status: $userStatus');
         print('Remember Me: $_rememberMe');
@@ -84,12 +86,13 @@
           case 'OTP TERKIRIM':
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Silakan masukkan kode OTP yang telah dikirim ke WhatsApp Anda'),
+                content: Text(
+                    'Silakan masukkan kode OTP yang telah dikirim ke WhatsApp Anda'),
                 backgroundColor: Colors.blue,
                 duration: Duration(seconds: 3),
               ),
             );
-            
+
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -135,7 +138,7 @@
                 duration: Duration(seconds: 2),
               ),
             );
-            
+
             Navigator.pushReplacementNamed(context, '/dashboard');
             break;
 
@@ -155,7 +158,8 @@
           default:
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Status akun: ${userStatus ?? "Tidak diketahui"}'),
+                content:
+                    Text('Status akun: ${userStatus ?? "Tidak diketahui"}'),
                 backgroundColor: Colors.grey,
                 duration: const Duration(seconds: 3),
               ),
@@ -166,7 +170,8 @@
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              authProvider.errorMessage ?? 'Login gagal. Periksa nomor HP dan password Anda.',
+              authProvider.errorMessage ??
+                  'Login gagal. Periksa nomor HP dan password Anda.',
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 4),
@@ -203,136 +208,165 @@
                   deviceWidth: _deviceWidth,
                 ),
               ),
-
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 30),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 30),
 
-                      CustomTextFormField(
-                        controller: _phoneController,
-                        label: "No. Handphone",
-                        hint: "081 xxx-xxxx-xxxx",
-                        keyboardType: TextInputType.phone,
-                        enabled: !_isLoading,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Nomor wajib diisi";
-                          } else if (!value.startsWith("08") && !value.startsWith("62")) {
-                            return "Format nomor tidak valid";
-                          }
-                          return null;
-                        },
-                      ),
+                        CustomTextFormField(
+                          controller: _phoneController,
+                          label: "No. Handphone",
+                          hint: "+62 xxx-xxxx-xxxx",
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          enabled: !_isLoading,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Nomor wajib diisi";
+                            } else if (!value.startsWith("62")) {
+                              return "Format nomor tidak valid";
+                            }
+                            return null;
+                          },
+                        ),
 
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 30),
 
-                      CustomTextFormField(
-                        controller: _passwordController,
-                        label: "Kata Sandi",
-                        hint: "Kata Sandi",
-                        obscureText: true,
-                        enabled: !_isLoading,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Password wajib diisi";
-                          }
-                          return null;
-                        },
-                      ),
+                        CustomTextFormField(
+                          controller: _passwordController,
+                          label: "Kata Sandi",
+                          hint: "Kata Sandi",
+                          obscureText: true,
+                          enabled: !_isLoading,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Password wajib diisi";
+                            }
+                            return null;
+                          },
+                        ),
 
-                      // ⭐ CHECKBOX "INGAT SAYA"
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _rememberMe,
-                            onChanged: _isLoading
-                                ? null
-                                : (value) {
-                                    setState(() {
-                                      _rememberMe = value ?? false;
-                                    });
-                                  },
-                            activeColor: darkGreen,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
+                        // ⭐ CHECKBOX "INGAT SAYA"
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _rememberMe,
+                              onChanged: _isLoading
+                                  ? null
+                                  : (value) {
+                                      setState(() {
+                                        _rememberMe = value ?? false;
+                                      });
+                                    },
+                              activeColor: darkGreen,
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _isLoading
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _rememberMe = !_rememberMe;
+                                        });
+                                      },
+                                child: Text(
+                                  'Ingat Saya',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: _isLoading
+                                        ? Colors.grey
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        SizedBox(
+                          width: _deviceWidth * 0.75,
+                          height: 55,
+                          child: _isLoading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: darkGreen,
+                                  ),
+                                )
+                              : CustomButton(
+                                  text: "MASUK",
+                                  onPressed: _handleLogin,
+                                ),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Belum punya akun? ',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                            GestureDetector(
                               onTap: _isLoading
                                   ? null
                                   : () {
-                                      setState(() {
-                                        _rememberMe = !_rememberMe;
-                                      });
+                                      Navigator.pushNamed(
+                                          context, '/registration1');
                                     },
                               child: Text(
-                                'Ingat Saya',
+                                'Daftar',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
-                                  color: _isLoading ? Colors.grey : Colors.black87,
+                                  color: _isLoading ? Colors.grey : darkGreen,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor:
+                                      _isLoading ? Colors.grey : darkGreen,
+                                  decorationThickness: 1.5,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 30),
 
-                      SizedBox(
-                        width: _deviceWidth * 0.75,
-                        height: 55,
-                        child: _isLoading
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                  color: darkGreen,
-                                ),
-                              )
-                            : CustomButton(
-                                text: "MASUK",
-                                onPressed: _handleLogin,
-                              ),
-                      ),
-
-                      const SizedBox(height: 25),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Belum punya akun? ',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: _isLoading
-                                ? null
-                                : () {
-                                    Navigator.pushNamed(context, '/registration1');
+                        SizedBox(
+                          width: _deviceWidth * 0.75,
+                          height: 55,
+                          child: _isLoading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: darkGreen,
+                                  ),
+                                )
+                              : CustomButton(
+                                  text: "Profile",
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                        context, '/profile');
                                   },
-                            child: Text(
-                              'Daftar',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: _isLoading ? Colors.grey : darkGreen,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                decorationColor: _isLoading ? Colors.grey : darkGreen,
-                                decorationThickness: 1.5,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 50),
-                    ],
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
