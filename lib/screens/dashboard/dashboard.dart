@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
@@ -26,6 +27,26 @@ class _DashboardPageState extends State<DashboardPage> {
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 0,
+        onItemSelected: (i) {
+          if (i == 0) return; // already on Dashboard
+          if (!mounted) return;
+          switch (i) {
+            case 1:
+              Navigator.pushReplacementNamed(context, '/daftarProyek');
+              break;
+            case 2:
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Halaman Dompet belum tersedia')),
+              );
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
