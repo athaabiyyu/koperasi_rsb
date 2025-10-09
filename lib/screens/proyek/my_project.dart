@@ -70,246 +70,256 @@ class _MyProjectPageState extends State<MyProjectPage>
     final _deviceWidth = MediaQuery.of(context).size.width;
     final _deviceHeight = MediaQuery.of(context).size.height;
 
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF3FFFA),
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _deviceWidth * 0.04,
-                  vertical: _deviceHeight * 0.02,
-                ),
-                color: Colors.white,
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios_outlined,
-                        color: Colors.green,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Text(
-                      "Proyek Saya",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Tab
-              Container(
-                color: Colors.white,
-                child: const TabBar(
-                  labelColor: Colors.green,
-                  unselectedLabelColor: Colors.black,
-                  indicatorColor: Colors.green,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  labelStyle: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+    return WillPopScope(
+      onWillPop: () async {
+        // Navigasi ke DashboardPage dan hapus halaman sekarang dari stack
+        Navigator.pushReplacementNamed(context, '/member-reguler');
+        return false; // mencegah pop default
+      },
+      child: DefaultTabController(
+        length: 5,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF3FFFA),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _deviceWidth * 0.04,
+                    vertical: _deviceHeight * 0.02,
                   ),
-                  labelPadding: EdgeInsets.symmetric(horizontal: 16),
-                  tabs: [
-                    Tab(
-                      child: Column(
-                        children: [
-                          Text("Pendanaan Dibuka"),
-                          SizedBox(height: 4),
-                          Text(
-                            "(1)",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Column(
-                        children: [
-                          Text("Proyek Berjalan"),
-                          SizedBox(height: 4),
-                          Text(
-                            "(0)",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Column(
-                        children: [
-                          Text("Proyek Selesai"),
-                          SizedBox(height: 4),
-                          Text(
-                            "(0)",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Column(
-                        children: [
-                          Text("Proyek Dibatalkan"),
-                          SizedBox(height: 4),
-                          Text(
-                            "(0)",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Column(
-                        children: [
-                          Text("Draft Proyek"),
-                          SizedBox(height: 4),
-                          Text(
-                            "(0)",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: _deviceHeight * 0.01),
-
-              // Sort (Terbaru/Terlama)
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_outlined,
+                          color: Colors.green,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Text(
+                        "Proyek Saya",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            _sortIndex = 0;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Terbaru",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: _sortIndex == 0
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              color: _sortIndex == 0
-                                  ? Colors.green
-                                  : Colors.black,
+
+                // Tab
+                Container(
+                  color: Colors.white,
+                  child: const TabBar(
+                    labelColor: Colors.green,
+                    unselectedLabelColor: Colors.black,
+                    indicatorColor: Colors.green,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    labelStyle: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    labelPadding: EdgeInsets.symmetric(horizontal: 16),
+                    tabs: [
+                      Tab(
+                        child: Column(
+                          children: [
+                            Text("Pendanaan Dibuka"),
+                            SizedBox(height: 4),
+                            Text(
+                              "(1)",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Column(
+                          children: [
+                            Text("Proyek Berjalan"),
+                            SizedBox(height: 4),
+                            Text(
+                              "(0)",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Column(
+                          children: [
+                            Text("Proyek Selesai"),
+                            SizedBox(height: 4),
+                            Text(
+                              "(0)",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Column(
+                          children: [
+                            Text("Proyek Dibatalkan"),
+                            SizedBox(height: 4),
+                            Text(
+                              "(0)",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Column(
+                          children: [
+                            Text("Draft Proyek"),
+                            SizedBox(height: 4),
+                            Text(
+                              "(0)",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: _deviceHeight * 0.01),
+
+                // Sort (Terbaru/Terlama)
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _sortIndex = 0;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Terbaru",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: _sortIndex == 0
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: _sortIndex == 0
+                                    ? Colors.green
+                                    : Colors.black,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: _deviceHeight * 0.02,
-                      color: Colors.grey.shade300,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            _sortIndex = 1;
-                          });
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: _deviceHeight * 0.015),
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Terlama",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: _sortIndex == 1
-                                  ? FontWeight.w700
-                                  : FontWeight.w400,
-                              color: _sortIndex == 1
-                                  ? Colors.green
-                                  : Colors.black,
+                      Container(
+                        width: 1,
+                        height: _deviceHeight * 0.02,
+                        color: Colors.grey.shade300,
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _sortIndex = 1;
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: _deviceHeight * 0.015),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Terlama",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: _sortIndex == 1
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
+                                color: _sortIndex == 1
+                                    ? Colors.green
+                                    : Colors.black,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // List Proyek sesuai tab
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    _buildProjectList("Pendanaan Dibuka"),
-                    _buildProjectList("Proyek Berjalan"),
-                    _buildProjectList("Proyek Selesai"),
-                    _buildProjectList("Proyek Dibatalkan"),
-                    _buildProjectList("Draft Proyek"),
-                  ],
-                ),
-              ),
-
-              // Button Buat Proyek Baru
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(_deviceHeight * 0.015),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: EdgeInsets.symmetric(
-                      vertical: _deviceHeight * 0.015,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(_deviceHeight * 0.01),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AddProjectPage()),
-                    );
-                  },
-                  child: const Text(
-                    "Buat Proyek Baru",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    ],
                   ),
                 ),
-              ),
-            ],
+
+                // List Proyek sesuai tab
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildProjectList("Pendanaan Dibuka"),
+                      _buildProjectList("Proyek Berjalan"),
+                      _buildProjectList("Proyek Selesai"),
+                      _buildProjectList("Proyek Dibatalkan"),
+                      _buildProjectList("Draft Proyek"),
+                    ],
+                  ),
+                ),
+
+                // Button Buat Proyek Baru
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(_deviceHeight * 0.015),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(
+                        vertical: _deviceHeight * 0.015,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(_deviceHeight * 0.01),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AddProjectPage()),
+                      );
+                    },
+                    child: const Text(
+                      "Buat Proyek Baru",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

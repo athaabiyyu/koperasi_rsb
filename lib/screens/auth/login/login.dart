@@ -358,10 +358,10 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 )
                               : CustomButton(
-                                  text: "Profile",
+                                  text: "Member Reguler",
                                   onPressed: () {
                                     Navigator.pushNamed(
-                                        context, '/profile');
+                                        context, '/member-reguler');
                                   },
                                 ),
                         ),

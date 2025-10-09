@@ -65,6 +65,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Form terkirim (dummy).')));
+      Navigator.pushReplacementNamed(context, '/member-reguler');
     }
   }
 
