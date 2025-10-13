@@ -13,6 +13,7 @@ class RegistrationPage1 extends StatefulWidget {
 
 class _RegistrationPage1State extends State<RegistrationPage1> {
   late double _deviceWidth;
+  late double _deviceHeight;
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -61,6 +62,7 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
+    _deviceHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: SafeArea(
@@ -68,6 +70,7 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
           child: Column(
             children: [
               SizedBox(
+                height: _deviceHeight * 0.27,
                 child: cardLoginRegisWidget(
                   title: "Buat Akun",
                   subtitle:
@@ -82,7 +85,9 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height,
+                    minHeight: MediaQuery.of(context)
+                        .size
+                        .height,
                   ),
                   child: Form(
                     key: _formKey,

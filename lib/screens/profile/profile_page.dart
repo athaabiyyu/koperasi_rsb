@@ -22,45 +22,52 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: lightGreen,
-      appBar: AppBar(
-        title: const Text('Profil'),
+    // ignore: deprecated_member_use
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacementNamed(context, '/member-reguler');
+        return false; // mencegah pop default
+      },
+      child: Scaffold(
         backgroundColor: lightGreen,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const ProfileHeader(name: 'budiono siregar', isPremium: true),
-            const SizedBox(height: 24),
-            _menuCard(
-              context,
-              icon: Icons.person,
-              title: 'Data Diri',
-              subtitle: 'NIK, nama lengkap, tempat & tanggal lahir',
-              route: '/profile/data-diri',
-            ),
-            const SizedBox(height: 16),
-            _menuCard(
-              context,
-              icon: Icons.home_rounded,
-              title: 'Alamat',
-              subtitle: 'Provinsi, kota/kabupaten, kecamatan & detail',
-              route: '/profile/alamat',
-            ),
-            const SizedBox(height: 16),
-            _menuCard(
-              context,
-              icon: Icons.file_present_rounded,
-              title: 'Dokumen Pelengkap',
-              subtitle: 'Upload foto KTP dan foto diri',
-              route: '/profile/dokumen',
-            ),
-            const SizedBox(height: 32),
-          ],
+        appBar: AppBar(
+          title: const Text('Profil'),
+          backgroundColor: lightGreen,
+          elevation: 0,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ProfileHeader(name: 'budiono siregar', isPremium: true),
+              const SizedBox(height: 24),
+              _menuCard(
+                context,
+                icon: Icons.person,
+                title: 'Data Diri',
+                subtitle: 'NIK, nama lengkap, tempat & tanggal lahir',
+                route: '/profile/data-diri',
+              ),
+              const SizedBox(height: 16),
+              _menuCard(
+                context,
+                icon: Icons.home_rounded,
+                title: 'Alamat',
+                subtitle: 'Provinsi, kota/kabupaten, kecamatan & detail',
+                route: '/profile/alamat',
+              ),
+              const SizedBox(height: 16),
+              _menuCard(
+                context,
+                icon: Icons.file_present_rounded,
+                title: 'Dokumen Pelengkap',
+                subtitle: 'Upload foto KTP dan foto diri',
+                route: '/profile/dokumen',
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

@@ -15,6 +15,7 @@ Widget cardLoginRegisWidget({
       vertical: 24,
     ),
     child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Image.asset(
@@ -22,7 +23,7 @@ Widget cardLoginRegisWidget({
           height: 60,
           fit: BoxFit.contain,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 2),
         Text(
           title,
           style: GoogleFonts.poppins(

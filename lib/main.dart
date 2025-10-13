@@ -48,6 +48,7 @@ class MyApp extends StatelessWidget {
           '/member-reguler': (context) => const DashboardPage(),
           '/my-project' : (context) => const MyProjectPage(),
           '/wallet' : (context) => const DompetPage(),
+          '/profile' : (context) => const ProfilePage(),
         },
         // Tambahkan onGenerateRoute untuk handle route dengan parameter
         onGenerateRoute: (settings) {

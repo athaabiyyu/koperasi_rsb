@@ -20,6 +20,7 @@ class RegistrationPage3 extends StatefulWidget {
 
 class _RegistrationPage3State extends State<RegistrationPage3> {
   late double _deviceWidth;
+  late double _deviceHeight;
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -149,6 +150,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
+    _deviceHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: SafeArea(
@@ -156,6 +158,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
           child: Column(
             children: [
               SizedBox(
+                height: _deviceHeight * 0.27,
                 child: cardLoginRegisWidget(
                   title: "Lengkapi Data!",
                   subtitle:
@@ -172,7 +175,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
                   constraints: BoxConstraints(
                     minHeight: MediaQuery.of(context)
                         .size
-                        .height, // 🔥 minimal setinggi layar
+                        .height,
                   ),
                   child: Form(
                     key: _formKey,
