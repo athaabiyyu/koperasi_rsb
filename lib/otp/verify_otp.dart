@@ -1,63 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:provider/provider.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String noHp;
   final String password;
 
   const OtpVerificationPage({
-    Key? key,
+    super.key,
     required this.noHp,
     required this.password,
-  }) : super(key: key);
+  });
 
   @override
   State<OtpVerificationPage> createState() => _OtpVerificationPageState();
 }
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _otpController = TextEditingController();
+  late List<TextEditingController> otpControllers;
   bool _isLoading = false;
+  final int otpLength = 4;
+
+  @override
+  void initState() {
+    super.initState();
+    otpControllers = List.generate(otpLength, (_) => TextEditingController());
+  }
 
   @override
   void dispose() {
-    _otpController.dispose();
+    for (var c in otpControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _handleVerifyOtp() async {
-    if (!_formKey.currentState!.validate()) return;
+    final otpCode = otpControllers.map((c) => c.text).join();
+    if (otpCode.length != otpLength) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Masukkan kode OTP dengan benar.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
-
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final otp = _otpController.text.trim();
 
       print('=== OTP VERIFICATION ATTEMPT ===');
       print('No HP: ${widget.noHp}');
-      print('OTP: $otp');
+      print('OTP: $otpCode');
       print('================================');
 
-      // ⭐ PENTING: Pass noHp dan password ke verifyOtp
-      final result = await authProvider.verifyOtp(widget.noHp, widget.password, otp);
+      final result =
+          await authProvider.verifyOtp(widget.noHp, widget.password, otpCode);
 
       setState(() => _isLoading = false);
 
       if (!mounted) return;
 
       if (result['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'OTP berhasil diverifikasi!'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-
-        // Navigate to home after successful verification
         await Future.delayed(const Duration(seconds: 1));
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/dashboard');
@@ -67,7 +76,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           SnackBar(
             content: Text(result['message'] ?? 'Verifikasi OTP gagal'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -88,136 +97,104 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Verifikasi OTP'),
-        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                
-                Icon(
-                  Icons.lock_outline,
-                  size: 80,
-                  color: Colors.green[700],
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Gambar
+              Image.asset(
+                "assets/images/ava-payment.png",
+                height: 140,
+              ),
+              const SizedBox(height: 24),
+
+              // Deskripsi
+              Text(
+                "Silahkan Masukkan Kode OTP yang telah kami kirim ke nomor ${widget.noHp}",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: grayFont,
+                  height: 1.6,
                 ),
-                
-                const SizedBox(height: 24),
-                
-                Text(
-                  'Verifikasi OTP',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 12),
-                
-                Text(
-                  'Masukkan kode OTP yang telah dikirim ke WhatsApp Anda di nomor ${widget.noHp}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 40),
-                
-                TextFormField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  enabled: !_isLoading,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 8,
-                  ),
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    labelText: 'Kode OTP',
-                    hintText: '0000',
-                    counterText: '',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[400]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.green[700]!, width: 2),
+              ),
+              const SizedBox(height: 24),
+
+              // Input OTP
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(
+                  otpLength,
+                  (index) => SizedBox(
+                    width: 55,
+                    child: TextField(
+                      controller: otpControllers[index],
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      maxLength: 1,
+                      enabled: !_isLoading,
+                      decoration: const InputDecoration(
+                        counterText: "",
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        if (value.isNotEmpty && index < otpLength - 1) {
+                          FocusScope.of(context).nextFocus();
+                        }
+                      },
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'OTP wajib diisi';
-                    }
-                    if (value.length != 4) {
-                      return 'OTP harus 4 digit';
-                    }
-                    if (!RegExp(r'^\d+$').hasMatch(value)) {
-                      return 'OTP harus berupa angka';
-                    }
-                    return null;
-                  },
                 ),
-                
-                const SizedBox(height: 32),
-                
-                SizedBox(
-                  height: 50,
-                  child: _isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.green[700],
-                          ),
-                        )
-                      : ElevatedButton(
-                          onPressed: _handleVerifyOtp,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'VERIFIKASI',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+              ),
+              const SizedBox(height: 28),
+
+              // Tombol Verifikasi
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.green[700],
                         ),
-                ),
-                
-                const SizedBox(height: 24),
-                
-                TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          Navigator.pop(context);
-                        },
-                  child: Text(
-                    'Kembali ke Login',
-                    style: TextStyle(
-                      color: _isLoading ? Colors.grey : Colors.green[700],
-                      fontSize: 14,
-                    ),
+                      )
+                    : CustomButton(
+                        text: "Masuk",
+                        onPressed: _handleVerifyOtp,
+                      ),
+              ),
+              const SizedBox(height: 16),
+
+              // Teks bawah (Chat Admin)
+              GestureDetector(
+                onTap: _isLoading
+                    ? null
+                    : () {
+                        print("User klik Chat Admin");
+                      },
+                child: Text(
+                  "OTP error atau tidak menerima OTP? Chat Admin",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
       ),

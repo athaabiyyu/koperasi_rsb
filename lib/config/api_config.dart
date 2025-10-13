@@ -1,13 +1,15 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConfig {
-  static const String baseUrl = 'http://172.3.20.38:3000';
-  
+  static final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:3000';
+
   // Headers
   static Map<String, String> get headers => {
-    'Content-Type': 'application/json',
-  };
-  
+        'Content-Type': 'application/json',
+      };
+
   static Map<String, String> getAuthHeaders(String token) => {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
 }

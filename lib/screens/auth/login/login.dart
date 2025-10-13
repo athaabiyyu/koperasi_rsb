@@ -18,6 +18,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   late double _deviceWidth;
+  late double _deviceHeight;
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _phoneController = TextEditingController();
@@ -51,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
         _rememberMe = credentials['remember_me'] == 'true';
       });
 
-      print('✅ Credentials loaded from storage');
+      print('Credentials loaded from storage');
     }
   }
 
@@ -195,6 +196,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
+    _deviceHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: SafeArea(
@@ -202,6 +204,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             children: [
               SizedBox(
+                height: _deviceHeight * 0.27,
                 child: cardLoginRegisWidget(
                   title: "Selamat Datang!",
                   subtitle: "Silahkan masuk untuk melanjutkan",
@@ -213,7 +216,9 @@ class _LoginPageState extends State<LoginPage> {
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height,
+                    minHeight: MediaQuery.of(context)
+                        .size
+                        .height,
                   ),
                   child: Form(
                     key: _formKey,
@@ -344,26 +349,6 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                           ],
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        SizedBox(
-                          width: _deviceWidth * 0.75,
-                          height: 55,
-                          child: _isLoading
-                              ? const Center(
-                                  child: CircularProgressIndicator(
-                                    color: darkGreen,
-                                  ),
-                                )
-                              : CustomButton(
-                                  text: "Member Reguler",
-                                  onPressed: () {
-                                    Navigator.pushNamed(
-                                        context, '/member-reguler');
-                                  },
-                                ),
                         ),
                       ],
                     ),
