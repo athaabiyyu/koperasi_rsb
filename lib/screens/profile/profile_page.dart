@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/screens/profile/profile_header.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
-import 'package:provider/provider.dart'; // ⭐ TAMBAHAN
-import 'package:koperasi_rsb/providers/auth_provider.dart'; // ⭐ TAMBAHAN
+import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -19,12 +19,10 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_navigating) return; // debounce
     setState(() => _navigating = true);
     
-    // ⭐ TAMBAHAN: Await navigation dan check result
     final result = await Navigator.pushNamed(context, route);
     
     if (!mounted) return;
     
-    // ⭐ TAMBAHAN: Jika result == true (update berhasil), refresh UI
     if (result == true) {
       setState(() {}); // Trigger rebuild untuk update data
     }
@@ -32,9 +30,108 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _navigating = false);
   }
 
+  Future<void> _handleLogout(BuildContext context) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Keluar',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin keluar dari akun ini?',
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Keluar',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+
+    // Perform logout
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.logout(
+      keepCredentials: authProvider.rememberMe, // Keep if remember me is on
+    );
+
+    if (!mounted) return;
+
+    // Close loading dialog
+    Navigator.pop(context);
+
+    if (success) {
+      // Navigate to login page and clear all routes
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (route) => false,
+      );
+    } else {
+      // Show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authProvider.errorMessage ?? 'Gagal keluar',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // ⭐ TAMBAHAN: Ambil data dari AuthProvider
     final authProvider = Provider.of<AuthProvider>(context);
     final userName = authProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
@@ -44,7 +141,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/member-reguler');
-        return false; // mencegah pop default
+        return false;
       },
       child: Scaffold(
         backgroundColor: lightGreen,
@@ -56,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
         bottomNavigationBar: AppBottomNav(
           currentIndex: 3,
           onItemSelected: (i) {
-            if (i == 3) return; // already on Profil
+            if (i == 3) return;
             if (!mounted) return;
             switch (i) {
               case 0:
@@ -76,7 +173,6 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ⭐ UPDATED: Pass data dinamis dari Provider
               ProfileHeader(
                 name: userName,
                 isplatinum: isplatinum,
@@ -104,6 +200,73 @@ class _ProfilePageState extends State<ProfilePage> {
                 title: 'Dokumen Pelengkap',
                 subtitle: 'Upload foto KTP dan foto diri',
                 route: '/profile/dokumen',
+              ),
+              const SizedBox(height: 32),
+              
+              // Logout Button
+              InkWell(
+                onTap: () => _handleLogout(context),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.red.shade200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.red,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Keluar',
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Keluar dari akun Anda',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.red,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
             ],
