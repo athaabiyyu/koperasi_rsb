@@ -14,8 +14,13 @@ import 'package:koperasi_rsb/otp/verify_otp.dart';
 import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  // Pastikan dotenv dimuat sebelum runApp
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+
   runApp(const MyApp());
 }
 
@@ -27,7 +32,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        // Tambahkan provider lain di sini jika diperlukan
       ],
       child: MaterialApp(
         title: 'Koperasi RSB',
@@ -48,21 +52,19 @@ class MyApp extends StatelessWidget {
           '/member-reguler': (context) => const DashboardPage(),
           '/my-project' : (context) => const MyProjectPage(),
           '/wallet' : (context) => const DompetPage(),
-          '/profile' : (context) => const ProfilePage(),
         },
-        // Tambahkan onGenerateRoute untuk handle route dengan parameter
         onGenerateRoute: (settings) {
-          // Handle /verify-otp dengan arguments
           if (settings.name == '/verify-otp') {
             final args = settings.arguments as Map<String, dynamic>?;
-            
-            if (args == null || !args.containsKey('noHp') || !args.containsKey('password')) {
-              // Jika arguments tidak valid, redirect ke login
+
+            if (args == null ||
+                !args.containsKey('noHp') ||
+                !args.containsKey('password')) {
               return MaterialPageRoute(
                 builder: (context) => const LoginPage(),
               );
             }
-            
+
             return MaterialPageRoute(
               builder: (context) => OtpVerificationPage(
                 noHp: args['noHp'] as String,
@@ -70,8 +72,7 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-          
-          // Return null untuk route yang tidak ditemukan
+
           return null;
         },
       ),

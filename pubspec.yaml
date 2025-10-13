@@ -46,6 +46,7 @@ dependencies:
   url_launcher: ^6.2.1
   auto_size_text: ^3.0.0
   timeline_tile: ^2.0.0
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +75,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/logo/
+    - .env
 
   #   - images/a_dot_ham.jpeg
 
