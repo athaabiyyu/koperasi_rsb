@@ -238,14 +238,14 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(70),
-          bottomRight: Radius.circular(70),
+          bottomLeft: Radius.circular(60),
+          bottomRight: Radius.circular(60),
         ),
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(70),
-          bottomRight: Radius.circular(70),
+          bottomLeft: Radius.circular(60),
+          bottomRight: Radius.circular(60),
         ),
         child: Container(
           width: _deviceWidth,
