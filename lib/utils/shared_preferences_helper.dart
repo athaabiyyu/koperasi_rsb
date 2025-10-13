@@ -121,4 +121,50 @@ class SharedPreferencesHelper {
       );
     }
   }
+
+  // ========== FUNGSI BARU DARI KODE 2 ==========
+
+  /// Check if token exists
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  /// Check if user is logged in (has valid token)
+  static Future<bool> isLoggedIn() async {
+    return await hasToken();
+  }
+
+  /// Get all stored keys (for debugging)
+  static Future<Set<String>> getAllKeys() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getKeys();
+    } catch (e) {
+      print('Error getting all keys: $e');
+      return {};
+    }
+  }
+
+  /// Print all saved data (for debugging)
+  static Future<void> printAllData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      
+      print('=== SHARED PREFERENCES DATA ===');
+      for (var key in keys) {
+        final value = prefs.get(key);
+        // Mask password for security
+        if (key == _passwordKey) {
+          print('$key: ********');
+        } else {
+          print('$key: $value');
+        }
+      }
+      print('================================');
+    } catch (e) {
+      print('Error printing data: $e');
+    }
+  }
 }

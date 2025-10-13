@@ -12,4 +12,13 @@ class ApiConfig {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       };
+
+  // Helper untuk konversi relative path ke full URL
+  static String getFullUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path; // Sudah full URL
+    }
+    return '$baseUrl$path';
+  }
 }
