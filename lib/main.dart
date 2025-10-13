@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
-import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
-import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
 import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +15,6 @@ import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
   WidgetsFlutterBinding.ensureInitialized();

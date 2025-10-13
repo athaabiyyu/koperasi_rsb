@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
@@ -7,6 +8,7 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
+import 'package:flutter/services.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -24,6 +26,14 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: lightGreen,
+        statusBarIconBrightness:
+            Brightness.dark,
+      ),
+    );
 
     return Scaffold(
       bottomNavigationBar: AppBottomNav(
@@ -50,7 +60,7 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             children: [
               _buildHeaderSection(),
-              SizedBox(height: _deviceHeight * 0.015),
+              SizedBox(height: _deviceHeight * 0.040),
               _buildTransactionHistoryCard(),
               SizedBox(height: _deviceHeight * 0.02),
             ],
@@ -72,6 +82,7 @@ class _DashboardPageState extends State<DashboardPage> {
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.grey.withOpacity(0.1),
               blurRadius: 6,
               offset: const Offset(0, 3),
@@ -90,8 +101,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   flex: 3,
                   child: AutoSizeText(
                     "Riwayat Transaksi",
-                    style: TextStyle(
-                      fontSize: _deviceWidth * 0.045,
+                    style: GoogleFonts.poppins(
+                      fontSize: _deviceWidth * 0.04,
                       fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
@@ -103,7 +114,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   flex: 2,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: darkGreen,
                       padding: EdgeInsets.symmetric(
                         horizontal: _deviceWidth * 0.025,
                         vertical: _deviceHeight * 0.008,
@@ -137,13 +148,13 @@ class _DashboardPageState extends State<DashboardPage> {
                     },
                     child: AutoSizeText(
                       "Bayar Simpanan Wajib",
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.028,
+                      style: GoogleFonts.poppins(
+                        fontSize: _deviceWidth * 0.032,
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 2,
-                      minFontSize: 9,
+                      maxLines: 1,
+                      minFontSize: 11,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -154,7 +165,7 @@ class _DashboardPageState extends State<DashboardPage> {
             const Divider(height: 1),
             SizedBox(height: _deviceHeight * 0.01),
             // List Transaksi
-            TransactionItem(
+            const TransactionItem(
               title: "Simpanan Wajib",
               date: "12 Agustus 2025",
               amount: "Rp. 120.000",
@@ -162,7 +173,7 @@ class _DashboardPageState extends State<DashboardPage> {
               statusLabel: "Belum Membayar",
             ),
             const Divider(),
-            TransactionItem(
+            const TransactionItem(
               title: "Simpanan Pokok",
               date: "12 Agustus 2024",
               amount: "Rp. 120.000",
@@ -170,7 +181,39 @@ class _DashboardPageState extends State<DashboardPage> {
               statusLabel: "Berhasil",
             ),
             const Divider(),
-            TransactionItem(
+            const TransactionItem(
+              title: "Simpanan Wajib",
+              date: "12 Agustus 2023",
+              amount: "Rp. 120.000",
+              isSuccess: true,
+              statusLabel: "Berhasil",
+            ),
+            const Divider(),
+            const TransactionItem(
+              title: "Simpanan Wajib",
+              date: "12 Agustus 2023",
+              amount: "Rp. 120.000",
+              isSuccess: true,
+              statusLabel: "Berhasil",
+            ),
+            const Divider(),
+            const TransactionItem(
+              title: "Simpanan Wajib",
+              date: "12 Agustus 2023",
+              amount: "Rp. 120.000",
+              isSuccess: true,
+              statusLabel: "Berhasil",
+            ),
+            const Divider(),
+            const TransactionItem(
+              title: "Simpanan Wajib",
+              date: "12 Agustus 2023",
+              amount: "Rp. 120.000",
+              isSuccess: true,
+              statusLabel: "Berhasil",
+            ),
+            const Divider(),
+            const TransactionItem(
               title: "Simpanan Wajib",
               date: "12 Agustus 2023",
               amount: "Rp. 120.000",
@@ -188,26 +231,29 @@ class _DashboardPageState extends State<DashboardPage> {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 4,
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.46),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(60),
+          bottomRight: Radius.circular(60),
         ),
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(60),
+          bottomRight: Radius.circular(60),
         ),
         child: Container(
           width: _deviceWidth,
-          padding: EdgeInsets.symmetric(
-            horizontal: _deviceWidth * 0.05,
-            vertical: _deviceHeight * 0.025,
+          padding: EdgeInsets.only(
+            left: _deviceWidth * 0.07,
+            right: _deviceWidth * 0.07,
+            top: _deviceHeight * 0.045,
+            bottom: _deviceHeight * 0.050,
           ),
           color: lightGreen,
           child: Column(
@@ -223,9 +269,9 @@ class _DashboardPageState extends State<DashboardPage> {
                       children: [
                         AutoSizeText(
                           "Dashboard",
-                          style: TextStyle(
-                            fontSize: _deviceWidth * 0.065,
-                            fontWeight: FontWeight.w800,
+                          style: GoogleFonts.poppins(
+                            fontSize: _deviceWidth * 0.07,
+                            fontWeight: FontWeight.w700,
                           ),
                           maxLines: 1,
                           minFontSize: 20,
@@ -237,8 +283,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             Flexible(
                               child: AutoSizeText(
                                 "Andi Hidayat",
-                                style: TextStyle(
-                                  fontSize: _deviceWidth * 0.042,
+                                style: GoogleFonts.poppins(
+                                  fontSize: _deviceWidth * 0.02,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 1,
@@ -260,15 +306,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                 border: Border.all(
                                   color: isPremium
                                       ? Colors.green.shade700
-                                      : Colors.orange,
+                                      : orange,
                                 ),
                               ),
                               child: Text(
                                 isPremium ? "Member Premium" : "Member Reguler",
-                                style: TextStyle(
-                                  fontSize: _deviceWidth * 0.028,
-                                  color:
-                                      isPremium ? Colors.white : Colors.orange,
+                                style: GoogleFonts.poppins(
+                                  fontSize: _deviceWidth * 0.020,
+                                  color: isPremium ? Colors.white : orange,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -286,17 +331,44 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ],
               ),
-              SizedBox(height: _deviceHeight * 0.025),
+              SizedBox(height: _deviceHeight * 0.065),
 
               // Card Ringkasan Saldo
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildSummaryCard("Simpanan Pokok", "Rp 50.000"),
-                  SizedBox(width: _deviceWidth * 0.025),
-                  _buildSummaryCard("Simpanan Wajib", "Rp 120.000"),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildSummaryCard(
+                          icon: Icons.savings_rounded,
+                          title: "Simpanan Wajib",
+                          amount: "Rp 120.000",
+                          color: Colors.blue.shade400,
+                        ),
+                      ),
+                      SizedBox(width: _deviceWidth * 0.025),
+                      Expanded(
+                        child: _buildSummaryCard(
+                          icon: Icons.trending_up_rounded,
+                          title: "Sisa Hasil Usaha",
+                          amount: "Rp 0",
+                          color: orange,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: _deviceHeight * 0.02),
+                  _buildSummaryCard(
+                    icon: Icons.account_balance_wallet_rounded,
+                    title: "Simpanan Pokok",
+                    amount: "Rp 50.000",
+                    color: Colors.green.shade400,
+                  ),
+                  SizedBox(height: _deviceHeight * 0.045),
                 ],
               ),
-              SizedBox(height: _deviceHeight * 0.02),
 
               // Banner join penyertaan
               _buildPenyertaanBanner(),
@@ -307,46 +379,145 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildSummaryCard(String title, String amount) {
-    return Expanded(
+  Widget _buildSummaryCard({
+    required IconData icon,
+    required String title,
+    required String amount,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        showSummaryDialog(
+          icon: icon,
+          title: title,
+          amount: amount,
+          color: color,
+        );
+      },
       child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: _deviceHeight * 0.015,
-          horizontal: _deviceWidth * 0.03,
-        ),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AutoSizeText(
-              title,
-              style: TextStyle(
-                fontSize: _deviceWidth * 0.03,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 2,
-              minFontSize: 10,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: _deviceHeight * 0.008),
-            AutoSizeText(
-              amount,
-              style: TextStyle(
-                fontSize: _deviceWidth * 0.045,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-              maxLines: 1,
-              minFontSize: 12,
-              overflow: TextOverflow.ellipsis,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.grey.withOpacity(0.15),
+              spreadRadius: 2,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                // ignore: deprecated_member_use
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
+                  ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      amount,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void showSummaryDialog({
+    required IconData icon,
+    required String title,
+    required String amount,
+    required Color color,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 42),
+              ),
+              const SizedBox(height: 16),
+
+              // Judul
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Nominal
+              Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Tombol tutup
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  "Tutup",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -355,7 +526,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildPenyertaanBanner() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(_deviceWidth * 0.04),
+      padding: EdgeInsets.all(_deviceWidth * 0.055),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -370,13 +541,14 @@ class _DashboardPageState extends State<DashboardPage> {
               Container(
                 padding: EdgeInsets.all(_deviceWidth * 0.02),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  // ignore: deprecated_member_use
+                  color: orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Image.asset(
                   "assets/icons/join_penyertaan.png",
-                  width: _deviceWidth * 0.07,
-                  height: _deviceWidth * 0.07,
+                  width: _deviceWidth * 0.09,
+                  height: _deviceWidth * 0.09,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -388,9 +560,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     if (!isPremium) ...[
                       AutoSizeText(
                         "Ingin Mengikuti Penyertaan?",
-                        style: TextStyle(
-                          fontSize: _deviceWidth * 0.036,
-                          fontWeight: FontWeight.w600,
+                        style: GoogleFonts.poppins(
+                          fontSize: _deviceWidth * 0.035,
+                          fontWeight: FontWeight.w700,
                         ),
                         maxLines: 2,
                         minFontSize: 12,
@@ -401,8 +573,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       isPremium
                           ? "Top up saldo minimal dimulai dari Rp500.000"
                           : "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
-                      style: TextStyle(
-                        fontSize: _deviceWidth * 0.032,
+                      style: GoogleFonts.poppins(
+                        fontSize: _deviceWidth * 0.030,
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -419,7 +591,7 @@ class _DashboardPageState extends State<DashboardPage> {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: orange,
                 padding: EdgeInsets.symmetric(
                   vertical: _deviceHeight * 0.015,
                 ),
@@ -439,7 +611,7 @@ class _DashboardPageState extends State<DashboardPage> {
               },
               child: AutoSizeText(
                 isPremium ? "Top Up Penyertaan" : "Join Penyertaan",
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: _deviceWidth * 0.038,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
