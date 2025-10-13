@@ -60,7 +60,7 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             children: [
               _buildHeaderSection(),
-              SizedBox(height: _deviceHeight * 0.040),
+              SizedBox(height: _deviceHeight * 0.045),
               _buildTransactionHistoryCard(),
               SizedBox(height: _deviceHeight * 0.02),
             ],
@@ -238,14 +238,14 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(60),
-          bottomRight: Radius.circular(60),
+          bottomLeft: Radius.circular(70),
+          bottomRight: Radius.circular(70),
         ),
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(60),
-          bottomRight: Radius.circular(60),
+          bottomLeft: Radius.circular(70),
+          bottomRight: Radius.circular(70),
         ),
         child: Container(
           width: _deviceWidth,

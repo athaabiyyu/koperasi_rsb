@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
+import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
+import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
 import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:provider/provider.dart';
