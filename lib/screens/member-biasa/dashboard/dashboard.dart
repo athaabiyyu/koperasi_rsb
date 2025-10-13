@@ -9,6 +9,8 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayar
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart'; // ⭐ TAMBAHAN
+import 'package:koperasi_rsb/providers/auth_provider.dart'; // ⭐ TAMBAHAN
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -20,7 +22,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   late double _deviceHeight;
   late double _deviceWidth;
-  bool isPremium = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +31,15 @@ class _DashboardPageState extends State<DashboardPage> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: lightGreen,
-        statusBarIconBrightness:
-            Brightness.dark,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
+
+    // ⭐ AMBIL DATA DARI PROVIDER
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.userName ?? 'User';
+    final userRole = authProvider.userRole ?? 'BASIC';
+    final isplatinum = userRole == 'PLATINUM'; // ⭐ DINAMIS BERDASARKAN ROLE
 
     return Scaffold(
       bottomNavigationBar: AppBottomNav(
@@ -59,7 +65,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeaderSection(),
+              _buildHeaderSection(userName, isplatinum), // ⭐ PASS PARAMETER
               SizedBox(height: _deviceHeight * 0.045),
               _buildTransactionHistoryCard(),
               SizedBox(height: _deviceHeight * 0.02),
@@ -82,7 +88,6 @@ class _DashboardPageState extends State<DashboardPage> {
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: Colors.grey.withOpacity(0.1),
               blurRadius: 6,
               offset: const Offset(0, 3),
@@ -92,7 +97,6 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header dengan judul dan tombol
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -164,7 +168,6 @@ class _DashboardPageState extends State<DashboardPage> {
             SizedBox(height: _deviceHeight * 0.015),
             const Divider(height: 1),
             SizedBox(height: _deviceHeight * 0.01),
-            // List Transaksi
             const TransactionItem(
               title: "Simpanan Wajib",
               date: "12 Agustus 2025",
@@ -226,12 +229,12 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildHeaderSection() {
+  // ⭐ UPDATE: Method ini sekarang menerima userName dan isplatinum
+  Widget _buildHeaderSection(String userName, bool isplatinum) {
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.46),
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -259,7 +262,6 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header dengan nama dan avatar
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -277,12 +279,11 @@ class _DashboardPageState extends State<DashboardPage> {
                           minFontSize: 20,
                         ),
                         SizedBox(height: _deviceHeight * 0.008),
-                        // Nama dan badge status
                         Row(
                           children: [
                             Flexible(
                               child: AutoSizeText(
-                                "Andi Hidayat",
+                                userName, // ⭐ NAMA DINAMIS
                                 style: GoogleFonts.poppins(
                                   fontSize: _deviceWidth * 0.02,
                                   fontWeight: FontWeight.w600,
@@ -299,21 +300,21 @@ class _DashboardPageState extends State<DashboardPage> {
                                 vertical: _deviceHeight * 0.004,
                               ),
                               decoration: BoxDecoration(
-                                color: isPremium
+                                color: isplatinum
                                     ? Colors.green
                                     : const Color(0xFFFFF0E6),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isPremium
+                                  color: isplatinum
                                       ? Colors.green.shade700
                                       : orange,
                                 ),
                               ),
                               child: Text(
-                                isPremium ? "Member Premium" : "Member Reguler",
+                                isplatinum ? "Member Platinum" : "Member Reguler", // ⭐ STATUS DINAMIS
                                 style: GoogleFonts.poppins(
                                   fontSize: _deviceWidth * 0.020,
-                                  color: isPremium ? Colors.white : orange,
+                                  color: isplatinum ? Colors.white : orange,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -332,8 +333,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               SizedBox(height: _deviceHeight * 0.065),
-
-              // Card Ringkasan Saldo
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
@@ -369,9 +368,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   SizedBox(height: _deviceHeight * 0.045),
                 ],
               ),
-
-              // Banner join penyertaan
-              _buildPenyertaanBanner(),
+              _buildPenyertaanBanner(isplatinum), // ⭐ PASS isplatinum
             ],
           ),
         ),
@@ -401,7 +398,6 @@ class _DashboardPageState extends State<DashboardPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: Colors.grey.withOpacity(0.15),
               spreadRadius: 2,
               blurRadius: 6,
@@ -415,7 +411,6 @@ class _DashboardPageState extends State<DashboardPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                // ignore: deprecated_member_use
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
@@ -474,19 +469,15 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icon
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 42),
               ),
               const SizedBox(height: 16),
-
-              // Judul
               Text(
                 title,
                 style: TextStyle(
@@ -496,8 +487,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Nominal
               Text(
                 amount,
                 style: TextStyle(
@@ -507,8 +496,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Tombol tutup
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
@@ -523,7 +510,8 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildPenyertaanBanner() {
+  // ⭐ UPDATE: Method ini sekarang menerima isplatinum sebagai parameter
+  Widget _buildPenyertaanBanner(bool isplatinum) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(_deviceWidth * 0.055),
@@ -541,7 +529,6 @@ class _DashboardPageState extends State<DashboardPage> {
               Container(
                 padding: EdgeInsets.all(_deviceWidth * 0.02),
                 decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
                   color: orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -557,7 +544,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (!isPremium) ...[
+                    if (!isplatinum) ...[
                       AutoSizeText(
                         "Ingin Mengikuti Penyertaan?",
                         style: GoogleFonts.poppins(
@@ -570,7 +557,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       SizedBox(height: _deviceHeight * 0.008),
                     ],
                     AutoSizeText(
-                      isPremium
+                      isplatinum
                           ? "Top up saldo minimal dimulai dari Rp500.000"
                           : "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
                       style: GoogleFonts.poppins(
@@ -610,7 +597,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 );
               },
               child: AutoSizeText(
-                isPremium ? "Top Up Penyertaan" : "Join Penyertaan",
+                isplatinum ? "Top Up Penyertaan" : "Join Penyertaan",
                 style: GoogleFonts.poppins(
                   fontSize: _deviceWidth * 0.038,
                   color: Colors.white,

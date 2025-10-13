@@ -6,9 +6,10 @@ import 'package:koperasi_rsb/config/api_config.dart';
 import 'package:koperasi_rsb/config/api_endpoint/api_endpoints.dart';
 import 'package:koperasi_rsb/models/user_model.dart';
 import 'package:koperasi_rsb/models/payment-member_model.dart';
-import 'package:koperasi_rsb/utils/shared_preferences_helper.dart'; // ⭐ IMPORT HELPER
+import 'package:koperasi_rsb/utils/shared_preferences_helper.dart';
+import 'package:koperasi_rsb/services/user_services.dart';
 
-// Helper function untuk decode JWT token (existing code)
+// Helper function untuk decode JWT token
 Map<String, dynamic>? _decodeJwt(String token) {
   try {
     final parts = token.split('.');
@@ -49,15 +50,23 @@ class AuthProvider with ChangeNotifier {
   String? _token;
   String? _errorMessage;
   String? _userStatus;
+  String? _userName; // ⭐ TAMBAHAN
+  String? _userRole;  // ⭐ TAMBAHAN
+  String? _userId;    // ⭐ TAMBAHAN
   Map<String, dynamic> _registrationData = {};
   bool _isLoading = false;
-  bool _rememberMe = false; // ⭐ TAMBAHAN
+  bool _rememberMe = false;
+  
+  final UserService _userService = UserService(); // ⭐ TAMBAHAN
 
   String? get token => _token;
   String? get errorMessage => _errorMessage;
   String? get userStatus => _userStatus;
+  String? get userName => _userName;
+  String? get userRole => _userRole;
+  String? get userId => _userId;
   bool get isLoading => _isLoading;
-  bool get rememberMe => _rememberMe; // ⭐ TAMBAHAN
+  bool get rememberMe => _rememberMe;
   Map<String, dynamic> get registrationData => _registrationData;
 
   // ⭐ TAMBAHAN: Initialize dan load saved data saat app start
@@ -65,7 +74,42 @@ class AuthProvider with ChangeNotifier {
     await loadSavedData();
   }
 
-  // ⭐ TAMBAHAN: Load saved token dan credentials
+  // ⭐ TAMBAHAN: Fetch user profile menggunakan UserService
+  Future<void> fetchUserProfile() async {
+    if (_token == null || _userId == null) {
+      print('⚠️ Cannot fetch profile: token or userId is null');
+      return;
+    }
+
+    try {
+      print('🔄 Fetching user profile for ID: $_userId');
+      
+      final result = await _userService.getUserById(
+        userId: _userId!,
+        token: _token!,
+      );
+
+      if (result['success'] == true && result['data'] != null) {
+        final userData = result['data'];
+        _userName = userData['nama'];
+        
+        // Save nama ke SharedPreferences untuk persistence
+        if (_userName != null) {
+          await SharedPreferencesHelper.saveUserName(_userName!);
+        }
+        
+        print('✅ User profile fetched successfully');
+        print('   Name: $_userName');
+        notifyListeners();
+      } else {
+        print('⚠️ Failed to fetch profile: ${result['message']}');
+      }
+    } catch (e) {
+      print('❌ Error fetching profile: $e');
+    }
+  }
+
+  // ⭐ TAMBAHAN: Load saved data dari SharedPreferences
   Future<void> loadSavedData() async {
     try {
       // Load token
@@ -74,13 +118,34 @@ class AuthProvider with ChangeNotifier {
       // Load user status
       _userStatus = await SharedPreferencesHelper.getUserStatus();
       
+      // Load user name
+      _userName = await SharedPreferencesHelper.getUserName();
+      
       // Load credentials
       final credentials = await SharedPreferencesHelper.getSavedCredentials();
       _rememberMe = credentials['remember_me'] ?? false;
       
+      // ⭐ Decode token untuk ambil userId dan role
+      if (_token != null) {
+        final decodedToken = _decodeJwt(_token!);
+        if (decodedToken != null) {
+          _userId = decodedToken['id'] as String?;
+          _userRole = decodedToken['role'] as String?;
+          
+          // Jika nama null tapi ada token & userId, fetch dari API
+          if (_userName == null && _userId != null) {
+            print('⚠️ Nama not found in cache, fetching from API...');
+            await fetchUserProfile();
+          }
+        }
+      }
+      
       print('=== 📂 LOADED SAVED DATA ===');
       print('Token exists: ${_token != null}');
+      print('User ID: $_userId');
       print('User Status: $_userStatus');
+      print('User Name: $_userName');
+      print('User Role: $_userRole');
       print('Remember Me: $_rememberMe');
       print('============================');
       
@@ -130,7 +195,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // ⭐ UPDATED: Login method dengan save token dan credentials
+  // ⭐ UPDATED: Login method dengan fetch user profile
   Future<bool> login(String noHp, String password, {bool rememberMe = false}) async {
     setLoading(true);
     setError(null);
@@ -161,13 +226,15 @@ class AuthProvider with ChangeNotifier {
         
         print('\n🔑 Token received: ${_token?.substring(0, 30)}...\n');
         
-        // Decode JWT untuk mendapatkan status
+        // Decode JWT untuk mendapatkan userId, status, dan role
         if (_token != null) {
           print('🔓 Attempting to decode JWT...');
           final decodedToken = _decodeJwt(_token!);
           
           if (decodedToken != null) {
+            _userId = decodedToken['id'] as String?;
             _userStatus = decodedToken['status'] as String?;
+            _userRole = decodedToken['role'] as String?;
             
             // ⭐ Save user status to SharedPreferences
             if (_userStatus != null) {
@@ -175,12 +242,18 @@ class AuthProvider with ChangeNotifier {
             }
             
             print('\n=== ✅ JWT DECODED SUCCESSFULLY ===');
-            print('User ID: ${decodedToken['id']}');
-            print('Role: ${decodedToken['role']}');
+            print('User ID: $_userId');
+            print('Role: $_userRole');
             print('Status: $_userStatus');
             print('IAT: ${decodedToken['iat']}');
             print('EXP: ${decodedToken['exp']}');
             print('===================================\n');
+            
+            // ⭐ Fetch nama dari API menggunakan userId
+            if (_userId != null) {
+              print('🔄 Fetching user name from API...');
+              await fetchUserProfile();
+            }
           } else {
             print('⚠️ Failed to decode JWT token');
           }
@@ -200,6 +273,9 @@ class AuthProvider with ChangeNotifier {
         
         print('=== 🎉 LOGIN SUCCESS ===');
         print('Token: ${_token?.substring(0, 20)}...');
+        print('User ID: $_userId');
+        print('User Name: $_userName');
+        print('User Role: $_userRole');
         print('User Status: $_userStatus');
         print('Remember Me: $rememberMe');
         print('========================\n');
@@ -223,9 +299,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Step 1: Register user (existing code, no changes needed)
+  // Step 1: Register user
   Future<Map<String, dynamic>> registerUser() async {
-    // ... existing code ...
     setLoading(true);
     setError(null);
 
@@ -335,7 +410,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // ⭐ UPDATED: Login for token dengan save ke SharedPreferences
+  // ⭐ UPDATED: Login for token dengan fetch profile
   Future<bool> loginForToken() async {
     setLoading(true);
     setError(null);
@@ -354,23 +429,30 @@ class AuthProvider with ChangeNotifier {
         final data = jsonDecode(response.body);
         _token = data['token'];
         
-        // ⭐ Save token
         if (_token != null) {
           await SharedPreferencesHelper.saveToken(_token!);
           
           final decodedToken = _decodeJwt(_token!);
           if (decodedToken != null) {
+            _userId = decodedToken['id'] as String?;
             _userStatus = decodedToken['status'] as String?;
+            _userRole = decodedToken['role'] as String?;
             
-            // ⭐ Save user status
             if (_userStatus != null) {
               await SharedPreferencesHelper.saveUserStatus(_userStatus!);
             }
             
+            // ⭐ Fetch user profile
+            if (_userId != null) {
+              await fetchUserProfile();
+            }
+            
             print('=== ✅ LOGIN FOR TOKEN SUCCESS ===');
             print('Token: ${_token?.substring(0, 20)}...');
+            print('User ID: $_userId');
+            print('User Name: $_userName');
+            print('User Role: $_userRole');
             print('User Status: $_userStatus');
-            print('Role: ${decodedToken['role']}');
             print('==================================');
           }
         }
@@ -390,7 +472,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Combined Register + Payment (existing code, no changes needed)
+  // Combined Register + Payment
   Future<Map<String, dynamic>> registerAndPay(PaymentModel paymentModel) async {
     try {
       print('=== STEP 1: REGISTERING USER ===');
@@ -420,7 +502,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Pay member (existing code, no changes needed)
+  // Pay member
   Future<Map<String, dynamic>> payMember(PaymentModel paymentModel) async {
     if (_token == null) {
       return {'success': false, 'message': 'Token tidak ditemukan'};
@@ -544,6 +626,20 @@ class AuthProvider with ChangeNotifier {
       return {'success': false, 'message': _errorMessage};
     }
   }
+  Future<void> refreshUserProfile() async {
+  if (_token == null || _userId == null) {
+    print('⚠️ Cannot refresh profile: token or userId is null');
+    return;
+  }
+
+  try {
+    print('🔄 Refreshing user profile...');
+    await fetchUserProfile();
+    print('✅ Profile refreshed successfully');
+  } catch (e) {
+    print('❌ Error refreshing profile: $e');
+  }
+}
 
   // ⭐ UPDATED: Logout dengan opsi keep credentials
   Future<bool> logout({bool keepCredentials = false}) async {
@@ -566,6 +662,9 @@ class AuthProvider with ChangeNotifier {
 
       _token = null;
       _userStatus = null;
+      _userName = null;
+      _userRole = null;
+      _userId = null;
       _registrationData = {};
       _errorMessage = null;
       
@@ -586,6 +685,9 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _token = null;
       _userStatus = null;
+      _userName = null;
+      _userRole = null;
+      _userId = null;
       _registrationData = {};
       setError('Terjadi kesalahan: $e');
       setLoading(false);

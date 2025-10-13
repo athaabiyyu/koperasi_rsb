@@ -3,7 +3,6 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/services/user_services.dart';
-import 'package:koperasi_rsb/utils/shared_preferences_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'dart:convert';
@@ -17,11 +16,11 @@ class DataDiriPage extends StatefulWidget {
 class _DataDiriPageState extends State<DataDiriPage> {
   final _formKey = GlobalKey<FormState>();
   final _userService = UserService();
-  final _nik = TextEditingController(text: '3501234567890124');
-  final _nama = TextEditingController(text: 'budiono siregar');
-  final _hp = TextEditingController(text: '6281234567891');
-  final _tempat = TextEditingController(text: 'Surabaya');
-  final _tanggal = TextEditingController(text: '03/03/2003');
+  final _nik = TextEditingController();
+  final _nama = TextEditingController();
+  final _hp = TextEditingController();
+  final _tempat = TextEditingController();
+  final _tanggal = TextEditingController();
   
   bool _isLoading = false;
   bool _isFetching = true;
@@ -152,13 +151,30 @@ class _DataDiriPageState extends State<DataDiriPage> {
       if (!mounted) return;
 
       if (result['success']) {
+        // ⭐ TAMBAHAN: Refresh user profile di AuthProvider
+        print('✅ Data Diri berhasil disimpan, refreshing profile...');
+        
+        // Cara 1: Refresh dari API (Recommended - data pasti sinkron)
+        await authProvider.refreshUserProfile();
+        
+        // ATAU Cara 2: Update manual lebih cepat (uncomment jika ingin pakai ini)
+        // await authProvider.updateUserName(_nama.text.trim());
+        
+        print('✅ Profile refreshed, nama sekarang: ${authProvider.userName}');
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Data Diri berhasil disimpan'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context);
+        
+        // ⭐ Kembali ke halaman sebelumnya dengan delay kecil
+        // supaya user sempat lihat snackbar
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          Navigator.pop(context, true); // ⭐ Return true untuk indicate success
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -5,8 +5,13 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 class ProfileHeader extends StatelessWidget {
   final String name;
-  final bool isPremium;
-  const ProfileHeader({super.key, required this.name, this.isPremium = true});
+  final bool isplatinum;
+  
+  const ProfileHeader({
+    super.key, 
+    required this.name, 
+    this.isplatinum = false, // ⭐ UPDATED: Default false supaya lebih aman
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,24 +37,30 @@ class ProfileHeader extends StatelessWidget {
                 AutoSizeText(
                   name,
                   style: GoogleFonts.poppins(
-                      fontSize: 18, fontWeight: FontWeight.w600),
+                    fontSize: 18, 
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   minFontSize: 14,
+                  overflow: TextOverflow.ellipsis, // ⭐ TAMBAHAN: Handle long names
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10, 
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: isPremium ? darkGreen : Colors.orange,
+                    color: isplatinum ? darkGreen : Colors.orange,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    isPremium ? 'Member Premium' : 'Member Reguler',
+                    isplatinum ? 'Member Platinum' : 'Member Reguler',
                     style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],

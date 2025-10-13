@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/screens/profile/profile_header.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
+import 'package:provider/provider.dart'; // ⭐ TAMBAHAN
+import 'package:koperasi_rsb/providers/auth_provider.dart'; // ⭐ TAMBAHAN
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,13 +18,28 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _navigate(BuildContext context, String route) async {
     if (_navigating) return; // debounce
     setState(() => _navigating = true);
-    await Navigator.pushNamed(context, route);
+    
+    // ⭐ TAMBAHAN: Await navigation dan check result
+    final result = await Navigator.pushNamed(context, route);
+    
     if (!mounted) return;
+    
+    // ⭐ TAMBAHAN: Jika result == true (update berhasil), refresh UI
+    if (result == true) {
+      setState(() {}); // Trigger rebuild untuk update data
+    }
+    
     setState(() => _navigating = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    // ⭐ TAMBAHAN: Ambil data dari AuthProvider
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.userName ?? 'User';
+    final userRole = authProvider.userRole ?? 'BASIC';
+    final isplatinum = userRole == 'PLATINUM';
+
     // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
@@ -59,7 +76,11 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ProfileHeader(name: 'budiono siregar', isPremium: true),
+              // ⭐ UPDATED: Pass data dinamis dari Provider
+              ProfileHeader(
+                name: userName,
+                isplatinum: isplatinum,
+              ),
               const SizedBox(height: 24),
               _menuCard(
                 context,
