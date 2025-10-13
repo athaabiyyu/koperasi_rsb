@@ -4,6 +4,7 @@ import 'package:koperasi_rsb/widgets-global/card/top-up-card.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-topUp-saldo-simpanan-wajib.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
+import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 
 class DompetPage extends StatefulWidget {
   const DompetPage({super.key});
@@ -23,72 +24,72 @@ class _DompetPageState extends State<DompetPage>
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000"
+      "nominal": "Rp. 200.000",
     },
   ];
 
@@ -96,13 +97,11 @@ class _DompetPageState extends State<DompetPage>
     {
       "tanggal": "14-04-2024 10:00:00",
       "metode": "Dana",
-      "nominal": "Rp. 150.000"
+      "nominal": "Rp. 150.000",
     },
   ];
 
-  final List<Map<String, String>> gagalData = const [
-    {},
-  ];
+  final List<Map<String, String>> gagalData = const [{}];
 
   @override
   void initState() {
@@ -127,6 +126,24 @@ class _DompetPageState extends State<DompetPage>
       },
       child: Scaffold(
         backgroundColor: lightGreen,
+        bottomNavigationBar: AppBottomNav(
+          currentIndex: 2,
+          onItemSelected: (i) {
+            if (i == 2) return; // already on Dompet
+            if (!mounted) return;
+            switch (i) {
+              case 0:
+                Navigator.pushReplacementNamed(context, '/member-reguler');
+                break;
+              case 1:
+                Navigator.pushReplacementNamed(context, '/my-project');
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, '/profile');
+                break;
+            }
+          },
+        ),
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +164,7 @@ class _DompetPageState extends State<DompetPage>
                       ),
                     ),
                     const SizedBox(height: 16),
-      
+
                     // Card PageView - tinggi dinamis berdasarkan konten
                     SizedBox(
                       height: 227,
@@ -160,7 +177,9 @@ class _DompetPageState extends State<DompetPage>
                         },
                         children: [
                           const TopUpCard(
-                              title: "Saldo Top Up", amount: "Rp. 10.000.000"),
+                            title: "Saldo Top Up",
+                            amount: "Rp. 10.000.000",
+                          ),
                           TopUpCard(
                             title: "Simpanan Wajib",
                             amount: "Rp 500.000",
@@ -174,12 +193,14 @@ class _DompetPageState extends State<DompetPage>
                             },
                           ),
                           const TopUpCard(
-                              title: "Simpanan Pokok", amount: "Rp. 50.000"),
+                            title: "Simpanan Pokok",
+                            amount: "Rp. 50.000",
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 8),
-      
+
                     // Dot Indicator
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -233,9 +254,13 @@ class _DompetPageState extends State<DompetPage>
                                 decoration: InputDecoration(
                                   hintText: "Search..",
                                   hintStyle: GoogleFonts.poppins(fontSize: 12),
-                                  prefixIcon: const Icon(Icons.search, size: 20),
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 8),
+                                  prefixIcon: const Icon(
+                                    Icons.search,
+                                    size: 20,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
                                   filled: true,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
@@ -268,11 +293,17 @@ class _DompetPageState extends State<DompetPage>
                             controller: _tabController,
                             children: [
                               TransactionTable(
-                                  status: "Menunggu Konfirmasi",
-                                  data: menungguData),
+                                status: "Menunggu Konfirmasi",
+                                data: menungguData,
+                              ),
                               TransactionTable(
-                                  status: "Berhasil", data: berhasilData),
-                              TransactionTable(status: "Gagal", data: gagalData),
+                                status: "Berhasil",
+                                data: berhasilData,
+                              ),
+                              TransactionTable(
+                                status: "Gagal",
+                                data: gagalData,
+                              ),
                             ],
                           ),
                         ),

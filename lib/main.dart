@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
+import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
+import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
 import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:provider/provider.dart';
@@ -26,13 +28,11 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
       child: MaterialApp(
         title: 'Koperasi RSB',
         theme: ThemeData(
@@ -50,8 +50,12 @@ class MyApp extends StatelessWidget {
           '/registration3': (context) => RegistrationPage3(),
           '/dashboard': (context) => const DashboardPage(),
           '/member-reguler': (context) => const DashboardPage(),
-          '/my-project' : (context) => const MyProjectPage(),
-          '/wallet' : (context) => const DompetPage(),
+          '/my-project': (context) => const MyProjectPage(),
+          '/wallet': (context) => const DompetPage(),
+          '/profile': (context) => const ProfilePage(),
+          '/profile/data-diri': (context) => const DataDiriPage(),
+          '/profile/alamat': (context) => const AlamatPage(),
+          '/profile/dokumen': (context) => const DokumenPelengkapPage(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/verify-otp') {
@@ -60,9 +64,7 @@ class MyApp extends StatelessWidget {
             if (args == null ||
                 !args.containsKey('noHp') ||
                 !args.containsKey('password')) {
-              return MaterialPageRoute(
-                builder: (context) => const LoginPage(),
-              );
+              return MaterialPageRoute(builder: (context) => const LoginPage());
             }
 
             return MaterialPageRoute(

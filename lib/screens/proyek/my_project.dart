@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
 import 'package:koperasi_rsb/screens/proyek/add_project.dart';
 import 'package:koperasi_rsb/screens/proyek/project_detail.dart';
+import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});
@@ -80,6 +81,24 @@ class _MyProjectPageState extends State<MyProjectPage>
         length: 5,
         child: Scaffold(
           backgroundColor: const Color(0xFFF3FFFA),
+          bottomNavigationBar: AppBottomNav(
+            currentIndex: 1,
+            onItemSelected: (i) {
+              if (i == 1) return; // already on Proyek
+              if (!mounted) return;
+              switch (i) {
+                case 0:
+                  Navigator.pushReplacementNamed(context, '/member-reguler');
+                  break;
+                case 2:
+                  Navigator.pushReplacementNamed(context, '/wallet');
+                  break;
+                case 3:
+                  Navigator.pushReplacementNamed(context, '/profile');
+                  break;
+              }
+            },
+          ),
           body: SafeArea(
             child: Column(
               children: [
@@ -92,13 +111,6 @@ class _MyProjectPageState extends State<MyProjectPage>
                   color: Colors.white,
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back_ios_outlined,
-                          color: Colors.green,
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
                       const Text(
                         "Proyek Saya",
                         style: TextStyle(
@@ -256,7 +268,8 @@ class _MyProjectPageState extends State<MyProjectPage>
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: _deviceHeight * 0.015),
+                              vertical: _deviceHeight * 0.015,
+                            ),
                             alignment: Alignment.center,
                             child: Text(
                               "Terlama",
@@ -301,15 +314,17 @@ class _MyProjectPageState extends State<MyProjectPage>
                         vertical: _deviceHeight * 0.015,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(_deviceHeight * 0.01),
+                        borderRadius: BorderRadius.circular(
+                          _deviceHeight * 0.01,
+                        ),
                       ),
                     ),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const AddProjectPage()),
+                          builder: (_) => const AddProjectPage(),
+                        ),
                       );
                     },
                     child: const Text(
