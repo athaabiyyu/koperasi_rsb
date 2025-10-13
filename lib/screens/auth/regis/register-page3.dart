@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/login-regis-section.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
@@ -151,6 +152,14 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
     _deviceHeight = MediaQuery.of(context).size.height;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: lightGreen,
+        statusBarIconBrightness:
+            Brightness.dark,
+      ),
+    );
 
     return Scaffold(
       body: SafeArea(
