@@ -261,11 +261,12 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
 
-                        // ⭐ CHECKBOX "INGAT SAYA"
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Checkbox(
+                           const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Transform.scale(
+                            scale: 0.9,
+                            child: Checkbox(
                               value: _rememberMe,
                               onChanged: _isLoading
                                   ? null
@@ -275,31 +276,36 @@ class _LoginPageState extends State<LoginPage> {
                                       });
                                     },
                               activeColor: darkGreen,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: const VisualDensity(
+                                  horizontal: -4, vertical: -4),
                             ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: _isLoading
-                                    ? null
-                                    : () {
-                                        setState(() {
-                                          _rememberMe = !_rememberMe;
-                                        });
-                                      },
-                                child: Text(
-                                  'Ingat Saya',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    color: _isLoading
-                                        ? Colors.grey
-                                        : Colors.black87,
-                                  ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _isLoading
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _rememberMe = !_rememberMe;
+                                      });
+                                    },
+                              child: Text(
+                                'Ingat Saya',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color:
+                                      _isLoading ? Colors.grey : Colors.black87,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
 
-                        const SizedBox(height: 30),
+                      const SizedBox(height: 20),
+
 
                         SizedBox(
                           width: _deviceWidth * 0.75,
