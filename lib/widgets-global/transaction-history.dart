@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 class TransactionItem extends StatelessWidget {
   final String title; // Simpanan Wajib / Simpanan Pokok
@@ -28,7 +29,7 @@ class TransactionItem extends StatelessWidget {
         children: [
           Icon(
             isSuccess ? Icons.check_circle : Icons.cancel,
-            color: isSuccess ? Colors.green : Colors.red,
+            color: isSuccess ? darkGreen : Colors.red,
             size: 28,
           ),
           const SizedBox(width: 12),
@@ -75,7 +76,7 @@ class TransactionItem extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isSuccess
-                      ? Colors.green.withOpacity(0.1)
+                      ? darkGreen.withOpacity(0.1)
                       : Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -84,7 +85,7 @@ class TransactionItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: isSuccess ? Colors.green : Colors.red,
+                    color: isSuccess ? darkGreen : Colors.red,
                   ),
                 ),
               ),

@@ -17,7 +17,6 @@ import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
   WidgetsFlutterBinding.ensureInitialized();

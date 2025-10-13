@@ -25,7 +25,6 @@ class CardPembayaranBank extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.of(context).size.width;
 
     return Container(
       width: double.infinity,
