@@ -19,6 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late double _deviceWidth;
   late double _deviceHeight;
+  
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _phoneController = TextEditingController();
@@ -197,6 +198,14 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
     _deviceHeight = MediaQuery.of(context).size.height;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: lightGreen,
+        statusBarIconBrightness:
+            Brightness.dark,
+      ),
+    );
 
     return Scaffold(
       body: SafeArea(
