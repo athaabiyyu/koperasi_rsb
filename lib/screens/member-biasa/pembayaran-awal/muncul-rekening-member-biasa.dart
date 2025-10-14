@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-muncul-rekening.dart';
+import 'package:koperasi_rsb/widgets-global/reusable-page/konfirmasi-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart';
 
 class MunculRekeningMemberBiasa extends StatefulWidget {
   @override
-  State<MunculRekeningMemberBiasa> createState() => _MunculRekeningMemberBiasaState();
+  State<MunculRekeningMemberBiasa> createState() =>
+      _MunculRekeningMemberBiasaState();
 }
 
 class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
+  late double _deviceHeight;
+  late double _deviceWidth;
 
   @override
   Widget build(BuildContext context) {
+    _deviceHeight = MediaQuery.of(context).size.height;
+    _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -27,7 +35,8 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                   text:
                       "Silahkan transfer ke nomor rekening berikut agar transaksi anda dapat segera kami proses",
                   alertTitle: "Informasi Penting !",
-                  alertMessage: "•   Selesaikan pembayaran di nomor rekening kami.\n"
+                  alertMessage:
+                      "•   Selesaikan pembayaran di nomor rekening kami.\n"
                       "•   Mohon transfer sesuai jumlah hingga 3 digit terakhir.",
                 ),
 
@@ -39,7 +48,7 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                   namaPemilik: "Koperasi Produksi Rejeki Sukses Berkah",
                   totalPembayaran: "Rp 170.000",
                   onCopy: () {
-                    // Logika copy rekening
+                    // Logika copy rekening + snackbar
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Nomor rekening berhasil disalin'),
@@ -48,36 +57,11 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                     );
                   },
                   onKonfirmasi: () {
-                    // Navigasi ke halaman form konfirmasi pembayaran
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Scaffold(
-                          backgroundColor: Colors.grey.shade100,
-                          appBar: AppBar(
-                            title: const Text('Konfirmasi Pembayaran'),
-                            backgroundColor: Colors.white,
-                            elevation: 1,
-                          ),
-                          body: SafeArea(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.all(16),
-                              child: KonfirmasiPembayaranForm(
-                                // onSubmit: (data) {
-                                //   // Handle submit form
-                                //   print('Data konfirmasi pembayaran: $data');
-                                  
-                                //   // Tampilkan snackbar sukses atau navigasi ke halaman lain
-                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                //     const SnackBar(
-                                //       content: Text('Pembayaran berhasil dikonfirmasi'),
-                                //     ),
-                                //   );
-                                // },
-                              ),
-                            ),
-                          ),
-                        ),
+                        builder: (context) =>
+                            KonfirmasiPembayaran(), // langsung aja
                       ),
                     );
                   },

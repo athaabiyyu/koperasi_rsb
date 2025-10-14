@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as path;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,7 +45,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
       setState(() {
         _fotoDiri = File(file.path);
       });
-      print('File Foto Diri yang dipilih: ${file.name}');
+      print('File Foto Diri yang dipilih: ${path.basename(file.path)}');
     }
   }
 
@@ -54,7 +55,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
       setState(() {
         _fotoKtp = File(file.path);
       });
-      print('File KTP yang dipilih: ${file.name}');
+      print('File KTP yang dipilih: ${path.basename(file.path)}');
     }
   }
 
@@ -156,8 +157,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: lightGreen,
-        statusBarIconBrightness:
-            Brightness.dark,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
 
@@ -182,9 +182,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context)
-                        .size
-                        .height,
+                    minHeight: MediaQuery.of(context).size.height,
                   ),
                   child: Form(
                     key: _formKey,
