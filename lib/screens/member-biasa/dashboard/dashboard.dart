@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
@@ -37,7 +38,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final authProvider = Provider.of<AuthProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
-    final userName = userProvider.userName ?? 'User';
+    final userName = userProvider.userName ?? 'Default User';
     final userRole = authProvider.userRole ?? 'BASIC';
     final isplatinum = userRole == 'PLATINUM';
 
@@ -178,8 +179,8 @@ class _DashboardPageState extends State<DashboardPage> {
       decoration: BoxDecoration(
         color: lightGreen,
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(40),
-          bottomRight: Radius.circular(40),
+          bottomLeft: Radius.circular(45),
+          bottomRight: Radius.circular(45),
         ),
         boxShadow: [
           BoxShadow(
