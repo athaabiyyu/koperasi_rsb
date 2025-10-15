@@ -15,35 +15,30 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool _navigating = false;
+  late double _deviceWidth;
 
   Future<void> _navigate(BuildContext context, String route) async {
-    if (_navigating) return; // debounce
+    if (_navigating) return;
     setState(() => _navigating = true);
-    
+
     final result = await Navigator.pushNamed(context, route);
-    
     if (!mounted) return;
-    
+
     if (result == true) {
-      setState(() {}); // Trigger rebuild untuk update data
+      setState(() {});
     }
-    
+
     setState(() => _navigating = false);
   }
 
   Future<void> _handleLogout(BuildContext context) async {
-    // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Keluar',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-          ),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         content: Text(
           'Apakah Anda yakin ingin keluar dari akun ini?',
@@ -54,9 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Batal',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-              ),
+              style: GoogleFonts.poppins(color: Colors.grey[600]),
             ),
           ),
           ElevatedButton(
@@ -80,7 +73,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (confirmed != true || !mounted) return;
 
-    // Show loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -91,30 +83,23 @@ class _ProfilePageState extends State<ProfilePage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
           ),
+          child: const CircularProgressIndicator(color: Colors.green),
         ),
       ),
     );
 
-    // Perform logout
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.logout(
-      keepCredentials: authProvider.rememberMe, // Keep if remember me is on
+      keepCredentials: authProvider.rememberMe,
     );
 
     if (!mounted) return;
 
-    // Close loading dialog
-    Navigator.pop(context);
+    Navigator.pop(context); // close loading dialog
 
     if (success) {
-      // Navigate to login page and clear all routes
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/login',
-        (route) => false,
-      );
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
     } else {
-      // Show error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -137,9 +122,10 @@ class _ProfilePageState extends State<ProfilePage> {
     final userProvider = Provider.of<UserProvider>(context);
     final userName = userProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
-    final isplatinum = userRole == 'PLATINUM';
+    final isPlatinum = userRole == 'PLATINUM';
 
-    // ignore: deprecated_member_use
+    _deviceWidth = MediaQuery.of(context).size.width;
+
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/member-reguler');
@@ -147,11 +133,6 @@ class _ProfilePageState extends State<ProfilePage> {
       },
       child: Scaffold(
         backgroundColor: lightGreen,
-        appBar: AppBar(
-          title: const Text('Profil'),
-          backgroundColor: lightGreen,
-          elevation: 0,
-        ),
         bottomNavigationBar: AppBottomNav(
           currentIndex: 3,
           onItemSelected: (i) {
@@ -170,108 +151,123 @@ class _ProfilePageState extends State<ProfilePage> {
             }
           },
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ProfileHeader(
-                name: userName,
-                isplatinum: isplatinum,
-              ),
-              const SizedBox(height: 24),
-              _menuCard(
-                context,
-                icon: Icons.person,
-                title: 'Data Diri',
-                subtitle: 'NIK, nama lengkap, tempat & tanggal lahir',
-                route: '/profile/data-diri',
-              ),
-              const SizedBox(height: 16),
-              _menuCard(
-                context,
-                icon: Icons.home_rounded,
-                title: 'Alamat',
-                subtitle: 'Provinsi, kota/kabupaten, kecamatan & detail',
-                route: '/profile/alamat',
-              ),
-              const SizedBox(height: 16),
-              _menuCard(
-                context,
-                icon: Icons.file_present_rounded,
-                title: 'Dokumen Pelengkap',
-                subtitle: 'Upload foto KTP dan foto diri',
-                route: '/profile/dokumen',
-              ),
-              const SizedBox(height: 32),
-              
-              // Logout Button
-              InkWell(
-                onTap: () => _handleLogout(context),
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.logout_rounded,
-                          color: Colors.red,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Keluar',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.red,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Keluar dari akun Anda',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: Colors.red,
-                      ),
-                    ],
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// ====== TITLE PROFIL ======
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 15, 10, 2),
+                  child: Text(
+                    "Profil",
+                    style: GoogleFonts.poppins(
+                      fontSize: _deviceWidth * 0.07,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 16),
+
+                /// ====== PROFILE HEADER ======
+                ProfileHeader(name: userName, isplatinum: isPlatinum),
+                const SizedBox(height: 24),
+
+                /// ====== MENU ======
+                _menuCard(
+                  context,
+                  icon: Icons.person,
+                  title: 'Data Diri',
+                  subtitle: 'NIK, nama lengkap, tempat & tanggal lahir',
+                  route: '/profile/data-diri',
+                ),
+                const SizedBox(height: 16),
+                _menuCard(
+                  context,
+                  icon: Icons.home_rounded,
+                  title: 'Alamat',
+                  subtitle: 'Provinsi, kota/kabupaten, kecamatan & detail',
+                  route: '/profile/alamat',
+                ),
+                const SizedBox(height: 16),
+                _menuCard(
+                  context,
+                  icon: Icons.file_present_rounded,
+                  title: 'Dokumen Pelengkap',
+                  subtitle: 'Upload foto KTP dan foto diri',
+                  route: '/profile/dokumen',
+                ),
+                const SizedBox(height: 32),
+
+                /// ====== LOGOUT BUTTON ======
+                InkWell(
+                  onTap: () => _handleLogout(context),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.red.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: Colors.red,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Keluar',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Keluar dari akun Anda',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Colors.red,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

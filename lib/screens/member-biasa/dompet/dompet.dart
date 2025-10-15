@@ -76,6 +76,8 @@ class _DompetPageState extends State<DompetPage>
     },
   ];
 
+  late double _deviceWidth;
+
   final List<Map<String, String>> gagalData = const [{}];
 
   @override
@@ -93,6 +95,7 @@ class _DompetPageState extends State<DompetPage>
 
   @override
   Widget build(BuildContext context) {
+    _deviceWidth = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/member-reguler');
@@ -140,8 +143,8 @@ class _DompetPageState extends State<DompetPage>
                                 child: Text(
                                   "Dompet",
                                   style: GoogleFonts.poppins(
-                                    fontSize: 23,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: _deviceWidth * 0.07,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
@@ -264,8 +267,7 @@ class _DompetPageState extends State<DompetPage>
                                                   BorderRadius.circular(8),
                                               borderSide: BorderSide.none,
                                             ),
-                                            isDense:
-                                                true,
+                                            isDense: true,
                                           ),
                                         ),
                                       ),
