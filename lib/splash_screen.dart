@@ -29,8 +29,8 @@ class _SplashPageState extends State<SplashPage> {
       backgroundColor: Colors.white,
       body: Center(
         child: Image(
-          image: const AssetImage("assets/images/logo-koperasi.png"),
-          width: _deviceWidth * 2,
+          image: const AssetImage("assets/logo/logo-koperasi.png"),
+          width: _deviceWidth * 0.8,
         ),
       ),
     );
