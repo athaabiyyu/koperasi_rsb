@@ -161,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(10, 15, 10, 2),
                   child: Text(
-                    "Profil",
+                    "Profile Saya",
                     style: GoogleFonts.poppins(
                       fontSize: _deviceWidth * 0.07,
                       fontWeight: FontWeight.w700,
@@ -175,93 +175,117 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 24),
 
                 /// ====== MENU ======
-                _menuCard(
-                  context,
-                  icon: Icons.person,
-                  title: 'Data Diri',
-                  subtitle: 'NIK, nama lengkap, tempat & tanggal lahir',
-                  route: '/profile/data-diri',
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _menuCard(
+                    context,
+                    icon: Icons.person,
+                    title: 'Data Diri',
+                    subtitle: 'NIK, nama lengkap, tempat & tanggal lahir',
+                    route: '/profile/data-diri',
+                  ),
                 ),
                 const SizedBox(height: 16),
-                _menuCard(
-                  context,
-                  icon: Icons.home_rounded,
-                  title: 'Alamat',
-                  subtitle: 'Provinsi, kota/kabupaten, kecamatan & detail',
-                  route: '/profile/alamat',
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _menuCard(
+                    context,
+                    icon: Icons.home_rounded,
+                    title: 'Alamat',
+                    subtitle: 'Provinsi, kota/kabupaten, kecamatan & detail',
+                    route: '/profile/alamat',
+                  ),
                 ),
                 const SizedBox(height: 16),
-                _menuCard(
-                  context,
-                  icon: Icons.file_present_rounded,
-                  title: 'Dokumen Pelengkap',
-                  subtitle: 'Upload foto KTP dan foto diri',
-                  route: '/profile/dokumen',
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _menuCard(
+                    context,
+                    icon: Icons.file_present_rounded,
+                    title: 'Dokumen Pelengkap',
+                    subtitle: 'Upload foto KTP dan foto diri',
+                    route: '/profile/dokumen',
+                  ),
                 ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _menuCard(
+                    context,
+                    icon: Icons.support_agent_rounded,
+                    title: 'Hubungi Admin',
+                    subtitle: 'Butuh bantuan? Hubungi admin di sini',
+                    route: '/profile/hubungi-admin',
+                  ),
+                ),
+
                 const SizedBox(height: 32),
 
                 /// ====== LOGOUT BUTTON ======
-                InkWell(
-                  onTap: () => _handleLogout(context),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.red.shade200),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(12),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InkWell(
+                    onTap: () => _handleLogout(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.red.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
                           ),
-                          child: const Icon(
-                            Icons.logout_rounded,
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.logout_rounded,
+                              color: Colors.red,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Keluar',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Keluar dari akun Anda',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
                             color: Colors.red,
-                            size: 28,
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Keluar',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.red,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Keluar dari akun Anda',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right_rounded,
-                          color: Colors.red,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
