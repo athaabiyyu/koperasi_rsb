@@ -8,6 +8,7 @@ import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -31,7 +32,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())
+      , ChangeNotifierProvider(create: (_) => UserProvider())
+      ],
       child: MaterialApp(
         title: 'Koperasi RSB',
         theme: ThemeData(

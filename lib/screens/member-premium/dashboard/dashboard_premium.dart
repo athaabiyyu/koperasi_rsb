@@ -9,8 +9,9 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';  
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 
 class PremiumDashboardPage extends StatefulWidget {
   const PremiumDashboardPage({Key? key}) : super(key: key);
@@ -62,7 +63,8 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
     final authProvider = Provider.of<AuthProvider>(context);
-    final userName = authProvider.userName ?? 'User';
+    final userProvider = Provider.of<UserProvider>(context);
+    final userName = userProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
     final isplatinum = userRole == 'PLATINUM';
 

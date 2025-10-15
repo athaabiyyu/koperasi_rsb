@@ -5,6 +5,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -133,7 +134,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final userName = authProvider.userName ?? 'User';
+    final userProvider = Provider.of<UserProvider>(context);
+    final userName = userProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
     final isplatinum = userRole == 'PLATINUM';
 

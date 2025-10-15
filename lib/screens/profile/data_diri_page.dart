@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -132,6 +133,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
       final token = authProvider.token;
 
       if (token == null) {
@@ -155,12 +157,15 @@ class _DataDiriPageState extends State<DataDiriPage> {
         print('✅ Data Diri berhasil disimpan, refreshing profile...');
         
         // Cara 1: Refresh dari API (Recommended - data pasti sinkron)
-        await authProvider.refreshUserProfile();
+        await  userProvider.refreshUserProfile(
+          userId: _userId!,
+          token: token,
+        );
         
         // ATAU Cara 2: Update manual lebih cepat (uncomment jika ingin pakai ini)
         // await authProvider.updateUserName(_nama.text.trim());
         
-        print('✅ Profile refreshed, nama sekarang: ${authProvider.userName}');
+        print('✅ Profile refreshed, nama sekarang: ${userProvider.userName}');
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

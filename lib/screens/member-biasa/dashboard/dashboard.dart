@@ -11,6 +11,7 @@ import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart'; 
+import 'package:koperasi_rsb/providers/user_provider.dart'; 
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -37,7 +38,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // ⭐ AMBIL DATA DARI PROVIDER
     final authProvider = Provider.of<AuthProvider>(context);
-    final userName = authProvider.userName ?? 'User';
+    final userProvider = Provider.of<UserProvider>(context);
+    final userName = userProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
     final isplatinum = userRole == 'PLATINUM'; // ⭐ DINAMIS BERDASARKAN ROLE
 
