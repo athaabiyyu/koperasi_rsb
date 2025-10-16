@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/screens/kontak%20admin/kontak-admin.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
 import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
           '/profile/data-diri': (context) => const DataDiriPage(),
           '/profile/alamat': (context) => const AlamatPage(),
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
+          '/profile/hubungi-admin': (context) => const KontakAdminPage(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/verify-otp') {

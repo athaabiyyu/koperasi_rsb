@@ -29,7 +29,7 @@ class KontakAdminPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -40,7 +40,7 @@ class KontakAdminPage extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 50),
                   Text(
                     'Butuh bantuan apa\nhari ini ?',
                     style: GoogleFonts.poppins(
@@ -64,7 +64,7 @@ class KontakAdminPage extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(35),
+                  padding: const EdgeInsets.all(30),
                   child: ListView(
                     children: [
                       // Contact Card - WhatsApp

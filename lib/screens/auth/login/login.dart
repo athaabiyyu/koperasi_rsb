@@ -20,7 +20,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late double _deviceWidth;
   late double _deviceHeight;
-  
+
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _phoneController = TextEditingController();
@@ -158,8 +158,69 @@ class _LoginPageState extends State<LoginPage> {
                 duration: Duration(seconds: 2),
               ),
             );
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  insetPadding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+                  content: Column(
+                    mainAxisSize: MainAxisSize
+                        .min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF4CAF50),
+                        ),
+                        padding: const EdgeInsets.all(14),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 42,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
 
-            Navigator.pushReplacementNamed(context, '/dashboard');
+                      // Judul dialog
+                      Text(
+                        'Login berhasil!',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 25,
+                          color: darkGreen,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Pesan tambahan
+                      Text(
+                        'Selamat datang di Koperasi RSB.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+            Future.delayed(const Duration(seconds: 2), () {
+              Navigator.of(context).pop();
+              Navigator.pushReplacementNamed(context, '/dashboard');
+            });
             break;
 
           case 'TIDAK AKTIF':
@@ -220,8 +281,7 @@ class _LoginPageState extends State<LoginPage> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: lightGreen,
-        statusBarIconBrightness:
-            Brightness.dark,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
 
@@ -243,16 +303,13 @@ class _LoginPageState extends State<LoginPage> {
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context)
-                        .size
-                        .height,
+                    minHeight: MediaQuery.of(context).size.height,
                   ),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
                         const SizedBox(height: 30),
-
                         CustomTextFormField(
                           controller: _phoneController,
                           label: "No. Handphone",
@@ -271,9 +328,7 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 30),
-
                         CustomTextFormField(
                           controller: _passwordController,
                           label: "Kata Sandi",
@@ -287,7 +342,6 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -322,17 +376,17 @@ class _LoginPageState extends State<LoginPage> {
                                   'Ingat Saya',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
-                                    color:
-                                        _isLoading ? Colors.grey : Colors.black87,
+                                    color: _isLoading
+                                        ? Colors.grey
+                                        : Colors.black87,
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 20),
-
+                        const SizedBox(height: 20),
                         SizedBox(
                           width: _deviceWidth * 0.75,
                           height: 55,
@@ -347,9 +401,7 @@ class _LoginPageState extends State<LoginPage> {
                                   onPressed: _handleLogin,
                                 ),
                         ),
-
                         const SizedBox(height: 25),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

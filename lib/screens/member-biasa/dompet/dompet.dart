@@ -20,6 +20,8 @@ class _DompetPageState extends State<DompetPage>
 
   late final TabController _tabController;
 
+  late double _deviceWidth;
+
   final List<Map<String, String>> menungguData = const [
     {
       "tanggal": "15-04-2024 13:28:08",
@@ -93,6 +95,7 @@ class _DompetPageState extends State<DompetPage>
 
   @override
   Widget build(BuildContext context) {
+    _deviceWidth = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/member-reguler');
@@ -140,8 +143,8 @@ class _DompetPageState extends State<DompetPage>
                                 child: Text(
                                   "Dompet",
                                   style: GoogleFonts.poppins(
-                                    fontSize: 23,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: _deviceWidth * 0.07,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
@@ -200,7 +203,7 @@ class _DompetPageState extends State<DompetPage>
                         // ======== BAGIAN BAWAH (Riwayat Transaksi) ========
                         Expanded(
                           child: Card(
-                            color: darkGreen,
+                            color: Colors.white,
                             elevation: 2,
                             margin: EdgeInsets.zero,
                             shape: const RoundedRectangleBorder(
@@ -223,7 +226,7 @@ class _DompetPageState extends State<DompetPage>
                                         style: GoogleFonts.poppins(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                       ),
                                       SizedBox(
@@ -232,13 +235,13 @@ class _DompetPageState extends State<DompetPage>
                                         child: TextField(
                                           style: GoogleFonts.poppins(
                                             fontSize: 12,
-                                            color: Colors.white,
+                                            color: darkGreen,
                                           ),
                                           decoration: InputDecoration(
                                             hintText: "Search..",
                                             hintStyle: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: Colors.black,
+                                              color: darkGreen,
                                             ),
                                             prefixIcon: const Padding(
                                               padding: EdgeInsets.only(
@@ -246,7 +249,7 @@ class _DompetPageState extends State<DompetPage>
                                               child: Icon(
                                                 Icons.search,
                                                 size: 18,
-                                                color: Colors.black,
+                                                color: darkGreen,
                                               ),
                                             ),
                                             prefixIconConstraints:
@@ -259,13 +262,25 @@ class _DompetPageState extends State<DompetPage>
                                                     vertical: 10),
                                             filled: true,
                                             fillColor: lightGreen,
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: darkGreen, width: 1.5),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: darkGreen, width: 1.8),
+                                            ),
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(8),
-                                              borderSide: BorderSide.none,
+                                              borderSide: const BorderSide(
+                                                  color: darkGreen, width: 1.5),
                                             ),
-                                            isDense:
-                                                true,
+                                            isDense: true,
                                           ),
                                         ),
                                       ),
@@ -274,9 +289,9 @@ class _DompetPageState extends State<DompetPage>
                                   const SizedBox(height: 16),
                                   TabBar(
                                     controller: _tabController,
-                                    labelColor: Colors.white,
-                                    unselectedLabelColor: Colors.white70,
-                                    indicatorColor: Colors.white,
+                                    labelColor: darkGreen,
+                                    unselectedLabelColor: darkGreen,
+                                    indicatorColor: darkGreen,
                                     labelStyle: GoogleFonts.poppins(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
@@ -287,7 +302,7 @@ class _DompetPageState extends State<DompetPage>
                                       Tab(text: "Gagal"),
                                     ],
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 12),
                                   SizedBox(
                                     height: 400,
                                     child: TabBarView(
