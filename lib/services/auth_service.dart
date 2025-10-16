@@ -9,41 +9,41 @@ import '../utils/shared_preferences_helper.dart';
 
 class AuthService {
   // Helper function untuk decode JWT token
-  static Map<String, dynamic>? decodeJwt(String token) {
-    try {
-      final parts = token.split('.');
-      if (parts.length != 3) {
-        print('❌ JWT token tidak valid: harus 3 bagian');
+    static Map<String, dynamic>? decodeJwt(String token) {
+      try {
+        final parts = token.split('.');
+        if (parts.length != 3) {
+          print('❌ JWT token tidak valid: harus 3 bagian');
+          return null;
+        }
+
+        String payload = parts[1];
+        payload = payload.replaceAll('-', '+').replaceAll('_', '/');
+        
+        switch (payload.length % 4) {
+          case 0:
+            break;
+          case 2:
+            payload += '==';
+            break;
+          case 3:
+            payload += '=';
+            break;
+          default:
+            print('❌ Base64 string tidak valid');
+            return null;
+        }
+        
+        final decoded = utf8.decode(base64.decode(payload));
+        print('🔍 JWT Payload (decoded): $decoded');
+        final Map<String, dynamic> result = jsonDecode(decoded);
+        
+        return result;
+      } catch (e) {
+        print('❌ Error decoding JWT: $e');
         return null;
       }
-
-      String payload = parts[1];
-      payload = payload.replaceAll('-', '+').replaceAll('_', '/');
-      
-      switch (payload.length % 4) {
-        case 0:
-          break;
-        case 2:
-          payload += '==';
-          break;
-        case 3:
-          payload += '=';
-          break;
-        default:
-          print('❌ Base64 string tidak valid');
-          return null;
-      }
-      
-      final decoded = utf8.decode(base64.decode(payload));
-      print('🔍 JWT Payload (decoded): $decoded');
-      final Map<String, dynamic> result = jsonDecode(decoded);
-      
-      return result;
-    } catch (e) {
-      print('❌ Error decoding JWT: $e');
-      return null;
     }
-  }
 
   // Login
   static Future<Map<String, dynamic>> login(String noHp, String password) async {

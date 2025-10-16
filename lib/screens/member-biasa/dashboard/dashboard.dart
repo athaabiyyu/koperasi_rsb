@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
+import 'package:koperasi_rsb/widgets-global/transaction-item.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
@@ -11,7 +12,8 @@ import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart'; 
-import 'package:koperasi_rsb/providers/user_provider.dart'; 
+import 'package:koperasi_rsb/providers/user_provider.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -25,6 +27,30 @@ class _DashboardPageState extends State<DashboardPage> {
   late double _deviceWidth;
 
   @override
+  void initState() {
+    super.initState();
+    _loadTopupHistory();
+  }
+
+  Future<void> _loadTopupHistory() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final topupProvider = Provider.of<TopupProvider>(context, listen: false);
+    
+    if (authProvider.token != null) {
+      await topupProvider.fetchTopupHistory(authProvider.token!);
+    }
+  }
+
+  Future<void> _refreshData() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final topupProvider = Provider.of<TopupProvider>(context, listen: false);
+    
+    if (authProvider.token != null) {
+      await topupProvider.refreshTopupHistory(authProvider.token!);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
@@ -36,12 +62,13 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
 
-    // ⭐ AMBIL DATA DARI PROVIDER
     final authProvider = Provider.of<AuthProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
+    final topupProvider = Provider.of<TopupProvider>(context);
+    
     final userName = userProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
-    final isplatinum = userRole == 'PLATINUM'; // ⭐ DINAMIS BERDASARKAN ROLE
+    final isplatinum = userRole == 'PLATINUM';
 
     return Scaffold(
       bottomNavigationBar: AppBottomNav(
@@ -64,58 +91,63 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeaderSection(userName, isplatinum), // ⭐ PASS PARAMETER
-              SizedBox(height: _deviceHeight * 0.045),
-              _buildTransactionHistoryCard(),
-              SizedBox(height: _deviceHeight * 0.02),
-            ],
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                _buildHeaderSection(userName, isplatinum),
+                SizedBox(height: _deviceHeight * 0.045),
+                _buildTransactionHistoryCard(topupProvider),
+                SizedBox(height: _deviceHeight * 0.02),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTransactionHistoryCard() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(_deviceWidth * 0.04),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                  flex: 3,
-                  child: AutoSizeText(
-                    "Riwayat Transaksi",
-                    style: GoogleFonts.poppins(
-                      fontSize: _deviceWidth * 0.04,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    minFontSize: 14,
+ Widget _buildTransactionHistoryCard(TopupProvider topupProvider) {
+  return Padding(
+    padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(_deviceWidth * 0.04),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                flex: 3,
+                child: AutoSizeText(
+                  "Riwayat Transaksi",
+                  style: GoogleFonts.poppins(
+                    fontSize: _deviceWidth * 0.04,
+                    fontWeight: FontWeight.w700,
                   ),
+                  maxLines: 1,
+                  minFontSize: 14,
                 ),
-                SizedBox(width: _deviceWidth * 0.02),
+              ),
+              SizedBox(width: _deviceWidth * 0.02),
+              if (topupProvider.pendingTopup != null)
                 Flexible(
                   flex: 2,
                   child: ElevatedButton(
@@ -131,29 +163,34 @@ class _DashboardPageState extends State<DashboardPage> {
                       elevation: 0,
                     ),
                     onPressed: () {
+                      final pendingTopup = topupProvider.pendingTopup!;
                       DetailPembayaranAwalMember.show(
                         context,
                         alertTitle: "Detail Pembayaran",
                         alertMessage: "Pastikan data pembayaran sudah benar.",
-                        paymentTitle: "Pembayaran Simpanan Wajib",
+                        paymentTitle: "Pembayaran Top Up",
                         paymentHeader: "Informasi Pembayaran",
                         paymentItems: [
                           PaymentItem(
-                              title: "Simpanan Wajib", price: "Rp 120.000"),
+                            // ✅ FIXED: Gunakan displayTransactionType
+                            title: pendingTopup.displayTransactionType,
+                            price: pendingTopup.displayAmount,
+                          ),
                         ],
-                        totalPrice: "Rp 120.000",
+                        totalPrice: pendingTopup.displayAmount,
                         onPressed: () {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text(
-                                    "Pembayaran Simpanan Wajib dikonfirmasi")),
+                              content: Text("Pembayaran dikonfirmasi"),
+                            ),
                           );
+                          _refreshData();
                         },
                       );
                     },
                     child: AutoSizeText(
-                      "Bayar Simpanan Wajib",
+                      "Bayar Top Up",
                       style: GoogleFonts.poppins(
                         fontSize: _deviceWidth * 0.032,
                         color: Colors.white,
@@ -165,73 +202,114 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                 ),
-              ],
+            ],
+          ),
+          SizedBox(height: _deviceHeight * 0.015),
+          const Divider(height: 1),
+          SizedBox(height: _deviceHeight * 0.01),
+          
+          // Loading State
+          if (topupProvider.isLoading)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: _deviceHeight * 0.05),
+                child: const CircularProgressIndicator(),
+              ),
+            )
+          
+          // Error State
+          else if (topupProvider.errorMessage != null)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: _deviceHeight * 0.05),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red.shade300,
+                    ),
+                    SizedBox(height: _deviceHeight * 0.02),
+                    Text(
+                      topupProvider.errorMessage!,
+                      style: GoogleFonts.poppins(
+                        color: Colors.red.shade700,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: _deviceHeight * 0.02),
+                    ElevatedButton.icon(
+                      onPressed: _refreshData,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text("Coba Lagi"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: darkGreen,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          
+          // Empty State
+          else if (!topupProvider.hasTopups)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: _deviceHeight * 0.05),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.inbox_outlined,
+                      size: 48,
+                      color: Colors.grey.shade400,
+                    ),
+                    SizedBox(height: _deviceHeight * 0.02),
+                    Text(
+                      "Belum ada riwayat transaksi",
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          
+          // Transaction List
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: topupProvider.topups.length,
+              separatorBuilder: (context, index) => const Divider(),
+              itemBuilder: (context, index) {
+                final topup = topupProvider.topups[index];
+                
+                // ✅ DEBUG: Print untuk melihat data setiap transaksi
+                print('🔍 Transaction $index:');
+                print('  - Type: ${topup.displayTransactionType}');
+                print('  - Jenis: ${topup.jenis}');
+                print('  - Status: ${topup.displayStatus}');
+                
+                // ✅ Gunakan TransactionItemEnhanced untuk support semua status
+                return TransactionItemEnhanced(
+                  title: topup.displayTransactionType,
+                  date: topup.displayDate,
+                  amount: topup.displayAmount,
+                  status: topup.status, // Pass raw status untuk logic icon
+                  statusLabel: topup.displayStatus,
+                );
+              },
             ),
-            SizedBox(height: _deviceHeight * 0.015),
-            const Divider(height: 1),
-            SizedBox(height: _deviceHeight * 0.01),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2025",
-              amount: "Rp. 120.000",
-              isSuccess: false,
-              statusLabel: "Belum Membayar",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Pokok",
-              date: "12 Agustus 2024",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-          ],
-        ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  // ⭐ UPDATE: Method ini sekarang menerima userName dan isplatinum
   Widget _buildHeaderSection(String userName, bool isplatinum) {
     return Container(
       decoration: BoxDecoration(
@@ -285,7 +363,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           children: [
                             Flexible(
                               child: AutoSizeText(
-                                userName, // ⭐ NAMA DINAMIS
+                                userName,
                                 style: GoogleFonts.poppins(
                                   fontSize: _deviceWidth * 0.02,
                                   fontWeight: FontWeight.w600,
@@ -313,7 +391,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ),
                               ),
                               child: Text(
-                                isplatinum ? "Member Platinum" : "Member Reguler", // ⭐ STATUS DINAMIS
+                                isplatinum ? "Member Platinum" : "Member Reguler",
                                 style: GoogleFonts.poppins(
                                   fontSize: _deviceWidth * 0.020,
                                   color: isplatinum ? Colors.white : orange,
@@ -370,7 +448,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   SizedBox(height: _deviceHeight * 0.045),
                 ],
               ),
-              _buildPenyertaanBanner(isplatinum), // ⭐ PASS isplatinum
+              _buildPenyertaanBanner(isplatinum),
             ],
           ),
         ),
@@ -512,7 +590,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // ⭐ UPDATE: Method ini sekarang menerima isplatinum sebagai parameter
   Widget _buildPenyertaanBanner(bool isplatinum) {
     return Container(
       width: double.infinity,

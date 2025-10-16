@@ -6,6 +6,7 @@ import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/otp/verify_otp.dart';
 import 'package:provider/provider.dart';
 
@@ -41,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // ⭐ Load saved credentials
+  // Load saved credentials
   Future<void> _loadSavedCredentials() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final credentials = await authProvider.getSavedCredentials();
@@ -64,11 +65,12 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
 
       final noHp = _phoneController.text.trim();
       final password = _passwordController.text.trim();
 
-      // ⭐ Pass rememberMe ke login method
+      // Pass rememberMe ke login method
       final success =
           await authProvider.login(noHp, password, rememberMe: _rememberMe);
 
@@ -133,6 +135,22 @@ class _LoginPageState extends State<LoginPage> {
             break;
 
           case 'AKTIF':
+            // ⭐ TAMBAH: Fetch user profile sebelum navigate ke dashboard
+            if (authProvider.userId != null && authProvider.token != null) {
+              try {
+                await userProvider.fetchUserProfile(
+                  userId: authProvider.userId!,
+                  token: authProvider.token!,
+                );
+                print('✅ User profile fetched successfully after login');
+              } catch (e) {
+                print('⚠️ Warning: Failed to fetch user profile: $e');
+                // Tetap lanjut ke dashboard meskipun fetch gagal
+              }
+            }
+
+            if (!mounted) return;
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Login berhasil! Selamat datang.'),
@@ -270,51 +288,50 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
 
-                           const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Transform.scale(
-                            scale: 0.9,
-                            child: Checkbox(
-                              value: _rememberMe,
-                              onChanged: _isLoading
-                                  ? null
-                                  : (value) {
-                                      setState(() {
-                                        _rememberMe = value ?? false;
-                                      });
-                                    },
-                              activeColor: darkGreen,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: const VisualDensity(
-                                  horizontal: -4, vertical: -4),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Transform.scale(
+                              scale: 0.9,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: _isLoading
+                                    ? null
+                                    : (value) {
+                                        setState(() {
+                                          _rememberMe = value ?? false;
+                                        });
+                                      },
+                                activeColor: darkGreen,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: const VisualDensity(
+                                    horizontal: -4, vertical: -4),
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _isLoading
-                                  ? null
-                                  : () {
-                                      setState(() {
-                                        _rememberMe = !_rememberMe;
-                                      });
-                                    },
-                              child: Text(
-                                'Ingat Saya',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color:
-                                      _isLoading ? Colors.grey : Colors.black87,
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _isLoading
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _rememberMe = !_rememberMe;
+                                        });
+                                      },
+                                child: Text(
+                                  'Ingat Saya',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color:
+                                        _isLoading ? Colors.grey : Colors.black87,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
-                      const SizedBox(height: 20),
-
+                        const SizedBox(height: 20),
 
                         SizedBox(
                           width: _deviceWidth * 0.75,

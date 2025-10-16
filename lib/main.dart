@@ -9,6 +9,7 @@ import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -18,6 +19,8 @@ import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:koperasi_rsb/screens/member-premium/dashboard/dashboard_premium.dart';
+
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +37,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AuthProvider())
       , ChangeNotifierProvider(create: (_) => UserProvider())
+      , ChangeNotifierProvider(create: (_) => TopupProvider()),
       ],
       child: MaterialApp(
         title: 'Koperasi RSB',
@@ -52,6 +56,7 @@ class MyApp extends StatelessWidget {
           '/registration3': (context) => RegistrationPage3(),
           '/dashboard': (context) => const DashboardPage(),
           '/member-reguler': (context) => const DashboardPage(),
+          '/member-platinum': (context) => const PremiumDashboardPage(),
           '/my-project': (context) => const MyProjectPage(),
           '/wallet': (context) => const DompetPage(),
           '/profile': (context) => const ProfilePage(),
