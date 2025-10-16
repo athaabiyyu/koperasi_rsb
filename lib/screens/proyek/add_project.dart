@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/proyek/add_project/sections/proyek_section.dart';
 import 'package:koperasi_rsb/screens/proyek/add_project/sections/pendanaan_section.dart';
@@ -65,7 +66,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Form terkirim (dummy).')));
-      Navigator.pushReplacementNamed(context, '/member-reguler');
+      Navigator.pushReplacementNamed(context, '/my-project');
     }
   }
 
@@ -75,73 +76,93 @@ class _AddProjectPageState extends State<AddProjectPage> {
     final _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: lightGreen,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        leading: IconButton(
+          icon: const Icon(Icons.chevron_left_rounded,
+              color: darkGreen, size: 40),
+          onPressed: () {
+            if (_step > 0) {
+              // Jika bukan halaman pertama, mundur 1 step di PageView
+              setState(() => _step--);
+              _pageController.animateToPage(
+                _step,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            } else {
+              // Jika halaman pertama, keluar dari AddProjectPage
+              Navigator.pop(context);
+            }
+          },
+        ),
         title: Text(
-          widget.isEditingDraft ? 'Lanjutkan Draft' : 'Buat Proyek',
-          style: GoogleFonts.roboto(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
+          'Buat Proyek',
+          style: GoogleFonts.poppins(
+            fontSize: _deviceWidth * 0.05,
+            fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
       ),
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          _sectionWrapper(
-            index: 0,
-            title: 'Proyek',
-            subtitle: 'Berisi informasi proyek anda',
-            children: [
-              ProyekSection(
-                initialJudul: widget.draftData != null
-                    ? widget.draftData!['title'] as String?
-                    : null,
-              ),
-            ],
-          ),
-          _sectionWrapper(
-            index: 1,
-            title: 'Pendanaan',
-            subtitle: 'Berisi informasi pengajuan pendanaan anda',
-            children: [
-              PendanaanSection(
-                initialNominal: widget.draftData != null
-                    ? widget.draftData!['tokenDitawarkan'] as int?
-                    : null,
-              ),
-            ],
-          ),
-          _sectionWrapper(
-            index: 2,
-            title: 'Model & Rencana Bisnis',
-            subtitle: 'Detail model bisnis dan rencana operasional',
-            children: const [ModelRencanaBisnisSection()],
-          ),
-          _sectionWrapper(
-            index: 3,
-            title: 'Pembagian Hasil',
-            subtitle:
-                'Berisi informasi mengenai pembagian hasil antar pengelola dan investor',
-            children: const [PembagianHasilSection()],
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _sectionWrapper(
+              index: 0,
+              title: 'Proyek',
+              subtitle: 'Berisi informasi proyek anda',
+              children: [
+                ProyekSection(
+                  initialJudul: widget.draftData != null
+                      ? widget.draftData!['title'] as String?
+                      : null,
+                ),
+              ],
+            ),
+            _sectionWrapper(
+              index: 1,
+              title: 'Pendanaan',
+              subtitle: 'Berisi informasi pengajuan pendanaan anda',
+              children: [
+                PendanaanSection(
+                  initialNominal: widget.draftData != null
+                      ? widget.draftData!['tokenDitawarkan'] as int?
+                      : null,
+                ),
+              ],
+            ),
+            _sectionWrapper(
+              index: 2,
+              title: 'Model & Rencana Bisnis',
+              subtitle: 'Detail model bisnis dan rencana operasional',
+              children: const [ModelRencanaBisnisSection()],
+            ),
+            _sectionWrapper(
+              index: 3,
+              title: 'Pembagian Hasil',
+              subtitle:
+                  'Berisi informasi mengenai pembagian hasil antar pengelola dan investor',
+              children: const [PembagianHasilSection()],
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.only(
-          left: _deviceWidth * 0.04,
-          right: _deviceWidth * 0.04,
-          top: _deviceHeight * 0.005,
+          left: _deviceWidth * 0.06,
+          right: _deviceWidth * 0.06,
+          top: _deviceHeight * 0.03,
           bottom: _deviceHeight * 0.03,
         ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        decoration: const BoxDecoration(
+          color: lightGreen,
         ),
         child: Row(
           children: [
@@ -159,7 +180,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
                 onPressed: _simpanDraft,
                 child: Text(
                   'Draft',
-                  style: GoogleFonts.roboto(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: darkGreen,
@@ -169,25 +190,12 @@ class _AddProjectPageState extends State<AddProjectPage> {
             ),
             SizedBox(width: _deviceWidth * 0.04),
             Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: darkGreen,
-                  padding: EdgeInsets.symmetric(
-                    vertical: _deviceHeight * 0.015,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+              child: CustomButton(
+                text: _step < 3 ? 'Selanjutnya' : 'Buat Proyek',
+                color: darkGreen,
+                textColor: Colors.white,
+                radius: 10,
                 onPressed: _selanjutnya,
-                child: Text(
-                  _step < 3 ? 'Selanjutnya' : 'Buat Proyek',
-                  style: GoogleFonts.roboto(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
-                ),
               ),
             ),
           ],
@@ -203,32 +211,54 @@ class _AddProjectPageState extends State<AddProjectPage> {
     required String subtitle,
     required List<Widget> children,
   }) {
+    final _deviceWidth = MediaQuery.of(context).size.width;
+
     return Form(
       key: _formKeys[index],
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.roboto(
-                fontWeight: FontWeight.w700,
-                fontSize: 20,
-                color: Colors.black,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 120,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: _deviceWidth * 0.075,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: grayFont,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Divider(color: Colors.grey.shade300, height: 1),
+                    const SizedBox(height: 30),
+                    ...children,
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: GoogleFonts.roboto(fontSize: 13, color: grayFont),
-            ),
-            const SizedBox(height: 12),
-            Divider(color: Colors.grey.shade300, height: 1),
-            const SizedBox(height: 20),
-            ...children,
-          ],
-        ),
+          );
+        },
       ),
     );
   }

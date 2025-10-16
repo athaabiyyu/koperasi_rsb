@@ -20,6 +20,8 @@ class _DompetPageState extends State<DompetPage>
 
   late final TabController _tabController;
 
+  late double _deviceWidth;
+
   final List<Map<String, String>> menungguData = const [
     {
       "tanggal": "15-04-2024 13:28:08",
@@ -93,6 +95,7 @@ class _DompetPageState extends State<DompetPage>
 
   @override
   Widget build(BuildContext context) {
+    _deviceWidth = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/member-reguler');
@@ -140,8 +143,8 @@ class _DompetPageState extends State<DompetPage>
                                 child: Text(
                                   "Dompet",
                                   style: GoogleFonts.poppins(
-                                    fontSize: 23,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: _deviceWidth * 0.07,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
@@ -259,7 +262,6 @@ class _DompetPageState extends State<DompetPage>
                                                     vertical: 10),
                                             filled: true,
                                             fillColor: lightGreen,
-
                                             enabledBorder: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(8),
@@ -278,7 +280,6 @@ class _DompetPageState extends State<DompetPage>
                                               borderSide: const BorderSide(
                                                   color: darkGreen, width: 1.5),
                                             ),
-
                                             isDense: true,
                                           ),
                                         ),

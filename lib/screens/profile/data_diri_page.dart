@@ -209,7 +209,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
         backgroundColor: lightGreen,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
+          icon: const Icon(Icons.chevron_left_rounded, color: darkGreen, size: 40),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
