@@ -41,7 +41,7 @@ class _KonfirmasiPembayaranFormState extends State<KonfirmasiPembayaranForm> {
       setState(() {
         _buktiPembayaran = File(file.path);
       });
-      print('File bukti pembayaran yang dipilih: ${file.name}');
+      print('File bukti pembayaran yang dipilih: ${file.path}');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/screens/kontak%20admin/kontak-admin.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
 import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
@@ -8,6 +9,7 @@ import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -31,7 +33,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())
+      , ChangeNotifierProvider(create: (_) => UserProvider())
+      ],
       child: MaterialApp(
         title: 'Koperasi RSB',
         theme: ThemeData(
@@ -55,6 +59,7 @@ class MyApp extends StatelessWidget {
           '/profile/data-diri': (context) => const DataDiriPage(),
           '/profile/alamat': (context) => const AlamatPage(),
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
+          '/profile/hubungi-admin': (context) => const KontakAdminPage(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/verify-otp') {

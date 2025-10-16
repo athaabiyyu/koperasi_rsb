@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart'; // biar bisa pakai darkGreen
 
 class TransactionTable extends StatelessWidget {
   final String status;
@@ -13,80 +14,75 @@ class TransactionTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Filter data yang valid (tidak kosong)
     final validData = data.where((item) => item.isNotEmpty).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header tabel - selalu ditampilkan
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(8),
-              topRight: Radius.circular(8),
+    return Container(
+      decoration: BoxDecoration(
+        color: lightGreen,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          // HEADER
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: const BoxDecoration(
+              color: darkGreen,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Tanggal',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Metode Pembayaran',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Nominal',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Tanggal',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Metode Pembayaran',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Nominal',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ],
-          ),
-        ),
 
-        // Data rows dengan scroll
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
-              ),
-            ),
+          // DATA
+          Expanded(
             child: validData.isEmpty
                 ? Center(
                     child: Text(
                       'Tidak ada data',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: Colors.black,
                       ),
                     ),
                   )
@@ -102,7 +98,7 @@ class TransactionTable extends StatelessWidget {
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
-                              color: Colors.grey[200]!,
+                              color: darkGreen.withOpacity(0.2),
                               width: 1,
                             ),
                           ),
@@ -114,8 +110,9 @@ class TransactionTable extends StatelessWidget {
                               child: Text(
                                 tx['tanggal'] ?? '-',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: Colors.black87,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -125,7 +122,8 @@ class TransactionTable extends StatelessWidget {
                                 tx['metode'] ?? '-',
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
-                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -136,7 +134,8 @@ class TransactionTable extends StatelessWidget {
                                 tx['nominal'] ?? '-',
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
-                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
                                 ),
                                 textAlign: TextAlign.right,
                               ),
@@ -147,8 +146,8 @@ class TransactionTable extends StatelessWidget {
                     },
                   ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

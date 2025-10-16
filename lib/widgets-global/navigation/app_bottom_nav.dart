@@ -28,16 +28,14 @@ class AppBottomNav extends StatelessWidget {
           ],
         ),
         padding: EdgeInsets.only(
-          left: _deviceWidth * 0.04,
-          right: _deviceWidth * 0.04,
-          top: _deviceHeight * 0.02,
-          bottom: _deviceHeight * 0.012,
+          top: _deviceHeight * 0.020,
+          bottom: _deviceHeight * 0.01,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _NavItem(
-              icon: Icons.home_rounded,
+              imagePath: 'assets/icons/home-icon.png',
               label: 'Beranda',
               selected: currentIndex == 0,
               onTap: () => onItemSelected?.call(0),
@@ -45,7 +43,7 @@ class AppBottomNav extends StatelessWidget {
               iconSize: iconSize,
             ),
             _NavItem(
-              icon: Icons.assignment_rounded,
+              imagePath: 'assets/icons/add-project-icon.png',
               label: 'Proyek',
               selected: currentIndex == 1,
               onTap: () => onItemSelected?.call(1),
@@ -53,7 +51,7 @@ class AppBottomNav extends StatelessWidget {
               iconSize: iconSize,
             ),
             _NavItem(
-              icon: Icons.account_balance_wallet_rounded,
+              imagePath: 'assets/icons/dompet-icon.png',
               label: 'Dompet',
               selected: currentIndex == 2,
               onTap: () => onItemSelected?.call(2),
@@ -61,7 +59,7 @@ class AppBottomNav extends StatelessWidget {
               iconSize: iconSize,
             ),
             _NavItem(
-              icon: Icons.person_rounded,
+              imagePath: 'assets/icons/profile-icon.png',
               label: 'Profil',
               selected: currentIndex == 3,
               onTap: () => onItemSelected?.call(3),
@@ -76,20 +74,21 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  final IconData icon;
+  final String imagePath;
   final String label;
   final bool selected;
   final VoidCallback? onTap;
   final double boxSize;
   final double iconSize;
 
-  const _NavItem(
-      {required this.icon,
-      required this.label,
-      required this.selected,
-      this.onTap,
-      required this.boxSize,
-      required this.iconSize});
+  const _NavItem({
+    required this.imagePath,
+    required this.label,
+    required this.selected,
+    this.onTap,
+    required this.boxSize,
+    required this.iconSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -108,10 +107,14 @@ class _NavItem extends StatelessWidget {
                 color: selected ? Colors.white : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                size: iconSize,
-                color: selected ? darkGreen : Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  imagePath,
+                  color: selected ? darkGreen : Colors.white,
+                  width: iconSize,
+                  height: iconSize,
+                ),
               ),
             ),
             const SizedBox(height: 6),

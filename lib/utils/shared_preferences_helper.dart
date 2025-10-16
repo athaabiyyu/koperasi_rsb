@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SharedPreferencesHelper {
   static const String _tokenKey = 'auth_token';
   static const String _rememberMeKey = 'remember_me';
+  static const String _userNameKey = 'user_name';
   static const String _noHpKey = 'saved_no_hp';
   static const String _passwordKey = 'saved_password';
   static const String _userStatusKey = 'user_status'; // ⭐ TAMBAHAN untuk status
@@ -165,6 +166,27 @@ class SharedPreferencesHelper {
       print('================================');
     } catch (e) {
       print('Error printing data: $e');
+    }
+  }
+   // ⭐ TAMBAHAN: Save User Name
+  static Future<bool> saveUserName(String userName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.setString(_userNameKey, userName);
+    } catch (e) {
+      print('Error saving user name: $e');
+      return false;
+    }
+  }
+
+  // ⭐ TAMBAHAN: Get User Name
+  static Future<String?> getUserName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_userNameKey);
+    } catch (e) {
+      print('Error getting user name: $e');
+      return null;
     }
   }
 }

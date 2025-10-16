@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
@@ -9,6 +10,8 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayar
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart'; 
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -20,7 +23,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   late double _deviceHeight;
   late double _deviceWidth;
-  bool isPremium = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +32,15 @@ class _DashboardPageState extends State<DashboardPage> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: lightGreen,
-        statusBarIconBrightness:
-            Brightness.dark,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
+
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final userName = userProvider.userName ?? 'Default User';
+    final userRole = authProvider.userRole ?? 'BASIC';
+    final isplatinum = userRole == 'PLATINUM';
 
     return Scaffold(
       bottomNavigationBar: AppBottomNav(
@@ -59,8 +66,8 @@ class _DashboardPageState extends State<DashboardPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeaderSection(),
-              SizedBox(height: _deviceHeight * 0.045),
+              _buildHeaderSection(userName, isplatinum),
+              SizedBox(height: _deviceHeight * 0.05),
               _buildTransactionHistoryCard(),
               SizedBox(height: _deviceHeight * 0.02),
             ],
@@ -82,8 +89,7 @@ class _DashboardPageState extends State<DashboardPage> {
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -92,79 +98,21 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header dengan judul dan tombol
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                  flex: 3,
-                  child: AutoSizeText(
-                    "Riwayat Transaksi",
-                    style: GoogleFonts.poppins(
-                      fontSize: _deviceWidth * 0.04,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    minFontSize: 14,
-                  ),
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: AutoSizeText(
+                "Riwayat Transaksi",
+                style: GoogleFonts.poppins(
+                  fontSize: _deviceWidth * 0.045,
+                  fontWeight: FontWeight.w700,
                 ),
-                SizedBox(width: _deviceWidth * 0.02),
-                Flexible(
-                  flex: 2,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: darkGreen,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: _deviceWidth * 0.025,
-                        vertical: _deviceHeight * 0.008,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      DetailPembayaranAwalMember.show(
-                        context,
-                        alertTitle: "Detail Pembayaran",
-                        alertMessage: "Pastikan data pembayaran sudah benar.",
-                        paymentTitle: "Pembayaran Simpanan Wajib",
-                        paymentHeader: "Informasi Pembayaran",
-                        paymentItems: [
-                          PaymentItem(
-                              title: "Simpanan Wajib", price: "Rp 120.000"),
-                        ],
-                        totalPrice: "Rp 120.000",
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Pembayaran Simpanan Wajib dikonfirmasi")),
-                          );
-                        },
-                      );
-                    },
-                    child: AutoSizeText(
-                      "Bayar Simpanan Wajib",
-                      style: GoogleFonts.poppins(
-                        fontSize: _deviceWidth * 0.032,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      minFontSize: 11,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ],
+                maxLines: 1,
+                minFontSize: 16,
+              ),
             ),
             SizedBox(height: _deviceHeight * 0.015),
             const Divider(height: 1),
             SizedBox(height: _deviceHeight * 0.01),
-            // List Transaksi
             const TransactionItem(
               title: "Simpanan Wajib",
               date: "12 Agustus 2025",
@@ -226,234 +174,277 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildHeaderSection() {
+  Widget _buildHeaderSection(String userName, bool isplatinum) {
     return Container(
       decoration: BoxDecoration(
+        color: lightGreen,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(45),
+          bottomRight: Radius.circular(45),
+        ),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.46),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(60),
-          bottomRight: Radius.circular(60),
-        ),
       ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(60),
-          bottomRight: Radius.circular(60),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Container(
           width: _deviceWidth,
-          padding: EdgeInsets.only(
-            left: _deviceWidth * 0.07,
-            right: _deviceWidth * 0.07,
-            top: _deviceHeight * 0.045,
-            bottom: _deviceHeight * 0.050,
-          ),
-          color: lightGreen,
+          padding: const EdgeInsets.fromLTRB(10, 15, 10, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header dengan nama dan avatar
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AutoSizeText(
-                          "Dashboard",
-                          style: GoogleFonts.poppins(
-                            fontSize: _deviceWidth * 0.07,
-                            fontWeight: FontWeight.w700,
+              // Header dengan nama, status, dan foto profil
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AutoSizeText(
+                            "Dashboard",
+                            style: GoogleFonts.poppins(
+                              fontSize: _deviceWidth * 0.07,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            minFontSize: 20,
                           ),
-                          maxLines: 1,
-                          minFontSize: 20,
+                          SizedBox(height: _deviceHeight * 0.01),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: AutoSizeText(
+                                  userName,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: _deviceWidth * 0.02,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  minFontSize: 14,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              SizedBox(width: _deviceWidth * 0.02),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: _deviceWidth * 0.025,
+                                  vertical: _deviceHeight * 0.004,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isplatinum
+                                      ? Colors.green
+                                      : const Color(0xFFFFF0E6),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isplatinum
+                                        ? Colors.green.shade700
+                                        : orange,
+                                  ),
+                                ),
+                                child: Text(
+                                  isplatinum ? "Member Platinum" : "Member Reguler",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: _deviceWidth * 0.020,
+                                    color: isplatinum ? Colors.white : orange,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: _deviceWidth * 0.03),
+                    CircleAvatar(
+                      radius: _deviceWidth * 0.08,
+                      backgroundImage:
+                          const AssetImage("assets/images/avatar.jpg"),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // Card Total Saldo
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(_deviceWidth * 0.05),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Total Saldo",
+                          style: GoogleFonts.poppins(
+                            fontSize: _deviceWidth * 0.04,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
-                        SizedBox(height: _deviceHeight * 0.008),
-                        // Nama dan badge status
-                        Row(
-                          children: [
-                            Flexible(
-                              child: AutoSizeText(
-                                "Andi Hidayat",
-                                style: GoogleFonts.poppins(
-                                  fontSize: _deviceWidth * 0.02,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                minFontSize: 14,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        GestureDetector(
+                          onTap: () {
+                            showSummaryDialog(
+                              icon: Icons.trending_up_rounded,
+                              title: "Sisa Hasil Usaha",
+                              amount: "Rp 0",
+                              color: orange,
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(_deviceWidth * 0.02),
+                            decoration: BoxDecoration(
+                              color: orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            SizedBox(width: _deviceWidth * 0.02),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: _deviceWidth * 0.025,
-                                vertical: _deviceHeight * 0.004,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isPremium
-                                    ? Colors.green
-                                    : const Color(0xFFFFF0E6),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isPremium
-                                      ? Colors.green.shade700
-                                      : orange,
-                                ),
-                              ),
-                              child: Text(
-                                isPremium ? "Member Premium" : "Member Reguler",
-                                style: GoogleFonts.poppins(
-                                  fontSize: _deviceWidth * 0.020,
-                                  color: isPremium ? Colors.white : orange,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                            child: Icon(
+                              Icons.trending_up_rounded,
+                              color: orange,
+                              size: _deviceWidth * 0.06,
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(width: _deviceWidth * 0.03),
-                  CircleAvatar(
-                    radius: _deviceWidth * 0.08,
-                    backgroundImage:
-                        const AssetImage("assets/images/avatar.jpg"),
-                  ),
-                ],
-              ),
-              SizedBox(height: _deviceHeight * 0.065),
-
-              // Card Ringkasan Saldo
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryCard(
-                          icon: Icons.savings_rounded,
-                          title: "Simpanan Wajib",
-                          amount: "Rp 120.000",
-                          color: Colors.blue.shade400,
-                        ),
+                    SizedBox(height: _deviceHeight * 0.005),
+                    Text(
+                      "Rp 170.000",
+                      style: GoogleFonts.poppins(
+                        fontSize: _deviceWidth * 0.08,
+                        fontWeight: FontWeight.w700,
+                        color: darkGreen,
                       ),
-                      SizedBox(width: _deviceWidth * 0.025),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          icon: Icons.trending_up_rounded,
-                          title: "Sisa Hasil Usaha",
-                          amount: "Rp 0",
-                          color: orange,
-                        ),
+                    ),
+                    SizedBox(height: _deviceHeight * 0.005),
+                    Text(
+                      "Simpanan: Rp 50.000",
+                      style: GoogleFonts.poppins(
+                        fontSize: _deviceWidth * 0.035,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade600,
                       ),
-                    ],
-                  ),
-                  SizedBox(height: _deviceHeight * 0.02),
-                  _buildSummaryCard(
-                    icon: Icons.account_balance_wallet_rounded,
-                    title: "Simpanan Pokok",
-                    amount: "Rp 50.000",
-                    color: Colors.green.shade400,
-                  ),
-                  SizedBox(height: _deviceHeight * 0.045),
-                ],
+                    ),
+                    SizedBox(height: _deviceHeight * 0.05),
+                    
+                    // Tombol Bayar Simpanan dan Join Penyertaan
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: darkGreen,
+                              padding: EdgeInsets.symmetric(
+                                vertical: _deviceHeight * 0.015,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              DetailPembayaranAwalMember.show(
+                                context,
+                                alertTitle: "Detail Pembayaran",
+                                alertMessage: "Pastikan data pembayaran sudah benar.",
+                                paymentTitle: "Pembayaran Simpanan Wajib",
+                                paymentHeader: "Informasi Pembayaran",
+                                paymentItems: [
+                                  PaymentItem(
+                                      title: "Simpanan Wajib", price: "Rp 120.000"),
+                                ],
+                                totalPrice: "Rp 120.000",
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            "Pembayaran Simpanan Wajib dikonfirmasi")),
+                                  );
+                                },
+                              );
+                            },
+                            child: AutoSizeText(
+                              "Bayar Simpanan",
+                              style: GoogleFonts.poppins(
+                                fontSize: _deviceWidth * 0.032,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 12,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: _deviceWidth * 0.03),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: orange,
+                              padding: EdgeInsets.symmetric(
+                                vertical: _deviceHeight * 0.015,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              showDialogJoinPenyertaan(
+                                context: context,
+                                onJoin: () {
+                                  showDialogPilihNominalPembayaran(context);
+                                },
+                                onCancel: () {},
+                              );
+                            },
+                            child: AutoSizeText(
+                              isplatinum ? "Top Up" : "Join Penyertaan",
+                              style: GoogleFonts.poppins(
+                                fontSize: _deviceWidth * 0.032,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 12,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-
-              // Banner join penyertaan
-              _buildPenyertaanBanner(),
+              
+              SizedBox(height: _deviceHeight * 0.03),
+              
+              // Banner Penyertaan
+              _buildPenyertaanBanner(isplatinum),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard({
-    required IconData icon,
-    required String title,
-    required String amount,
-    required Color color,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        showSummaryDialog(
-          icon: icon,
-          title: title,
-          amount: amount,
-          color: color,
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.grey.withOpacity(0.15),
-              spreadRadius: 2,
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                // ignore: deprecated_member_use
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: true,
-                  ),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      amount,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -474,19 +465,15 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icon
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 42),
               ),
               const SizedBox(height: 16),
-
-              // Judul
               Text(
                 title,
                 style: TextStyle(
@@ -496,8 +483,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Nominal
               Text(
                 amount,
                 style: TextStyle(
@@ -507,8 +492,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Tombol tutup
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
@@ -523,102 +506,66 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildPenyertaanBanner() {
+  Widget _buildPenyertaanBanner(bool isplatinum) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(_deviceWidth * 0.055),
+      padding: EdgeInsets.all(_deviceWidth * 0.04),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(_deviceWidth * 0.02),
-                decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
-                  color: orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Image.asset(
-                  "assets/icons/join_penyertaan.png",
-                  width: _deviceWidth * 0.09,
-                  height: _deviceWidth * 0.09,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              SizedBox(width: _deviceWidth * 0.03),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!isPremium) ...[
-                      AutoSizeText(
-                        "Ingin Mengikuti Penyertaan?",
-                        style: GoogleFonts.poppins(
-                          fontSize: _deviceWidth * 0.035,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 2,
-                        minFontSize: 12,
-                      ),
-                      SizedBox(height: _deviceHeight * 0.008),
-                    ],
-                    AutoSizeText(
-                      isPremium
-                          ? "Top up saldo minimal dimulai dari Rp500.000"
-                          : "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
-                      style: GoogleFonts.poppins(
-                        fontSize: _deviceWidth * 0.030,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 3,
-                      minFontSize: 11,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-          SizedBox(height: _deviceHeight * 0.015),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: orange,
-                padding: EdgeInsets.symmetric(
-                  vertical: _deviceHeight * 0.015,
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(_deviceWidth * 0.025),
+            decoration: BoxDecoration(
+              color: orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Image.asset(
+              "assets/icons/join_penyertaan.png",
+              width: _deviceWidth * 0.1,
+              height: _deviceWidth * 0.1,
+              fit: BoxFit.contain,
+            ),
+          ),
+          SizedBox(width: _deviceWidth * 0.03),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isplatinum)
+                  AutoSizeText(
+                    "Ingin Mengikuti Penyertaan?",
+                    style: GoogleFonts.poppins(
+                      fontSize: _deviceWidth * 0.035,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 2,
+                    minFontSize: 13,
+                  ),
+                SizedBox(height: _deviceHeight * 0.003),
+                AutoSizeText(
+                  isplatinum
+                      ? "Top up saldo minimal dimulai dari Rp500.000"
+                      : "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
+                  style: GoogleFonts.poppins(
+                    fontSize: _deviceWidth * 0.028,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                  maxLines: 2,
+                  minFontSize: 11,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 2,
-              ),
-              onPressed: () {
-                showDialogJoinPenyertaan(
-                  context: context,
-                  onJoin: () {
-                    showDialogPilihNominalPembayaran(context);
-                  },
-                  onCancel: () {},
-                );
-              },
-              child: AutoSizeText(
-                isPremium ? "Top Up Penyertaan" : "Join Penyertaan",
-                style: GoogleFonts.poppins(
-                  fontSize: _deviceWidth * 0.038,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                minFontSize: 14,
-              ),
+              ],
             ),
           ),
         ],

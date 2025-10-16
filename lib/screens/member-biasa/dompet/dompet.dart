@@ -24,72 +24,47 @@ class _DompetPageState extends State<DompetPage>
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
     {
       "tanggal": "15-04-2024 13:28:08",
       "metode": "BCA",
-      "nominal": "Rp. 200.000",
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000",
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000",
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000",
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000",
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000",
+      "nominal": "Rp. 200.000"
     },
   ];
 
@@ -97,7 +72,7 @@ class _DompetPageState extends State<DompetPage>
     {
       "tanggal": "14-04-2024 10:00:00",
       "metode": "Dana",
-      "nominal": "Rp. 150.000",
+      "nominal": "Rp. 150.000"
     },
   ];
 
@@ -120,16 +95,15 @@ class _DompetPageState extends State<DompetPage>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Navigasi ke DashboardPage dan hapus halaman sekarang dari stack
         Navigator.pushReplacementNamed(context, '/member-reguler');
-        return false; // mencegah pop default
+        return false;
       },
       child: Scaffold(
         backgroundColor: lightGreen,
         bottomNavigationBar: AppBottomNav(
           currentIndex: 2,
           onItemSelected: (i) {
-            if (i == 2) return; // already on Dompet
+            if (i == 2) return;
             if (!mounted) return;
             switch (i) {
               case 0:
@@ -145,174 +119,216 @@ class _DompetPageState extends State<DompetPage>
           },
         ),
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 15, 10, 2),
-                      child: Text(
-                        "Dompet",
-                        style: GoogleFonts.poppins(
-                          fontSize: 23,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Card PageView - tinggi dinamis berdasarkan konten
-                    SizedBox(
-                      height: 227,
-                      child: PageView(
-                        controller: _pageController,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentPage = index;
-                          });
-                        },
-                        children: [
-                          const TopUpCard(
-                            title: "Saldo Top Up",
-                            amount: "Rp. 10.000.000",
-                          ),
-                          TopUpCard(
-                            title: "Simpanan Wajib",
-                            amount: "Rp 500.000",
-                            onPressed: () {
-                              showTopUpSimpananWajibDialog(
-                                context: context,
-                                namaAnggota: "Andi Hidayat",
-                                tagihan: "April 2025",
-                                nominalTagihan: "Rp 120.000",
-                              );
-                            },
-                          ),
-                          const TopUpCard(
-                            title: "Simpanan Pokok",
-                            amount: "Rp. 50.000",
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Dot Indicator
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(3, (index) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: _currentPage == index ? 10 : 8,
-                          height: _currentPage == index ? 10 : 8,
-                          decoration: BoxDecoration(
-                            color: _currentPage == index
-                                ? darkGreen
-                                : Colors.grey[300],
-                            shape: BoxShape.circle,
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Card(
-                  color: grayTable,
-                  elevation: 2,
-                  margin: EdgeInsets.zero,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Riwayat Transaksi",
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 150,
-                              height: 40,
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: "Search..",
-                                  hintStyle: GoogleFonts.poppins(fontSize: 12),
-                                  prefixIcon: const Icon(
-                                    Icons.search,
-                                    size: 20,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                        // ======== BAGIAN ATAS (Saldo) ========
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 15, 10, 2),
+                                child: Text(
+                                  "Dompet",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        TabBar(
-                          controller: _tabController,
-                          labelColor: darkGreen,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorColor: darkGreen,
-                          labelStyle: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          tabs: const [
-                            Tab(text: "Menunggu Konfirmasi"),
-                            Tab(text: "Berhasil"),
-                            Tab(text: "Gagal"),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Expanded(
-                          child: TabBarView(
-                            controller: _tabController,
-                            children: [
-                              TransactionTable(
-                                status: "Menunggu Konfirmasi",
-                                data: menungguData,
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                height: 227,
+                                child: PageView(
+                                  controller: _pageController,
+                                  onPageChanged: (index) {
+                                    setState(() => _currentPage = index);
+                                  },
+                                  children: [
+                                    const TopUpCard(
+                                        title: "Saldo Top Up",
+                                        amount: "Rp. 10.000.000"),
+                                    TopUpCard(
+                                      title: "Simpanan Wajib",
+                                      amount: "Rp 500.000",
+                                      onPressed: () {
+                                        showTopUpSimpananWajibDialog(
+                                          context: context,
+                                          namaAnggota: "Andi Hidayat",
+                                          tagihan: "April 2025",
+                                          nominalTagihan: "Rp 120.000",
+                                        );
+                                      },
+                                    ),
+                                    const TopUpCard(
+                                        title: "Simpanan Pokok",
+                                        amount: "Rp. 50.000"),
+                                  ],
+                                ),
                               ),
-                              TransactionTable(
-                                status: "Berhasil",
-                                data: berhasilData,
-                              ),
-                              TransactionTable(
-                                status: "Gagal",
-                                data: gagalData,
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(3, (index) {
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 4),
+                                    width: _currentPage == index ? 10 : 8,
+                                    height: _currentPage == index ? 10 : 8,
+                                    decoration: BoxDecoration(
+                                      color: _currentPage == index
+                                          ? darkGreen
+                                          : Colors.grey[300],
+                                      shape: BoxShape.circle,
+                                    ),
+                                  );
+                                }),
                               ),
                             ],
+                          ),
+                        ),
+
+                        // ======== BAGIAN BAWAH (Riwayat Transaksi) ========
+                        Expanded(
+                          child: Card(
+                            color: Colors.white,
+                            elevation: 2,
+                            margin: EdgeInsets.zero,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Riwayat Transaksi",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 150,
+                                        height: 40,
+                                        child: TextField(
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: darkGreen,
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: "Search..",
+                                            hintStyle: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              color: darkGreen,
+                                            ),
+                                            prefixIcon: const Padding(
+                                              padding: EdgeInsets.only(
+                                                  left: 10, right: 6),
+                                              child: Icon(
+                                                Icons.search,
+                                                size: 18,
+                                                color: darkGreen,
+                                              ),
+                                            ),
+                                            prefixIconConstraints:
+                                                const BoxConstraints(
+                                              minWidth: 0,
+                                              minHeight: 0,
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    vertical: 10),
+                                            filled: true,
+                                            fillColor: lightGreen,
+
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: darkGreen, width: 1.5),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: darkGreen, width: 1.8),
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                  color: darkGreen, width: 1.5),
+                                            ),
+
+                                            isDense: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  TabBar(
+                                    controller: _tabController,
+                                    labelColor: darkGreen,
+                                    unselectedLabelColor: darkGreen,
+                                    indicatorColor: darkGreen,
+                                    labelStyle: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    tabs: const [
+                                      Tab(text: "Menunggu Konfirmasi"),
+                                      Tab(text: "Berhasil"),
+                                      Tab(text: "Gagal"),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: 400,
+                                    child: TabBarView(
+                                      controller: _tabController,
+                                      children: [
+                                        TransactionTable(
+                                            status: "Menunggu Konfirmasi",
+                                            data: menungguData),
+                                        TransactionTable(
+                                            status: "Berhasil",
+                                            data: berhasilData),
+                                        TransactionTable(
+                                            status: "Gagal", data: gagalData),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

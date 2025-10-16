@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import "package:flutter/material.dart";
+import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/services/user_services.dart';
-import 'package:koperasi_rsb/utils/shared_preferences_helper.dart';
-import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 
 class DataDiriPage extends StatefulWidget {
@@ -17,12 +19,12 @@ class DataDiriPage extends StatefulWidget {
 class _DataDiriPageState extends State<DataDiriPage> {
   final _formKey = GlobalKey<FormState>();
   final _userService = UserService();
-  final _nik = TextEditingController(text: '3501234567890124');
-  final _nama = TextEditingController(text: 'budiono siregar');
-  final _hp = TextEditingController(text: '6281234567891');
-  final _tempat = TextEditingController(text: 'Surabaya');
-  final _tanggal = TextEditingController(text: '03/03/2003');
-  
+  final _nik = TextEditingController();
+  final _nama = TextEditingController();
+  final _hp = TextEditingController();
+  final _tempat = TextEditingController();
+  final _tanggal = TextEditingController();
+
   bool _isLoading = false;
   bool _isFetching = true;
   String? _userId;
@@ -35,23 +37,22 @@ class _DataDiriPageState extends State<DataDiriPage> {
 
   Future<void> _loadUserData() async {
     setState(() => _isFetching = true);
-    
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final token = authProvider.token;
-      
+
       if (token != null) {
-        // Decode JWT untuk mendapatkan user ID
         final decodedToken = _decodeJwt(token);
         if (decodedToken != null) {
           _userId = decodedToken['id'] as String?;
-          
+
           if (_userId != null) {
             final result = await _userService.getUserById(
               userId: _userId!,
               token: token,
             );
-            
+
             if (result['success'] && result['data'] != null) {
               final userData = result['data'];
               if (mounted) {
@@ -68,11 +69,11 @@ class _DataDiriPageState extends State<DataDiriPage> {
         }
       }
     } catch (e) {
-      print('Error loading user data: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isFetching = false);
+      if (kDebugMode) {
+        print('Error loading user data: $e');
       }
+    } finally {
+      if (mounted) setState(() => _isFetching = false);
     }
   }
 
@@ -80,10 +81,10 @@ class _DataDiriPageState extends State<DataDiriPage> {
     try {
       final parts = token.split('.');
       if (parts.length != 3) return null;
-      
+
       String payload = parts[1];
       payload = payload.replaceAll('-', '+').replaceAll('_', '/');
-      
+
       switch (payload.length % 4) {
         case 0:
           break;
@@ -96,7 +97,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
         default:
           return null;
       }
-      
+
       final decoded = utf8.decode(base64.decode(payload));
       return jsonDecode(decoded) as Map<String, dynamic>;
     } catch (e) {
@@ -107,11 +108,12 @@ class _DataDiriPageState extends State<DataDiriPage> {
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime(2003, 3, 3),
-        firstDate: DateTime(1950),
-        lastDate: now,
-        helpText: 'Pilih Tanggal Lahir');
+      context: context,
+      initialDate: DateTime(2003, 3, 3),
+      firstDate: DateTime(1950),
+      lastDate: now,
+      helpText: 'Pilih Tanggal Lahir',
+    );
     if (picked != null) {
       if (!mounted) return;
       _tanggal.text =
@@ -133,11 +135,10 @@ class _DataDiriPageState extends State<DataDiriPage> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
       final token = authProvider.token;
 
-      if (token == null) {
-        throw Exception('Token tidak ditemukan');
-      }
+      if (token == null) throw Exception('Token tidak ditemukan');
 
       final result = await _userService.updateDataDiri(
         userId: _userId!,
@@ -152,13 +153,20 @@ class _DataDiriPageState extends State<DataDiriPage> {
       if (!mounted) return;
 
       if (result['success']) {
+        await userProvider.refreshUserProfile(
+          userId: _userId!,
+          token: token,
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Data Diri berhasil disimpan'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context);
+
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -176,9 +184,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
         ),
       );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -192,119 +198,190 @@ class _DataDiriPageState extends State<DataDiriPage> {
     super.dispose();
   }
 
+  late double _deviceWidth;
+
   @override
   Widget build(BuildContext context) {
+    _deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: lightGreen,
       appBar: AppBar(
-        title: const Text('Data Diri'),
         backgroundColor: lightGreen,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Data Diri',
+          style: GoogleFonts.poppins(
+            fontSize: _deviceWidth * 0.05,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
       ),
       body: _isFetching
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
                     _card(
-                        child: Column(
-                      children: [
-                        CustomTextFormField(
-                          label: 'NIK',
-                          hint: 'Nomor Induk Kependudukan',
-                          controller: _nik,
-                          keyboardType: TextInputType.number,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Wajib diisi';
-                            if (v.length != 16) return 'Harus 16 digit';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 18),
-                        CustomTextFormField(
-                          label: 'Nama Lengkap',
-                          hint: 'Nama sesuai KTP',
-                          controller: _nama,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Wajib diisi';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 18),
-                        CustomTextFormField(
-                          label: 'No. Handphone',
-                          hint: '08xxxxxxxx',
-                          controller: _hp,
-                          keyboardType: TextInputType.number,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Wajib diisi';
-                            if (v.length < 10) return 'Minimal 10 digit';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 18),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextFormField(
-                                label: 'Tempat Lahir',
-                                hint: 'Kota',
-                                controller: _tempat,
-                                validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Wajib diisi';
-                                  return null;
-                                },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 🔹 Bagian dark green (menyatu dengan card)
+                          Container(
+                            width: double.infinity,
+                            decoration: const BoxDecoration(
+                              color: darkGreen,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: _pickDate,
-                                child: AbsorbPointer(
-                                  child: CustomTextFormField(
-                                    label: 'Tanggal Lahir',
-                                    hint: 'DD/MM/YYYY',
-                                    controller: _tanggal,
-                                    validator: (v) {
-                                      if (v == null || v.isEmpty)
-                                        return 'Wajib diisi';
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    )),
-                    const SizedBox(height: 28),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12))),
-                        onPressed: _isLoading ? null : _saveData,
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                            padding: const EdgeInsets.fromLTRB(10, 50, 10, 20),
+                            child: Column(
+                              children: [
+                                // 🪪 Ganti dari foto ke ikon badge
+                                const Icon(
+                                  Icons.badge_rounded,
+                                  size: 70,
                                   color: Colors.white,
                                 ),
-                              )
-                            : Text('SIMPAN',
-                                style: GoogleFonts.poppins(
+                                const SizedBox(height: 12),
+                                Text(
+                                  "Ubah Data Diri",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: _deviceWidth * 0.05,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white)),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Divider(
+                                  color: Colors.white,
+                                  thickness: 1,
+                                  height: 30,
+                                  indent: _deviceWidth * 0.25,
+                                  endIndent:  _deviceWidth * 0.25, 
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 2),
+
+                          // 🔹 Form bagian putih
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 20),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(16),
+                                bottomRight: Radius.circular(16),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                CustomTextFormField(
+                                  label: 'NIK',
+                                  hint: 'Nomor Induk Kependudukan',
+                                  controller: _nik,
+                                  keyboardType: TextInputType.number,
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Wajib diisi';
+                                    }
+                                    if (v.length != 16) {
+                                      return 'Harus 16 digit';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 18),
+                                CustomTextFormField(
+                                  label: 'Nama Lengkap',
+                                  hint: 'Nama sesuai KTP',
+                                  controller: _nama,
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Wajib diisi';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 18),
+                                CustomTextFormField(
+                                  label: 'No. Handphone',
+                                  hint: '08xxxxxxxx',
+                                  controller: _hp,
+                                  keyboardType: TextInputType.number,
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Wajib diisi';
+                                    }
+                                    if (v.length < 10) {
+                                      return 'Minimal 10 digit';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 18),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: CustomTextFormField(
+                                        label: 'Tempat Lahir',
+                                        hint: 'Kota',
+                                        controller: _tempat,
+                                        validator: (v) {
+                                          if (v == null || v.isEmpty) {
+                                            return 'Wajib diisi';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: _pickDate,
+                                        child: AbsorbPointer(
+                                          child: CustomTextFormField(
+                                            label: 'Tanggal Lahir',
+                                            hint: 'DD/MM/YYYY',
+                                            controller: _tanggal,
+                                            validator: (v) {
+                                              if (v == null || v.isEmpty) {
+                                                return 'Wajib diisi';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 35),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: CustomButton(
+                                    text:
+                                        _isLoading ? 'Menyimpan...' : 'SIMPAN',
+                                    onPressed: _isLoading ? () {} : _saveData,
+                                    color: darkGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -316,11 +393,17 @@ class _DataDiriPageState extends State<DataDiriPage> {
 
   Widget _card({required Widget child}) => Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: strokeGray),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: child,
       );

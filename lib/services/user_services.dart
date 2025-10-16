@@ -5,6 +5,92 @@ import 'package:koperasi_rsb/config/api_config.dart';
 import 'package:koperasi_rsb/config/api_endpoint/api_endpoints.dart';
 
 class UserService {
+  // Verify OTP
+  Future<Map<String, dynamic>> verifyOtp({
+    required String token,
+    required String otp,
+  }) async {
+    try {
+      print('=== VERIFY OTP ===');
+      print('URL: ${UserEndpoints.verifyOtp}');
+      print('Token: ${token.substring(0, 20)}...');
+      print('OTP: $otp');
+      print('==================');
+
+      final response = await http.post(
+        Uri.parse(UserEndpoints.verifyOtp),
+        headers: ApiConfig.getAuthHeaders(token),
+        body: jsonEncode({'otp': otp}),
+      );
+
+      print('=== VERIFY OTP RESPONSE ===');
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+      print('===========================');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'message': data['message'] ?? 'OTP berhasil diverifikasi',
+        };
+      } else {
+        final error = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': error['message'] ?? 'Verifikasi OTP gagal',
+        };
+      }
+    } catch (e) {
+      print('=== VERIFY OTP ERROR ===');
+      print('Exception: $e');
+      print('========================');
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: ${e.toString()}',
+      };
+    }
+  }
+
+  // Get user by ID
+  Future<Map<String, dynamic>> getUserById({
+    required String userId,
+    required String token,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(UserEndpoints.getUserById(userId)),
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+
+      print('=== GET USER BY ID ===');
+      print('URL: ${UserEndpoints.getUserById(userId)}');
+      print('Status Code: ${response.statusCode}');
+      print('Response: ${response.body}');
+      print('=====================');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': data['data']
+        };
+      } else {
+        final error = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': error['message'] ?? 'Gagal mengambil data user'
+        };
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: ${e.toString()}'
+      };
+    }
+  }
+
   // Update user data (termasuk foto_diri, foto_ktp, foto_profile)
   Future<Map<String, dynamic>> updateUser({
     required String userId,
@@ -173,44 +259,5 @@ class UserService {
       fotoDiri: fotoDiri,
       fotoKtp: fotoKtp,
     );
-  }
-
-  // Get user by ID
-  Future<Map<String, dynamic>> getUserById({
-    required String userId,
-    required String token,
-  }) async {
-    try {
-      final response = await http.get(
-        Uri.parse(UserEndpoints.getUserById(userId)),
-        headers: ApiConfig.getAuthHeaders(token),
-      );
-
-      print('=== GET USER BY ID ===');
-      print('URL: ${UserEndpoints.getUserById(userId)}');
-      print('Status Code: ${response.statusCode}');
-      print('Response: ${response.body}');
-      print('=====================');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'data': data['data']
-        };
-      } else {
-        final error = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': error['message'] ?? 'Gagal mengambil data user'
-        };
-      }
-    } catch (e) {
-      print('Exception: $e');
-      return {
-        'success': false,
-        'message': 'Terjadi kesalahan: ${e.toString()}'
-      };
-    }
   }
 }

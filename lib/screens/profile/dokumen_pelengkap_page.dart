@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/form/uploadFile-Form.dart';
@@ -19,7 +20,7 @@ class DokumenPelengkapPage extends StatefulWidget {
 class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
   final _formKey = GlobalKey<FormState>();
   final _userService = UserService();
-  
+
   File? _ktpFile;
   File? _fotoFile;
   bool _ktpPicked = false;
@@ -29,6 +30,8 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
   String? _userId;
   String? _existingKtp;
   String? _existingFoto;
+
+  late double _deviceWidth;
 
   @override
   void initState() {
@@ -46,22 +49,22 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
 
   Future<void> _loadUserData() async {
     setState(() => _isFetching = true);
-    
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final token = authProvider.token;
-      
+
       if (token != null) {
         final decodedToken = _decodeJwt(token);
         if (decodedToken != null) {
           _userId = decodedToken['id'] as String?;
-          
+
           if (_userId != null) {
             final result = await _userService.getUserById(
               userId: _userId!,
               token: token,
             );
-            
+
             if (result['success'] && result['data'] != null) {
               final userData = result['data'];
               if (mounted) {
@@ -69,7 +72,8 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
                   _existingKtp = _getFullUrl(userData['foto_ktp']);
                   _existingFoto = _getFullUrl(userData['foto_diri']);
                   _ktpPicked = _existingKtp != null && _existingKtp!.isNotEmpty;
-                  _fotoPicked = _existingFoto != null && _existingFoto!.isNotEmpty;
+                  _fotoPicked =
+                      _existingFoto != null && _existingFoto!.isNotEmpty;
                   _ktpFile = null;
                   _fotoFile = null;
                 });
@@ -98,10 +102,10 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
     try {
       final parts = token.split('.');
       if (parts.length != 3) return null;
-      
+
       String payload = parts[1];
       payload = payload.replaceAll('-', '+').replaceAll('_', '/');
-      
+
       switch (payload.length % 4) {
         case 0:
           break;
@@ -114,7 +118,7 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
         default:
           return null;
       }
-      
+
       final decoded = utf8.decode(base64.decode(payload));
       return jsonDecode(decoded) as Map<String, dynamic>;
     } catch (e) {
@@ -186,7 +190,8 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          Icon(Icons.error_outline,
+                              size: 48, color: Colors.red),
                           SizedBox(height: 8),
                           Text('Gagal memuat gambar'),
                         ],
@@ -205,7 +210,7 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
   Widget _buildFilePreview(String? fileUrl, String label, File? localFile) {
     final hasNewFile = localFile != null;
     final hasExistingFile = fileUrl != null && fileUrl.isNotEmpty;
-    
+
     if (!hasNewFile && !hasExistingFile) {
       return const SizedBox.shrink();
     }
@@ -251,9 +256,9 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
         ],
       );
     }
-    
+
     final isPdf = fileUrl!.toLowerCase().endsWith('.pdf');
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -305,11 +310,13 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.picture_as_pdf, size: 48, color: Colors.red),
+                          Icon(Icons.picture_as_pdf,
+                              size: 48, color: Colors.red),
                           SizedBox(height: 8),
                           Text('File PDF'),
                           SizedBox(height: 4),
-                          Text('Tap untuk membuka', style: TextStyle(fontSize: 12)),
+                          Text('Tap untuk membuka',
+                              style: TextStyle(fontSize: 12)),
                         ],
                       ),
                     ),
@@ -342,7 +349,8 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.error_outline, color: Colors.red, size: 32),
+                              Icon(Icons.error_outline,
+                                  color: Colors.red, size: 32),
                               SizedBox(height: 8),
                               Text('Gagal memuat gambar'),
                             ],
@@ -427,102 +435,151 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
 
   @override
   Widget build(BuildContext context) {
+    _deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: lightGreen,
       appBar: AppBar(
-        title: const Text('Dokumen Pelengkap'),
         backgroundColor: lightGreen,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Dokumen Pelengkap',
+          style: GoogleFonts.poppins(
+            fontSize: _deviceWidth * 0.05,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
       ),
       body: _isFetching
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
                     _card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          FileUploadForm(
-                            label: 'Foto KTP',
-                            isRequired: true,
-                            descriptions: const [
-                              '• Upload foto KTP jelas dan asli',
-                              '• Maksimum ukuran 10 MB',
-                              '• Format: JPG, JPEG, PNG, PDF'
-                            ],
-                            existingFileUrl: _existingKtp,
-                            onFilePicked: (file) {
-                              if (!mounted) return;
-                              setState(() {
-                                _ktpFile = file;
-                                _ktpPicked = file != null || (_existingKtp != null && _existingKtp!.isNotEmpty);
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildFilePreview(_existingKtp, 'Foto KTP', _ktpFile),
-                          
-                          const SizedBox(height: 24),
-                          const Divider(),
-                          const SizedBox(height: 24),
-                          
-                          FileUploadForm(
-                            label: 'Foto Diri',
-                            isRequired: true,
-                            descriptions: const [
-                              '• Upload foto wajah jelas',
-                              '• Maksimum ukuran 10 MB'
-                            ],
-                            existingFileUrl: _existingFoto,
-                            onFilePicked: (file) {
-                              if (!mounted) return;
-                              setState(() {
-                                _fotoFile = file;
-                                _fotoPicked = file != null || (_existingFoto != null && _existingFoto!.isNotEmpty);
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildFilePreview(_existingFoto, 'Foto Diri', _fotoFile),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: (_ktpFile != null || _fotoFile != null)
-                              ? Colors.green
-                              : Colors.grey,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: (_ktpFile != null || _fotoFile != null) && !_isLoading
-                            ? _saveData
-                            : null,
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(
-                                'SIMPAN',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
+                          // 🔹 Bagian dark green (menyatu dengan card)
+                          Container(
+                            width: double.infinity,
+                            decoration: const BoxDecoration(
+                              color: darkGreen,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
                               ),
+                            ),
+                            padding: const EdgeInsets.fromLTRB(10, 50, 10, 20),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.description_rounded,
+                                  size: 70,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  "Isi Dokumen Pelengkap",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: _deviceWidth * 0.05,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Divider(
+                                  color: Colors.white,
+                                  thickness: 1,
+                                  height: 30,
+                                  indent: _deviceWidth * 0.25,
+                                  endIndent: _deviceWidth * 0.25,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 2),
+
+                          // 🔹 Form bagian putih
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 20),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(16),
+                                bottomRight: Radius.circular(16),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                FileUploadForm(
+                                  label: 'Foto KTP',
+                                  isRequired: true,
+                                  descriptions: const [
+                                    '• Upload foto KTP jelas dan asli',
+                                    '• Maksimum ukuran 10 MB',
+                                    '• Format: JPG, JPEG, PNG, PDF'
+                                  ],
+                                  existingFileUrl: _existingKtp,
+                                  onFilePicked: (file) {
+                                    if (!mounted) return;
+                                    setState(() {
+                                      _ktpFile = file;
+                                      _ktpPicked = file != null ||
+                                          (_existingKtp != null &&
+                                              _existingKtp!.isNotEmpty);
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                _buildFilePreview(
+                                    _existingKtp, 'Foto KTP', _ktpFile),
+                                const SizedBox(height: 24),
+                                const Divider(),
+                                const SizedBox(height: 24),
+                                FileUploadForm(
+                                  label: 'Foto Diri',
+                                  isRequired: true,
+                                  descriptions: const [
+                                    '• Upload foto wajah jelas',
+                                    '• Maksimum ukuran 10 MB'
+                                  ],
+                                  existingFileUrl: _existingFoto,
+                                  onFilePicked: (file) {
+                                    if (!mounted) return;
+                                    setState(() {
+                                      _fotoFile = file;
+                                      _fotoPicked = file != null ||
+                                          (_existingFoto != null &&
+                                              _existingFoto!.isNotEmpty);
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                _buildFilePreview(
+                                    _existingFoto, 'Foto Diri', _fotoFile),
+                                const SizedBox(height: 35),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: CustomButton(
+                                    text:
+                                        _isLoading ? 'Menyimpan...' : 'SIMPAN',
+                                    onPressed: _isLoading ? () {} : _saveData,
+                                    color: darkGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -534,11 +591,17 @@ class _DokumenPelengkapPageState extends State<DokumenPelengkapPage> {
 
   Widget _card({required Widget child}) => Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: strokeGray),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: child,
       );
