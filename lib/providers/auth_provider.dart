@@ -4,6 +4,8 @@ import 'package:koperasi_rsb/models/user_model.dart';
 import 'package:koperasi_rsb/models/payment-member_model.dart';
 import 'package:koperasi_rsb/utils/shared_preferences_helper.dart';
 import 'package:koperasi_rsb/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _token;
@@ -306,54 +308,76 @@ class AuthProvider with ChangeNotifier {
   }
 
   // LOGOUT
-  Future<bool> logout({bool keepCredentials = false}) async {
-    setLoading(true);
-    setError(null);
+  Future<bool> logout({bool keepCredentials = false, BuildContext? context}) async {
+  setLoading(true);
+  setError(null);
 
-    try {
-      final result = await AuthService.logout(token: _token);
+  try {
+    final result = await AuthService.logout(token: _token);
 
-      setLoading(false);
+    setLoading(false);
 
-      // Clear state
-      _token = null;
-      _userStatus = null;
-      _userRole = null;
-      _userId = null;
-      _registrationData = {};
-      _errorMessage = null;
-      
-      // Clear data from SharedPreferences
-      if (keepCredentials && _rememberMe) {
-        await SharedPreferencesHelper.clearAllExceptCredentials();
-        print('🔓 Logout: Credentials kept');
-      } else {
-        await SharedPreferencesHelper.clearAll();
-        _rememberMe = false;
-        print('🗑️ Logout: All data cleared');
+    // Clear state
+    _token = null;
+    _userStatus = null;
+    _userRole = null;
+    _userId = null;
+    _registrationData = {};
+    _errorMessage = null;
+    
+    // Clear topup data from TopupProvider if context is provided
+    if (context != null) {
+      try {
+        final topupProvider = Provider.of<TopupProvider>(context, listen: false);
+        topupProvider.clearTopupData();
+        print('🗑️ Topup data cleared');
+      } catch (e) {
+        print('⚠️ Could not clear topup data: $e');
       }
-      
-      notifyListeners();
-      return result['success'] == true;
-    } catch (e) {
-      // Clear state even on error
-      _token = null;
-      _userStatus = null;
-      _userRole = null;
-      _userId = null;
-      _registrationData = {};
-      setError('Terjadi kesalahan: $e');
-      setLoading(false);
-      
-      if (keepCredentials && _rememberMe) {
-        await SharedPreferencesHelper.clearAllExceptCredentials();
-      } else {
-        await SharedPreferencesHelper.clearAll();
-        _rememberMe = false;
-      }
-      
-      notifyListeners();
-      return false;
     }
+    
+    // Clear data from SharedPreferences
+    if (keepCredentials && _rememberMe) {
+      await SharedPreferencesHelper.clearAllExceptCredentials();
+      print('🔓 Logout: Credentials kept');
+    } else {
+      await SharedPreferencesHelper.clearAll();
+      _rememberMe = false;
+      print('🗑️ Logout: All data cleared');
+    }
+    
+    notifyListeners();
+    return result['success'] == true;
+  } catch (e) {
+    // Clear state even on error
+    _token = null;
+    _userStatus = null;
+    _userRole = null;
+    _userId = null;
+    _registrationData = {};
+    
+    // Clear topup data
+    if (context != null) {
+      try {
+        final topupProvider = Provider.of<TopupProvider>(context, listen: false);
+        topupProvider.clearTopupData();
+      } catch (e) {
+        print('⚠️ Could not clear topup data: $e');
+      }
+    }
+    
+    setError('Terjadi kesalahan: $e');
+    setLoading(false);
+    
+    if (keepCredentials && _rememberMe) {
+      await SharedPreferencesHelper.clearAllExceptCredentials();
+    } else {
+      await SharedPreferencesHelper.clearAll();
+      _rememberMe = false;
+    }
+    
+    notifyListeners();
+    return false;
   }
+}
 }
