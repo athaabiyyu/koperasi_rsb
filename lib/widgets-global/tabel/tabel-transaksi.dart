@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:koperasi_rsb/widgets-global/colors.dart'; // biar bisa pakai darkGreen
+import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 class TransactionTable extends StatelessWidget {
   final String status;
@@ -40,7 +40,7 @@ class TransactionTable extends StatelessWidget {
                   child: Text(
                     'Tanggal',
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -49,9 +49,21 @@ class TransactionTable extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: Text(
-                    'Metode Pembayaran',
+                    'Nama Bank',
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Jenis Transaksi',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -63,7 +75,7 @@ class TransactionTable extends StatelessWidget {
                   child: Text(
                     'Nominal',
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
@@ -120,6 +132,18 @@ class TransactionTable extends StatelessWidget {
                               flex: 2,
                               child: Text(
                                 tx['metode'] ?? '-',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                tx['jenis'] ?? '-',
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,

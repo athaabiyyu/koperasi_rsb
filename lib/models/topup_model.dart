@@ -49,15 +49,15 @@ class TopupModel {
     return TopupModel(
       id: topupData['id'] ?? '',
       idWallet: topupData['id_wallet'] ?? '',
-      nama: topupData['nama'],                              // ✅ Parse nama
-      namaBank: topupData['nama_bank'],                     // ✅ Parse nama_bank
-      noRekening: topupData['no_rekening'],                 // ✅ Parse no_rekening
-      namaPemilikRekening: topupData['nama_pemilik_rekening'], // ✅ Parse nama_pemilik_rekening
+      nama: topupData['nama'],                              
+      namaBank: topupData['nama_bank'],                     
+      noRekening: topupData['no_rekening'],                 
+      namaPemilikRekening: topupData['nama_pemilik_rekening'], 
       nominal: (topupData['nominal'] ?? 0).toDouble(),
-      jenis: topupData['jenis'],                            // ✅ Parse jenis (KEY FIELD!)
-      status: topupData['status'] ?? 'pending',
+      jenis: topupData['jenis'],                            
+      status: topupData['status'] ?? 'MENUNGGU KONFIRMASI',
       paymentMethod: topupData['payment_method'],
-      paymentProof: topupData['bukti_pembayaran'] ?? topupData['payment_proof'], // ✅ Handle both field names
+      paymentProof: topupData['bukti_pembayaran'] ?? topupData['payment_proof'],
       createdAt: DateTime.parse(topupData['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: topupData['updated_at'] != null 
           ? DateTime.parse(topupData['updated_at']) 
@@ -67,31 +67,44 @@ class TopupModel {
     );
   }
 
-  bool get isSuccess => status.toLowerCase() == 'success' || status.toLowerCase() == 'berhasil';
-  bool get isPending => status.toLowerCase() == 'pending' || status.toLowerCase() == 'menunggu';
+  // ✅ FIXED: Handle uppercase status dari backend
+  bool get isSuccess => status.toUpperCase() == 'SUKSES' || 
+                        status.toLowerCase() == 'success' || 
+                        status.toLowerCase() == 'berhasil';
+  
+  bool get isPending => status.toUpperCase() == 'MENUNGGU KONFIRMASI' || 
+                        status.toUpperCase() == 'PENDING' ||
+                        status.toLowerCase() == 'menunggu' ||
+                        status.toLowerCase() == 'pending';
+
+  bool get isFailed => status.toUpperCase() == 'GAGAL' || 
+                       status.toUpperCase() == 'FAILED' ||
+                       status.toLowerCase() == 'gagal' ||
+                       status.toLowerCase() == 'failed';
   
   String get displayStatus {
-    switch (status.toLowerCase()) {
-      case 'success':
-      case 'berhasil':
+    switch (status.toUpperCase()) {
+      case 'SUKSES':
+      case 'SUCCESS':
+      case 'BERHASIL':
         return 'Berhasil';
-      case 'pending':
-      case 'menunggu':
+      case 'MENUNGGU KONFIRMASI':
+      case 'PENDING':
+      case 'MENUNGGU':
         return 'Menunggu Konfirmasi';
-      case 'failed':
-      case 'gagal':
+      case 'GAGAL':
+      case 'FAILED':
         return 'Gagal';
       default:
         return status;
     }
   }
 
-  // ✅ ADDED: Display jenis transaksi yang dinamis
   String get displayTransactionType {
     if (jenis != null && jenis!.isNotEmpty) {
       return jenis!;
     }
-    return 'Top Up'; // fallback
+    return 'Top Up';
   }
 
   String get displayDate {
@@ -125,7 +138,7 @@ class WalletData {
     return WalletData(
       id: json['id'] ?? '',
       idUser: json['id_user'] ?? '',
-      balance: (json['saldo'] ?? json['balance'] ?? 0).toDouble(), // ✅ Handle both field names
+      balance: (json['saldo'] ?? json['balance'] ?? 0).toDouble(),
     );
   }
 }

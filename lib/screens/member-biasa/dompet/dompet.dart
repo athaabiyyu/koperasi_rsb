@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/widgets-global/card/top-up-card.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-topUp-saldo-simpanan-wajib.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/models/topup_model.dart';
 
 class DompetPage extends StatefulWidget {
   const DompetPage({super.key});
@@ -19,83 +23,119 @@ class _DompetPageState extends State<DompetPage>
   int _currentPage = 0;
 
   late final TabController _tabController;
-
   late double _deviceWidth;
 
-  final List<Map<String, String>> menungguData = const [
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-    {
-      "tanggal": "15-04-2024 13:28:08",
-      "metode": "BCA",
-      "nominal": "Rp. 200.000"
-    },
-  ];
-
-  final List<Map<String, String>> berhasilData = const [
-    {
-      "tanggal": "14-04-2024 10:00:00",
-      "metode": "Dana",
-      "nominal": "Rp. 150.000"
-    },
-  ];
-
-  final List<Map<String, String>> gagalData = const [{}];
+  // Search controller
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // Fetch topup history saat page load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final token = _getTokenFromContext();
+      if (token != null && token.isNotEmpty) {
+        context.read<TopupProvider>().fetchTopupHistory(token);
+        print('📲 Fetching topup history with token: ${token.substring(0, 20)}...');
+      } else {
+        print('⚠️ Token not available, cannot fetch topup history');
+        context.read<TopupProvider>().setError('Token tidak tersedia');
+      }
+    });
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  // Helper untuk ambil token dari AuthProvider
+  String? _getTokenFromContext() {
+    try {
+      final authProvider = context.read<AuthProvider>();
+      return authProvider.token;
+    } catch (e) {
+      print('Error getting token: $e');
+      return null;
+    }
+  }
+
+  // Filter data berdasarkan status
+  List<Map<String, String>> _filterDataByStatus(
+    List<TopupModel> topups,
+    String status,
+  ) {
+    print('\n🔍 === DEBUG TOPUP DATA ===');
+    for (var i = 0; i < topups.length; i++) {
+      print('Topup $i:');
+      print('  - status: ${topups[i].status}');
+      print('  - isPending: ${topups[i].isPending}');
+      print('  - isSuccess: ${topups[i].isSuccess}');
+      print('  - jenis: ${topups[i].jenis}');
+      print('  - namaBank: ${topups[i].namaBank}');
+      print('  - displayDate: ${topups[i].displayDate}');
+      print('  - displayAmount: ${topups[i].displayAmount}');
+    }
+    print('=== END DEBUG ===\n');
+
+    List<TopupModel> filtered = [];
+
+    if (status == "Menunggu Konfirmasi") {
+      filtered = topups.where((t) => t.isPending).toList();
+    } else if (status == "Berhasil") {
+      filtered = topups.where((t) => t.isSuccess).toList();
+    } else if (status == "Gagal") {
+      filtered = topups
+          .where((t) =>
+              t.status.toLowerCase() == 'failed' ||
+              t.status.toLowerCase() == 'gagal')
+          .toList();
+    }
+
+    print('🔍 Filter "$status": ${filtered.length} items');
+    for (var topup in filtered) {
+      print('  - Status: ${topup.status}, Jenis: ${topup.jenis}, Bank: ${topup.namaBank}');
+    }
+
+    // Convert TopupModel ke Map<String, String> untuk TransactionTable
+    final result = filtered
+        .map((topup) => {
+              "tanggal": topup.displayDate,
+              "metode": topup.namaBank ?? "N/A",
+              "jenis": topup.displayTransactionType,
+              "nominal": topup.displayAmount,
+            })
+        .toList();
+    
+    print('📊 Converted to Map: ${result.length} items');
+    return result;
+  }
+
+  // Filter berdasarkan search query
+  List<Map<String, String>> _searchFilter(
+    List<Map<String, String>> data,
+    String query,
+  ) {
+    if (query.isEmpty) return data;
+
+    return data
+        .where((item) =>
+            item['tanggal']!.contains(query) ||
+            item['metode']!.contains(query) ||
+            item['jenis']!.contains(query) ||
+            item['nominal']!.contains(query))
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
+
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, '/member-reguler');
@@ -233,6 +273,10 @@ class _DompetPageState extends State<DompetPage>
                                         width: 150,
                                         height: 40,
                                         child: TextField(
+                                          controller: _searchController,
+                                          onChanged: (value) {
+                                            setState(() {});
+                                          },
                                           style: GoogleFonts.poppins(
                                             fontSize: 12,
                                             color: darkGreen,
@@ -305,18 +349,74 @@ class _DompetPageState extends State<DompetPage>
                                   const SizedBox(height: 12),
                                   SizedBox(
                                     height: 400,
-                                    child: TabBarView(
-                                      controller: _tabController,
-                                      children: [
-                                        TransactionTable(
-                                            status: "Menunggu Konfirmasi",
-                                            data: menungguData),
-                                        TransactionTable(
-                                            status: "Berhasil",
-                                            data: berhasilData),
-                                        TransactionTable(
-                                            status: "Gagal", data: gagalData),
-                                      ],
+                                    child: Consumer<TopupProvider>(
+                                      builder: (context, provider, child) {
+                                        if (provider.isLoading) {
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              color: darkGreen,
+                                            ),
+                                          );
+                                        }
+
+                                        if (provider.errorMessage != null) {
+                                          return Center(
+                                            child: Text(
+                                              provider.errorMessage ??
+                                                  'Terjadi kesalahan',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 14,
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        // Filter data by tab
+                                        final menungguData = _filterDataByStatus(
+                                          provider.topups,
+                                          "Menunggu Konfirmasi",
+                                        );
+                                        final berhasilData = _filterDataByStatus(
+                                          provider.topups,
+                                          "Berhasil",
+                                        );
+                                        final gagalData = _filterDataByStatus(
+                                          provider.topups,
+                                          "Gagal",
+                                        );
+
+                                        // Apply search filter
+                                        final searchQuery =
+                                            _searchController.text;
+
+                                        return TabBarView(
+                                          controller: _tabController,
+                                          children: [
+                                            TransactionTable(
+                                              status: "Menunggu Konfirmasi",
+                                              data: _searchFilter(
+                                                menungguData,
+                                                searchQuery,
+                                              ),
+                                            ),
+                                            TransactionTable(
+                                              status: "Berhasil",
+                                              data: _searchFilter(
+                                                berhasilData,
+                                                searchQuery,
+                                              ),
+                                            ),
+                                            TransactionTable(
+                                              status: "Gagal",
+                                              data: _searchFilter(
+                                                gagalData,
+                                                searchQuery,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
