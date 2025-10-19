@@ -150,14 +150,6 @@ class _LoginPageState extends State<LoginPage> {
             }
 
             if (!mounted) return;
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Login berhasil! Selamat datang.'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
-            );
             showDialog(
               context: context,
               barrierDismissible: false,
