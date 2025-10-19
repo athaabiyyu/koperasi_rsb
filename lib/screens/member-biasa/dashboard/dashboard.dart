@@ -79,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildTransactionHistoryCard() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+      padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.all(_deviceWidth * 0.04),
