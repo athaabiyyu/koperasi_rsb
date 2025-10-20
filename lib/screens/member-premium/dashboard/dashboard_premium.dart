@@ -287,45 +287,54 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
             ],
           ),
           SizedBox(height: _deviceHeight * 0.008),
-          SizedBox(
-            height: 190,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _tokenUsage.length,
-              separatorBuilder: (_, __) =>
-                  SizedBox(width: _deviceWidth * 0.035),
-              itemBuilder: (context, index) {
-                final item = _tokenUsage[index];
-                final isSelesai = (item['status'] as String).contains(
-                  'Selesai',
-                );
-                return _TokenUsageCard(
-                  title: item['title'],
-                  owner: item['owner'],
-                  status: item['status'],
-                  modal: item['modal'],
-                  hasil: item['hasil'],
-                  modalLabel: item['modalLabel'],
-                  hasilLabel: item['hasilLabel'],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProjectDetailPage(
-                          imageUrl: item['imageUrl'],
-                          status: item['status'],
-                          title: item['title'],
-                          owner: item['owner'],
-                          collectedToken: item['hasil'],
-                          remainingDays: isSelesai ? 0 : 12,
-                          maxToken: item['modal'],
-                        ),
-                      ),
+          Builder(
+            builder: (context) {
+              // Responsive list/card height based on device height
+              final double listHeight = (_deviceHeight * 0.24)
+                  .clamp(180, 230)
+                  .toDouble();
+              return SizedBox(
+                height: listHeight,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _tokenUsage.length,
+                  separatorBuilder: (_, __) =>
+                      SizedBox(width: _deviceWidth * 0.035),
+                  itemBuilder: (context, index) {
+                    final item = _tokenUsage[index];
+                    final isSelesai = (item['status'] as String).contains(
+                      'Selesai',
+                    );
+                    return _TokenUsageCard(
+                      title: item['title'],
+                      owner: item['owner'],
+                      status: item['status'],
+                      modal: item['modal'],
+                      hasil: item['hasil'],
+                      modalLabel: item['modalLabel'],
+                      hasilLabel: item['hasilLabel'],
+                      cardHeight: listHeight,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProjectDetailPage(
+                              imageUrl: item['imageUrl'],
+                              status: item['status'],
+                              title: item['title'],
+                              owner: item['owner'],
+                              collectedToken: item['hasil'],
+                              remainingDays: isSelesai ? 0 : 12,
+                              maxToken: item['modal'],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -732,6 +741,7 @@ class _TokenUsageCard extends StatelessWidget {
   final int hasil;
   final String modalLabel;
   final String hasilLabel;
+  final double cardHeight;
   final VoidCallback onTap;
 
   const _TokenUsageCard({
@@ -743,6 +753,7 @@ class _TokenUsageCard extends StatelessWidget {
     required this.hasil,
     required this.modalLabel,
     required this.hasilLabel,
+    required this.cardHeight,
     required this.onTap,
   }) : super(key: key);
 
@@ -750,8 +761,9 @@ class _TokenUsageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     const double radius = 12;
-    const double gapS = 8;
-    const double gapM = 12;
+    // const double gapS = 8; // no longer used
+    final double deviceHeight = MediaQuery.of(context).size.height;
+    final double gapM = (deviceHeight * 0.012).clamp(8.0, 14.0).toDouble();
 
     return Material(
       color: Colors.transparent,
@@ -761,7 +773,11 @@ class _TokenUsageCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         child: Container(
           width: width * 0.74,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+          constraints: BoxConstraints(
+            minHeight: cardHeight,
+            maxHeight: cardHeight,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(radius),
@@ -786,49 +802,45 @@ class _TokenUsageCard extends StatelessWidget {
                     backgroundImage: AssetImage('assets/images/avatar.jpg'),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      owner,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: status.contains('Selesai')
-                          ? Colors.green.withOpacity(0.12)
-                          : Colors.blue.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      status,
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: status.contains('Selesai')
-                            ? darkGreen
-                            : Colors.blue,
-                        fontWeight: FontWeight.w600,
+                  const Spacer(),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: status.contains('Selesai')
+                              ? Colors.green.withOpacity(0.12)
+                              : Colors.blue.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          status,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: status.contains('Selesai')
+                                ? darkGreen
+                                : Colors.blue,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: gapM),
+              SizedBox(height: gapM),
 
               // Title
-              Text(
+              AutoSizeText(
                 title,
                 maxLines: 2,
+                minFontSize: 11,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
@@ -836,105 +848,105 @@ class _TokenUsageCard extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: gapM),
-
-              // Metrics block
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left: Modal
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              modalLabel,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$modal Lot',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      VerticalDivider(
-                        width: 16,
-                        thickness: 1,
-                        color: Colors.grey.shade200,
-                      ),
-
-                      // Right: Hasil + Progress
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              hasilLabel,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: LinearProgressIndicator(
-                                      value: (modal == 0) ? 0 : hasil / modal,
-                                      minHeight: 8,
-                                      backgroundColor: Colors.grey.shade200,
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                            darkGreen,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${((modal == 0) ? 0 : (hasil / modal * 100)).toStringAsFixed(0)}%',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: gapS),
-                            Text(
-                              '$hasil/$modal Lot',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 2),
+              Text(
+                owner,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
                 ),
               ),
 
-              const SizedBox(height: 4),
+              SizedBox(height: gapM),
+
+              // Metrics block: two bordered stat boxes
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$modal',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Jumlah Penggunaan Token',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'Rp 0',
+                              textAlign: TextAlign.right,
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: darkGreen,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 0),
+                          Text(
+                            'Return: ($hasil)',
+                            textAlign: TextAlign.right,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
