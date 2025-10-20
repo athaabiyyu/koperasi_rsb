@@ -55,11 +55,12 @@ class _DataDiriPageState extends State<DataDiriPage> {
 
             if (result['success'] && result['data'] != null) {
               final userData = result['data'];
+              final noHp = userData['no_hp'] ?? '';
               if (mounted) {
                 setState(() {
                   _nik.text = userData['nik'] ?? '';
                   _nama.text = userData['nama'] ?? '';
-                  _hp.text = userData['no_hp'] ?? '';
+                  _hp.text = noHp.startsWith('62') ? noHp.substring(2) : noHp;
                   _tempat.text = userData['tempat_lahir'] ?? '';
                   _tanggal.text = userData['tanggal_lahir'] ?? '';
                 });
@@ -137,6 +138,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final token = authProvider.token;
+      final formattedHp = '62${_hp.text}';
 
       if (token == null) throw Exception('Token tidak ditemukan');
 
@@ -145,7 +147,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
         token: token,
         nik: _nik.text,
         nama: _nama.text,
-        noHp: _hp.text,
+        noHp: formattedHp,
         tempatLahir: _tempat.text,
         tanggalLahir: _tanggal.text,
       );
@@ -209,7 +211,8 @@ class _DataDiriPageState extends State<DataDiriPage> {
         backgroundColor: lightGreen,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left_rounded, color: darkGreen, size: 40),
+          icon: const Icon(Icons.chevron_left_rounded,
+              color: darkGreen, size: 40),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -266,7 +269,7 @@ class _DataDiriPageState extends State<DataDiriPage> {
                                   thickness: 1,
                                   height: 30,
                                   indent: _deviceWidth * 0.25,
-                                  endIndent:  _deviceWidth * 0.25, 
+                                  endIndent: _deviceWidth * 0.25,
                                 ),
                               ],
                             ),
@@ -316,17 +319,17 @@ class _DataDiriPageState extends State<DataDiriPage> {
                                   },
                                 ),
                                 const SizedBox(height: 18),
-                                CustomTextFormField(
-                                  label: 'No. Handphone',
-                                  hint: '08xxxxxxxx',
+                                PhoneNumberField(
                                   controller: _hp,
-                                  keyboardType: TextInputType.number,
                                   validator: (v) {
                                     if (v == null || v.isEmpty) {
-                                      return 'Wajib diisi';
+                                      return 'Nomor wajib diisi';
                                     }
-                                    if (v.length < 10) {
-                                      return 'Minimal 10 digit';
+                                    if (!RegExp(r'^[0-9]+$').hasMatch(v)) {
+                                      return 'Hanya boleh angka';
+                                    }
+                                    if (v.length < 9 || v.length > 12) {
+                                      return 'Nomor HP harus 9–12 digit';
                                     }
                                     return null;
                                   },

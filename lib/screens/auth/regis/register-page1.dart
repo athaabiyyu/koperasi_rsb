@@ -21,8 +21,7 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
@@ -52,7 +51,8 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.saveRegistrationStep({
       'nama': _namaController.text.trim(),
-      'no_hp': _phoneController.text.trim(),
+      // tambahkan +62 di depan agar formatnya konsisten
+      'no_hp': "62${_phoneController.text.trim()}",
       'password': _passwordController.text,
     });
 
@@ -68,8 +68,7 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: lightGreen,
-        statusBarIconBrightness:
-            Brightness.dark,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
 
@@ -82,8 +81,7 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
                 height: _deviceHeight * 0.27,
                 child: cardLoginRegisWidget(
                   title: "Buat Akun",
-                  subtitle:
-                      "Silahkan mengisi formulir ini untuk buat akun anda",
+                  subtitle: "Silahkan mengisi formulir ini untuk buat akun anda",
                   deviceWidth: _deviceWidth,
                 ),
               ),
@@ -94,9 +92,7 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context)
-                        .size
-                        .height,
+                    minHeight: MediaQuery.of(context).size.height,
                   ),
                   child: Form(
                     key: _formKey,
@@ -111,33 +107,26 @@ class _RegistrationPage1State extends State<RegistrationPage1> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return "Nama wajib diisi";
-                            } else if (!RegExp(r'^[a-zA-Z\s]+$')
-                                .hasMatch(value)) {
+                            } else if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
                               return "Nama hanya boleh berisi huruf";
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 30),
-                        CustomTextFormField(
+
+                        PhoneNumberField(
                           controller: _phoneController,
-                          label: "No. Handphone",
-                          hint: "081 xxx-xxxx-xxxx",
-                          keyboardType: TextInputType.phone,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return "Nomor wajib diisi";
-                            } else if (!value.startsWith("62")) {
-                              return "Format nomor tidak valid";
-                            } else if (value.length < 10) {
+                            } else if (value.length < 9) {
                               return "Nomor terlalu pendek";
                             }
                             return null;
                           },
                         ),
+
                         const SizedBox(height: 30),
                         CustomTextFormField(
                           controller: _passwordController,
