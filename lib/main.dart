@@ -6,6 +6,8 @@ import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
 import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
 import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
+import 'package:koperasi_rsb/screens/member-premium/dashboard/dashboard_premium.dart';
+import 'package:koperasi_rsb/screens/member-premium/detail-penggunaan-token/detail_penggunaan_token.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
@@ -17,6 +19,7 @@ import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +52,7 @@ class MyApp extends StatelessWidget {
           '/registration3': (context) => RegistrationPage3(),
           '/dashboard': (context) => const DashboardPage(),
           '/member-reguler': (context) => const DashboardPage(),
+          '/member-premium': (context) => const PremiumDashboardPage(),
           '/my-project': (context) => const MyProjectPage(),
           '/wallet': (context) => const DompetPage(),
           '/profile': (context) => const ProfilePage(),
@@ -57,6 +61,11 @@ class MyApp extends StatelessWidget {
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
         },
         onGenerateRoute: (settings) {
+          if (settings.name == '/member-premium/token-usage') {
+            return MaterialPageRoute(
+              builder: (context) => const TokenUsageListPage(),
+            );
+          }
           if (settings.name == '/verify-otp') {
             final args = settings.arguments as Map<String, dynamic>?;
 
