@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,7 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
   }
 
   // Validasi form dan tampilkan dialog
+  // Ganti method _onDaftarButtonPressed di RegistrationPage3
   void _onDaftarButtonPressed() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -96,35 +98,16 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
     showDialogJoinPenyertaan(
       context: context,
       onJoin: () {
-        // User memilih join penyertaan
+        // User memilih join penyertaan - arahkan ke DialogPilihNominalPembayaran
         print("User joined penyertaan");
-        Navigator.of(context).pop(); // Tutup dialog
+        Navigator.of(context).pop(); // Tutup dialog join penyertaan
 
-        // Tampilkan detail pembayaran dengan penyertaan
-        DetailPembayaranAwalMember.show(
-          context,
-          alertTitle: "Detail Pembayaran",
-          alertMessage: "Pastikan data pembayaran sudah benar.",
-          paymentTitle: "Detail Pembayaran",
-          paymentHeader: "Informasi Pembayaran",
-          paymentItems: [
-            PaymentItem(title: "Setoran Awal", price: "Rp 50.000"),
-            PaymentItem(
-                title: "Simpanan Wajib 1 Tahun Member UMKM",
-                price: "Rp 120.000"),
-            PaymentItem(
-                title: "Simpanan Penyertaan Modal", price: "Rp 500.000"),
-          ],
-          totalPrice: "Rp 670.000",
-          onPressed: () {
-            Navigator.of(context).pop(); // Tutup dialog pembayaran
-            // Navigate ke payment form dengan penyertaan
-            Navigator.pushNamed(context, '/payment-form');
-          },
-        );
+        // Tampilkan dialog pilih nominal
+        // Dialog akan langsung menampilkan DetailPembayaranAwalMember setelah submit
+        showDialogPilihNominalPembayaran(context);
       },
       onCancel: () {
-        // User memilih skip penyertaan, tampilkan detail pembayaran
+        // User memilih skip penyertaan, tampilkan detail pembayaran tanpa penyertaan
         Navigator.of(context).pop(); // Tutup dialog join penyertaan
         DetailPembayaranAwalMember.show(
           context,
@@ -147,6 +130,17 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
         );
       },
     );
+  }
+
+// Tambahkan helper method untuk format rupiah
+  String _formatRupiah(int value) {
+    final chars = value.toString().split('').reversed.toList();
+    final buffer = StringBuffer();
+    for (int i = 0; i < chars.length; i++) {
+      if (i != 0 && i % 3 == 0) buffer.write('.');
+      buffer.write(chars[i]);
+    }
+    return 'Rp ' + buffer.toString().split('').reversed.join();
   }
 
   @override

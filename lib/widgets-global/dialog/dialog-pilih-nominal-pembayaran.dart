@@ -30,7 +30,16 @@ class _DialogPilihNominalPembayaranState
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    print('=== _submit() dipanggil ===');
+
+    // Validasi form
+    if (!_formKey.currentState!.validate()) {
+      print('Form tidak valid');
+      return;
+    }
+
+    print('Form valid, dropdown value: $_dropdownValue');
+
     // Ambil nominal mentah berdasarkan pilihan
     String rawNominal;
     if (_dropdownValue == 'Nominal Lainnya') {
@@ -39,24 +48,48 @@ class _DialogPilihNominalPembayaranState
       rawNominal = _dropdownValue ?? '';
     }
 
-    // Normalisasi string angka
+    print('Raw nominal: $rawNominal');
+
+    // Normalisasi string angka - hapus semua karakter non-digit
     final numericString = rawNominal
+        .toUpperCase()
         .replaceAll('RP', '')
-        .replaceAll('Rp', '')
         .replaceAll('.', '')
         .replaceAll(',', '')
         .replaceAll(' ', '')
-        .replaceAll(':', '');
+        .replaceAll(':', '')
+        .trim();
+
+    print('Numeric string: $numericString');
+
     int? nominalInt = int.tryParse(numericString);
-    String formattedNominal =
-        nominalInt != null ? _formatRupiah(nominalInt) : rawNominal;
+    print('Parsed int: $nominalInt');
 
-    // Hitung total (bisa ditambah item lain jika diperlukan)
-    int totalInt = nominalInt ?? 0;
-    String totalFormatted = _formatRupiah(totalInt);
+    if (nominalInt == null || nominalInt <= 0) {
+      print('Nominal invalid!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Format nominal tidak valid'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
-    Navigator.of(context).pop(); // Tutup dialog pilih nominal
+    String formattedNominal = _formatRupiah(nominalInt);
+    print('Formatted nominal: $formattedNominal');
 
+    // Hitung total pembayaran
+    final int setoranAwal = 50000;
+    final int simpananWajib = 120000;
+    final int total = setoranAwal + simpananWajib + nominalInt;
+
+    print('Total pembayaran: ${_formatRupiah(total)}');
+
+    // Tutup dialog pilih nominal
+    Navigator.of(context).pop();
+
+    // Langsung tampilkan DetailPembayaranAwalMember
     DetailPembayaranAwalMember.show(
       context,
       alertTitle: "Detail Pembayaran",
@@ -64,20 +97,26 @@ class _DialogPilihNominalPembayaranState
       paymentTitle: "Detail Pembayaran",
       paymentHeader: "Informasi Pembayaran",
       paymentItems: [
-        PaymentItem(title: "Gabung Penyertaan", price: formattedNominal),
+        PaymentItem(title: "Setoran Awal", price: "Rp 50.000"),
+        PaymentItem(
+          title: "Simpanan Wajib 1 Tahun Member UMKM",
+          price: "Rp 120.000",
+        ),
+        PaymentItem(
+          title: "Simpanan Penyertaan Modal",
+          price: formattedNominal,
+        ),
       ],
-      totalPrice: totalFormatted,
+      totalPrice: _formatRupiah(total),
       onPressed: () {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Pembayaran dikonfirmasi")),
-        );
+        Navigator.of(context).pop(); // Tutup dialog pembayaran
+        // Navigate ke payment form dengan penyertaan
+        Navigator.pushNamed(context, '/payment-form');
       },
     );
   }
 
   String _formatRupiah(int value) {
-    // Format sederhana: pisah tiap 3 digit dari belakang
     final chars = value.toString().split('').reversed.toList();
     final buffer = StringBuffer();
     for (int i = 0; i < chars.length; i++) {
@@ -109,7 +148,10 @@ class _DialogPilihNominalPembayaranState
                   alignment: Alignment.topRight,
                   child: IconButton(
                     icon: const Icon(Icons.close, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      print('Close button pressed');
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ),
                 const PembayaranSection(
@@ -157,13 +199,10 @@ class _DialogPilihNominalPembayaranState
                           return null;
                         },
                         onChanged: (String? value) {
+                          print('Dropdown changed: $value');
                           setState(() {
                             _dropdownValue = value;
-                            if (value == 'Nominal Lainnya') {
-                              if (_nominalLainController.text.isEmpty) {
-                                
-                              }
-                            } else {
+                            if (value != 'Nominal Lainnya') {
                               _nominalLainController.clear();
                             }
                           });
@@ -182,18 +221,24 @@ class _DialogPilihNominalPembayaranState
                                 return "Nominal lainnya wajib diisi";
                               }
                               final cleaned = value
+                                  .toUpperCase()
+                                  .replaceAll('RP', '')
                                   .replaceAll('.', '')
                                   .replaceAll(',', '')
-                                  .replaceAll(' ', '');
+                                  .replaceAll(' ', '')
+                                  .trim();
                               final intVal = int.tryParse(cleaned);
                               if (intVal == null) {
                                 return 'Format tidak valid';
                               }
+                              if (intVal < 500000) {
+                                return 'Minimal Rp 500.000';
+                              }
                               if (intVal <= 2000000) {
-                                return 'Harus lebih dari 2.000.000 dan kelipatan 500.000';
+                                return 'Harus lebih dari Rp 2.000.000 dan kelipatan Rp 500.000';
                               }
                               if (intVal % 500000 != 0) {
-                                return 'Harus kelipatan 500.000';
+                                return 'Harus kelipatan Rp 500.000';
                               }
                             }
                             return null;
@@ -206,7 +251,10 @@ class _DialogPilihNominalPembayaranState
                           height: 50,
                           child: CustomButton(
                             text: "LANJUTKAN PEMBAYARAN",
-                            onPressed: _submit,
+                            onPressed: () {
+                              print('Button LANJUTKAN PEMBAYARAN pressed');
+                              _submit();
+                            },
                           ),
                         ),
                       ),
@@ -223,6 +271,7 @@ class _DialogPilihNominalPembayaranState
 }
 
 Future<T?> showDialogPilihNominalPembayaran<T>(BuildContext context) {
+  print('=== showDialogPilihNominalPembayaran called ===');
   return showDialog<T>(
     context: context,
     barrierDismissible: true,
