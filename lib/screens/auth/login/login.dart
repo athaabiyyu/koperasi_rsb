@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-      final noHp = _phoneController.text.trim();
+      final noHp = "62${_phoneController.text.trim()}";
       final password = _passwordController.text.trim();
 
       // Pass rememberMe ke login method
@@ -163,8 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
                   content: Column(
-                    mainAxisSize: MainAxisSize
-                        .min,
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
@@ -302,20 +301,12 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       children: [
                         const SizedBox(height: 30),
-                        CustomTextFormField(
+                        PhoneNumberField(
                           controller: _phoneController,
-                          label: "No. Handphone",
-                          hint: "+62 xxx-xxxx-xxxx",
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
                           enabled: !_isLoading,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return "Nomor wajib diisi";
-                            } else if (!value.startsWith("62")) {
-                              return "Format nomor tidak valid";
                             }
                             return null;
                           },

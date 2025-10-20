@@ -165,3 +165,89 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
     return buffer.toString().split('').reversed.join();
   }
 }
+
+class PhoneNumberField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool enabled;
+  final String? Function(String?)? validator;
+
+  const PhoneNumberField({
+    super.key,
+    required this.controller,
+    this.enabled = true,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "No. Handphone *",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          enabled: enabled,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Nomor wajib diisi";
+            }
+            if (!value.startsWith("62") && !value.startsWith("8")) {
+              return "Nomor tidak valid";
+            }
+            return null;
+          },
+          decoration: InputDecoration(
+            prefixIcon: Container(
+              width: 60,
+              alignment: Alignment.center,
+              child: Text(
+                "+62",
+                style: GoogleFonts.poppins(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            hintText: "812-3456-7890",
+            hintStyle: GoogleFonts.poppins(color: strokeGray, fontSize: 14),
+            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: strokeGray, width: 1.0),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: strokeGray, width: 1.0),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: grayFont, width: 1.5),
+            ),
+          ),
+          onChanged: (value) {
+            // Kalau user ketik "62" di depan, hapus supaya tidak dobel
+            if (value.startsWith("62")) {
+              controller.text = value.substring(2);
+              controller.selection = TextSelection.fromPosition(
+                TextPosition(offset: controller.text.length),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
