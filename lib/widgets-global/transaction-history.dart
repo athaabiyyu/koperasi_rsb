@@ -44,7 +44,7 @@ class TransactionItem extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 15,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -83,7 +83,7 @@ class TransactionItem extends StatelessWidget {
                 child: Text(
                   statusLabel,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: isSuccess ? darkGreen : Colors.red,
                   ),

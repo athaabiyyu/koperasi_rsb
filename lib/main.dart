@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/screens/kontak%20admin/kontak-admin.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
 import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
@@ -10,6 +11,8 @@ import 'package:koperasi_rsb/screens/member-premium/dashboard/dashboard_premium.
 import 'package:koperasi_rsb/screens/member-premium/detail-penggunaan-token/detail_penggunaan_token.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -19,6 +22,8 @@ import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:koperasi_rsb/screens/member-premium/dashboard/dashboard_premium.dart';
 
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
@@ -34,7 +39,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())
+      , ChangeNotifierProvider(create: (_) => UserProvider())
+      , ChangeNotifierProvider(create: (_) => TopupProvider()),
+      ],
       child: MaterialApp(
         title: 'Koperasi RSB',
         theme: ThemeData(
@@ -52,13 +60,14 @@ class MyApp extends StatelessWidget {
           '/registration3': (context) => RegistrationPage3(),
           '/dashboard': (context) => const DashboardPage(),
           '/member-reguler': (context) => const DashboardPage(),
-          '/member-premium': (context) => const PremiumDashboardPage(),
+          '/member-platinum': (context) => const PremiumDashboardPage(),
           '/my-project': (context) => const MyProjectPage(),
           '/wallet': (context) => const DompetPage(),
           '/profile': (context) => const ProfilePage(),
           '/profile/data-diri': (context) => const DataDiriPage(),
           '/profile/alamat': (context) => const AlamatPage(),
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
+          '/profile/hubungi-admin': (context) => const KontakAdminPage(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/member-premium/token-usage') {
