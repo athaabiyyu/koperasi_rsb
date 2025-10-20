@@ -77,102 +77,143 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildTransactionHistoryCard() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(_deviceWidth * 0.04),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: AutoSizeText(
-                "Riwayat Transaksi",
-                style: GoogleFonts.poppins(
-                  fontSize: _deviceWidth * 0.045,
-                  fontWeight: FontWeight.w700,
+      Widget _buildTransactionHistoryCard() {
+    // Simulasi data transaksi
+    final transactions = [
+      const TransactionItem(title: "Simpanan Wajib", date: "12 Agustus 2025", amount: "Rp. 120.000", isSuccess: false, statusLabel: "Belum Membayar"),
+      const TransactionItem(title: "Simpanan Pokok", date: "12 Agustus 2024", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Wajib", date: "12 Agustus 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Wajib", date: "10 Juli 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Pokok", date: "10 Juni 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Wajib", date: "10 Mei 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Pokok", date: "10 April 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Wajib", date: "10 Maret 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+      const TransactionItem(title: "Simpanan Pokok", date: "10 Februari 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
+    ];
+
+    const int itemsPerPage = 3;
+    int currentPage = 1;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final int totalPages = (transactions.length / itemsPerPage).ceil();
+        final int startIndex = (currentPage - 1) * itemsPerPage;
+        final int endIndex = (startIndex + itemsPerPage) > transactions.length
+            ? transactions.length
+            : (startIndex + itemsPerPage);
+        final visibleTransactions = transactions.sublist(startIndex, endIndex);
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(_deviceWidth * 0.04),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade300),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
                 ),
-                maxLines: 1,
-                minFontSize: 16,
-              ),
+              ],
             ),
-            SizedBox(height: _deviceHeight * 0.015),
-            const Divider(height: 1),
-            SizedBox(height: _deviceHeight * 0.01),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2025",
-              amount: "Rp. 120.000",
-              isSuccess: false,
-              statusLabel: "Belum Membayar",
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: AutoSizeText(
+                    "Riwayat Transaksi",
+                    style: GoogleFonts.poppins(
+                      fontSize: _deviceWidth * 0.045,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    minFontSize: 16,
+                  ),
+                ),
+                const Divider(height: 1),
+                SizedBox(height: _deviceHeight * 0.01),
+
+                // tampilkan transaksi per halaman
+                Column(
+                  children: List.generate(
+                    visibleTransactions.length,
+                    (index) => Column(
+                      children: [
+                        visibleTransactions[index],
+                        if (index != visibleTransactions.length - 1)
+                          const Divider(),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: _deviceHeight * 0.02),
+
+                // Pagination
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Tombol Previous
+                      TextButton(
+                        onPressed: currentPage > 1
+                            ? () => setState(() => currentPage--)
+                            : null,
+                        child: const Text("Previous"),
+                      ),
+
+                      // Nomor halaman
+                      ...List.generate(totalPages, (index) {
+                        final page = index + 1;
+                        final isCurrent = page == currentPage;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: GestureDetector(
+                            onTap: () => setState(() => currentPage = page),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isCurrent ? darkGreen : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: darkGreen),
+                              ),
+                              child: Text(
+                                "$page",
+                                style: TextStyle(
+                                  color: isCurrent ? Colors.white : darkGreen,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+
+                      // Tombol Next
+                      TextButton(
+                        onPressed: currentPage < totalPages
+                            ? () => setState(() => currentPage++)
+                            : null,
+                        child: const Text("Next"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Pokok",
-              date: "12 Agustus 2024",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: "Simpanan Wajib",
-              date: "12 Agustus 2023",
-              amount: "Rp. 120.000",
-              isSuccess: true,
-              statusLabel: "Berhasil",
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+
+
 
   Widget _buildHeaderSection(String userName, bool isplatinum) {
     return Container(
