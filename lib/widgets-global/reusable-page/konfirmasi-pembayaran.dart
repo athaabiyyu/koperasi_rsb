@@ -27,7 +27,7 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
                 ),
 
                 // Card rekening bank
-                KonfirmasiPembayaranForm(
+                KonfirmasiPembayaran(
                 ),
               ],
             ),

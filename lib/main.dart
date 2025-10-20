@@ -22,8 +22,7 @@ import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'package:koperasi_rsb/screens/member-premium/dashboard/dashboard_premium.dart';
+import 'package:koperasi_rsb/screens/member-biasa/pembayaran-awal/muncul-rekening-member-biasa.dart';
 
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
@@ -39,9 +38,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())
-      , ChangeNotifierProvider(create: (_) => UserProvider())
-      , ChangeNotifierProvider(create: (_) => TopupProvider()),
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => TopupProvider()),
       ],
       child: MaterialApp(
         title: 'Koperasi RSB',
@@ -68,6 +68,18 @@ class MyApp extends StatelessWidget {
           '/profile/alamat': (context) => const AlamatPage(),
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
           '/profile/hubungi-admin': (context) => const KontakAdminPage(),
+          '/payment-form': (context) {
+            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+            
+            print('=== ROUTE /payment-form ===');
+            print('Arguments: $args');
+            
+            return MunculRekeningMemberBiasa(
+              nominalPenyertaan: args?['nominalPenyertaan'] as int?,
+              totalPembayaran: args?['totalPembayaran'] as int?,
+              formattedNominal: args?['formattedNominal'] as String?,
+            );
+          },
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/member-premium/token-usage') {

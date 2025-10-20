@@ -306,6 +306,64 @@ class AuthProvider with ChangeNotifier {
       return {'success': false, 'message': _errorMessage};
     }
   }
+  // REGISTER, PAY MEMBER, AND UPGRADE PLATINUM (Combined flow)
+Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
+  PaymentModel paymentModel,
+  int nominalPenyertaan,
+) async {
+  try {
+    print('=== STEP 1: REGISTERING USER ===');
+    final registerResult = await registerUser();
+
+    if (!registerResult['success']) {
+      return registerResult;
+    }
+
+    print('=== STEP 2: LOGIN FOR TOKEN ===');
+    final loginSuccess = await loginForToken();
+
+    if (!loginSuccess) {
+      return {
+        'success': false,
+        'message': 'Registrasi berhasil, tetapi gagal login otomatis. Silakan login manual.'
+      };
+    }
+
+    print('=== STEP 3: SUBMITTING INITIAL PAYMENT ===');
+    if (_token == null) {
+      return {'success': false, 'message': 'Token tidak ditemukan'};
+    }
+
+    setLoading(true);
+    final paymentResult = await AuthService.payMember(
+      token: _token!,
+      payment: paymentModel,
+    );
+    setLoading(false);
+
+    if (paymentResult['success'] != true) {
+      return paymentResult;
+    }
+
+    print('=== STEP 4: UPGRADING TO PLATINUM ===');
+    setLoading(true);
+    final upgradePlatinumResult = await AuthService.upgradeToPlatinum(
+      token: _token!,
+      payment: paymentModel,
+      nominal: nominalPenyertaan,
+    );
+    setLoading(false);
+
+    return upgradePlatinumResult;
+  } catch (e) {
+    print('\n=== ❌ REGISTER PAY UPGRADE ERROR ===');
+    print('Exception: $e');
+    print('=====================================\n');
+    setError('Terjadi kesalahan: ${e.toString()}');
+    setLoading(false);
+    return {'success': false, 'message': _errorMessage};
+  }
+}
 
   // LOGOUT
   Future<bool> logout({bool keepCredentials = false, BuildContext? context}) async {

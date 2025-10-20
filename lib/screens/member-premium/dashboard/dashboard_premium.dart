@@ -9,9 +9,10 @@ import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
-import 'package:provider/provider.dart';  
+import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
 
 class PremiumDashboardPage extends StatefulWidget {
   const PremiumDashboardPage({Key? key}) : super(key: key);
@@ -23,7 +24,6 @@ class PremiumDashboardPage extends StatefulWidget {
 class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
   late double _deviceHeight;
   late double _deviceWidth;
-  // Removed local isPremium flag; use role from AuthProvider instead.
 
   final List<Map<String, dynamic>> _tokenUsage = const [
     {
@@ -57,6 +57,30 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
       'imageUrl': 'https://picsum.photos/seed/crepes/600/400',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch topup history saat page load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final token = _getTokenFromContext();
+      if (token != null && token.isNotEmpty) {
+        context.read<TopupProvider>().fetchTopupHistory(token);
+        print('📲 Premium Dashboard: Fetching topup history');
+      }
+    });
+  }
+
+  // Helper untuk ambil token dari AuthProvider
+  String? _getTokenFromContext() {
+    try {
+      final authProvider = context.read<AuthProvider>();
+      return authProvider.token;
+    } catch (e) {
+      print('Error getting token: $e');
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +122,6 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
             children: [
               _buildHeaderSection(userName, isplatinum),
               SizedBox(height: _deviceHeight * 0.03),
-
               _buildTokenUsageSection(),
               SizedBox(height: _deviceHeight * 0.02),
               _buildTransactionHistoryCard(),
@@ -213,7 +236,6 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
                   ),
                 ],
               ),
-
               SizedBox(height: _deviceHeight * 0.065),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -291,7 +313,6 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
           SizedBox(height: _deviceHeight * 0.008),
           Builder(
             builder: (context) {
-              // Responsive list/card height based on device height
               final double listHeight = (_deviceHeight * 0.24)
                   .clamp(180, 230)
                   .toDouble();
@@ -344,159 +365,302 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
   }
 
   Widget _buildTransactionHistoryCard() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(_deviceWidth * 0.04),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+    return Consumer<TopupProvider>(
+      builder: (context, provider, child) {
+        // Jika loading
+        if (provider.isLoading) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_deviceWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(color: darkGreen),
+              ),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                  flex: 3,
-                  child: AutoSizeText(
-                    'Riwayat Transaksi',
-                    style: GoogleFonts.poppins(
-                      fontSize: _deviceWidth * 0.04,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    minFontSize: 14,
+          );
+        }
+
+        // Jika ada error
+        if (provider.errorMessage != null) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_deviceWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Center(
+                child: Text(
+                  provider.errorMessage!,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.red,
                   ),
                 ),
-                SizedBox(width: _deviceWidth * 0.02),
-                Flexible(
-                  flex: 2,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: darkGreen,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: _deviceWidth * 0.025,
-                        vertical: _deviceHeight * 0.008,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      DetailPembayaranAwalMember.show(
-                        context,
-                        alertTitle: 'Detail Pembayaran',
-                        alertMessage: 'Pastikan data pembayaran sudah benar.',
-                        paymentTitle: 'Pembayaran Simpanan Wajib',
-                        paymentHeader: 'Informasi Pembayaran',
-                        paymentItems: [
-                          PaymentItem(
-                            title: 'Simpanan Wajib',
-                            price: 'Rp 120.000',
+              ),
+            ),
+          );
+        }
+
+        // Convert topup data ke format TransactionItem (limit 6 items)
+        final allTransactions = provider.topups.map((topup) {
+          return TransactionItem(
+            title: topup.displayTransactionType,
+            date: topup.displayDate,
+            amount: topup.displayAmount,
+            isSuccess: topup.isSuccess,
+            statusLabel: topup.isPending
+                ? "Menunggu Konfirmasi"
+                : topup.isSuccess
+                    ? "Berhasil"
+                    : "Gagal",
+          );
+        }).toList();
+
+        // Limit to 6 transactions for premium dashboard
+        final transactions = allTransactions.take(6).toList();
+
+        // Jika tidak ada data
+        if (transactions.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_deviceWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        flex: 3,
+                        child: AutoSizeText(
+                          'Riwayat Transaksi',
+                          style: GoogleFonts.poppins(
+                            fontSize: _deviceWidth * 0.04,
+                            fontWeight: FontWeight.w700,
                           ),
-                        ],
-                        totalPrice: 'Rp 120.000',
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Pembayaran Simpanan Wajib dikonfirmasi',
-                              ),
+                          maxLines: 1,
+                          minFontSize: 14,
+                        ),
+                      ),
+                      SizedBox(width: _deviceWidth * 0.02),
+                      Flexible(
+                        flex: 2,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: darkGreen,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: _deviceWidth * 0.025,
+                              vertical: _deviceHeight * 0.008,
                             ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            DetailPembayaranAwalMember.show(
+                              context,
+                              alertTitle: 'Detail Pembayaran',
+                              alertMessage: 'Pastikan data pembayaran sudah benar.',
+                              paymentTitle: 'Pembayaran Simpanan Wajib',
+                              paymentHeader: 'Informasi Pembayaran',
+                              paymentItems: [
+                                PaymentItem(
+                                  title: 'Simpanan Wajib',
+                                  price: 'Rp 120.000',
+                                ),
+                              ],
+                              totalPrice: 'Rp 120.000',
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Pembayaran Simpanan Wajib dikonfirmasi',
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: AutoSizeText(
+                            'Bayar Simpanan Wajib',
+                            style: GoogleFonts.poppins(
+                              fontSize: _deviceWidth * 0.032,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            minFontSize: 11,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: _deviceHeight * 0.015),
+                  const Divider(height: 1),
+                  SizedBox(height: _deviceHeight * 0.02),
+                  Center(
+                    child: Text(
+                      "Belum ada transaksi",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: _deviceHeight * 0.01),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Jika ada data transaksi
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(_deviceWidth * 0.04),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade300),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      flex: 3,
+                      child: AutoSizeText(
+                        'Riwayat Transaksi',
+                        style: GoogleFonts.poppins(
+                          fontSize: _deviceWidth * 0.04,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        minFontSize: 14,
+                      ),
+                    ),
+                    SizedBox(width: _deviceWidth * 0.02),
+                    Flexible(
+                      flex: 2,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: darkGreen,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: _deviceWidth * 0.025,
+                            vertical: _deviceHeight * 0.008,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          DetailPembayaranAwalMember.show(
+                            context,
+                            alertTitle: 'Detail Pembayaran',
+                            alertMessage: 'Pastikan data pembayaran sudah benar.',
+                            paymentTitle: 'Pembayaran Simpanan Wajib',
+                            paymentHeader: 'Informasi Pembayaran',
+                            paymentItems: [
+                              PaymentItem(
+                                title: 'Simpanan Wajib',
+                                price: 'Rp 120.000',
+                              ),
+                            ],
+                            totalPrice: 'Rp 120.000',
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Pembayaran Simpanan Wajib dikonfirmasi',
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
-                      );
-                    },
-                    child: AutoSizeText(
-                      'Bayar Simpanan Wajib',
-                      style: GoogleFonts.poppins(
-                        fontSize: _deviceWidth * 0.032,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        child: AutoSizeText(
+                          'Bayar Simpanan Wajib',
+                          style: GoogleFonts.poppins(
+                            fontSize: _deviceWidth * 0.032,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          minFontSize: 11,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                      maxLines: 1,
-                      minFontSize: 11,
-                      textAlign: TextAlign.center,
                     ),
+                  ],
+                ),
+                SizedBox(height: _deviceHeight * 0.015),
+                const Divider(height: 1),
+                SizedBox(height: _deviceHeight * 0.01),
+                
+                // Display transactions dynamically
+                ...List.generate(
+                  transactions.length,
+                  (index) => Column(
+                    children: [
+                      transactions[index],
+                      if (index != transactions.length - 1) const Divider(),
+                    ],
                   ),
                 ),
               ],
             ),
-            SizedBox(height: _deviceHeight * 0.015),
-            const Divider(height: 1),
-            SizedBox(height: _deviceHeight * 0.01),
-            const TransactionItem(
-              title: 'Simpanan Wajib',
-              date: '12 Agustus 2025',
-              amount: 'Rp. 120.000',
-              isSuccess: false,
-              statusLabel: 'Belum Membayar',
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: 'Simpanan Pokok',
-              date: '12 Agustus 2024',
-              amount: 'Rp. 120.000',
-              isSuccess: true,
-              statusLabel: 'Berhasil',
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: 'Simpanan Wajib',
-              date: '12 Agustus 2023',
-              amount: 'Rp. 120.000',
-              isSuccess: true,
-              statusLabel: 'Berhasil',
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: 'Simpanan Wajib',
-              date: '12 Agustus 2023',
-              amount: 'Rp. 120.000',
-              isSuccess: true,
-              statusLabel: 'Berhasil',
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: 'Simpanan Wajib',
-              date: '12 Agustus 2023',
-              amount: 'Rp. 120.000',
-              isSuccess: true,
-              statusLabel: 'Berhasil',
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: 'Simpanan Wajib',
-              date: '12 Agustus 2023',
-              amount: 'Rp. 120.000',
-              isSuccess: true,
-              statusLabel: 'Berhasil',
-            ),
-            const Divider(),
-            const TransactionItem(
-              title: 'Simpanan Wajib',
-              date: '12 Agustus 2023',
-              amount: 'Rp. 120.000',
-              isSuccess: true,
-              statusLabel: 'Berhasil',
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -763,7 +927,6 @@ class _TokenUsageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     const double radius = 12;
-    // const double gapS = 8; // no longer used
     final double deviceHeight = MediaQuery.of(context).size.height;
     final double gapM = (deviceHeight * 0.012).clamp(8.0, 14.0).toDouble();
 

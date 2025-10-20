@@ -48,11 +48,6 @@ class TopupProvider with ChangeNotifier {
 
       if (result['success'] == true) {
         _topups = result['data'] as List<TopupModel>;
-        
-        print('=== 📊 TOPUP HISTORY LOADED ===');
-        print('Total topups: ${_topups.length}');
-        print('================================');
-        
         setLoading(false);
         notifyListeners();
         return true;

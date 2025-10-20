@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import '../config/api_config.dart';
 import '../config/api_endpoint/api_endpoints.dart';
 import '../models/user_model.dart';
@@ -9,41 +10,41 @@ import '../utils/shared_preferences_helper.dart';
 
 class AuthService {
   // Helper function untuk decode JWT token
-    static Map<String, dynamic>? decodeJwt(String token) {
-      try {
-        final parts = token.split('.');
-        if (parts.length != 3) {
-          print('❌ JWT token tidak valid: harus 3 bagian');
-          return null;
-        }
-
-        String payload = parts[1];
-        payload = payload.replaceAll('-', '+').replaceAll('_', '/');
-        
-        switch (payload.length % 4) {
-          case 0:
-            break;
-          case 2:
-            payload += '==';
-            break;
-          case 3:
-            payload += '=';
-            break;
-          default:
-            print('❌ Base64 string tidak valid');
-            return null;
-        }
-        
-        final decoded = utf8.decode(base64.decode(payload));
-        print('🔍 JWT Payload (decoded): $decoded');
-        final Map<String, dynamic> result = jsonDecode(decoded);
-        
-        return result;
-      } catch (e) {
-        print('❌ Error decoding JWT: $e');
+  static Map<String, dynamic>? decodeJwt(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        print('❌ JWT token tidak valid: harus 3 bagian');
         return null;
       }
+
+      String payload = parts[1];
+      payload = payload.replaceAll('-', '+').replaceAll('_', '/');
+      
+      switch (payload.length % 4) {
+        case 0:
+          break;
+        case 2:
+          payload += '==';
+          break;
+        case 3:
+          payload += '=';
+          break;
+        default:
+          print('❌ Base64 string tidak valid');
+          return null;
+      }
+      
+      final decoded = utf8.decode(base64.decode(payload));
+      print('🔍 JWT Payload (decoded): $decoded');
+      final Map<String, dynamic> result = jsonDecode(decoded);
+      
+      return result;
+    } catch (e) {
+      print('❌ Error decoding JWT: $e');
+      return null;
     }
+  }
 
   // Login
   static Future<Map<String, dynamic>> login(String noHp, String password) async {
@@ -251,6 +252,86 @@ class AuthService {
       return {'success': false, 'message': 'Terjadi kesalahan: ${e.toString()}'};
     }
   }
+
+  // Upgrade to Platinum - CORRECTED VERSION
+  static Future<Map<String, dynamic>> upgradeToPlatinum({
+  required String token,
+  required PaymentModel payment,
+  required int nominal,
+}) async {
+  try {
+    print('\n=== UPGRADE TO PLATINUM DEBUG ===');
+    print('URL: ${UserEndpoints.upgradePlatinum}');
+    print('Nominal Penyertaan: Rp ${nominal.toString()}');
+    print('Token exists: ${token.isNotEmpty}');
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(UserEndpoints.upgradePlatinum),
+    );
+
+    // Add headers
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Accept'] = 'application/json';
+
+    // Add fields
+    request.fields['nama_bank'] = payment.namaBank;
+    request.fields['no_rekening'] = payment.noRekening;
+    request.fields['nama_pemilik_rekening'] = payment.namaPemilikRekening;
+    request.fields['nominal'] = nominal.toString();
+
+    print('Fields: ${request.fields}');
+    print('File path: ${payment.buktiPembayaran.path}');
+
+    // Add file
+    final stream = payment.buktiPembayaran.openRead();
+    final length = await payment.buktiPembayaran.length();
+
+    final multipartFile = http.MultipartFile(
+      'bukti_pembayaran',
+      stream,
+      length,
+      filename: path.basename(payment.buktiPembayaran.path),
+    );
+    request.files.add(multipartFile);
+
+    print('Multipart file added: ${multipartFile.filename}');
+    print('Sending request...\n');
+
+    final response = await request.send().timeout(
+      const Duration(seconds: 30),
+      onTimeout: () {
+        throw Exception('Request timeout');
+      },
+    );
+
+    final responseBody = await response.stream.bytesToString();
+    final result = jsonDecode(responseBody);
+
+    print('=== UPGRADE PLATINUM RESPONSE ===');
+    print('Status Code: ${response.statusCode}');
+    print('Response Body: $result');
+    print('==================================\n');
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return {
+        'success': true,
+        'message': result['message'] ?? 'Upgrade platinum berhasil'
+      };
+    } else {
+      return {
+        'success': false,
+        'message': result['message'] ?? 'Upgrade platinum gagal'
+      };
+    }
+  } catch (e) {
+    print('❌ Upgrade platinum error: $e\n');
+    return {
+      'success': false,
+      'message': 'Terjadi kesalahan: $e'
+    };
+  }
+}
 
   // Logout
   static Future<Map<String, dynamic>> logout({String? token}) async {

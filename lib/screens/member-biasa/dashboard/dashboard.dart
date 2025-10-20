@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
+import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
@@ -11,7 +12,7 @@ import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:koperasi_rsb/providers/auth_provider.dart'; 
+import 'package:koperasi_rsb/providers/auth_provider.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -25,6 +26,30 @@ class _DashboardPageState extends State<DashboardPage> {
   late double _deviceWidth;
 
   @override
+  void initState() {
+    super.initState();
+    // Fetch topup history saat page load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final token = _getTokenFromContext();
+      if (token != null && token.isNotEmpty) {
+        context.read<TopupProvider>().fetchTopupHistory(token);
+        print('📲 Dashboard: Fetching topup history');
+      }
+    });
+  }
+
+  // Helper untuk ambil token dari AuthProvider
+  String? _getTokenFromContext() {
+    try {
+      final authProvider = context.read<AuthProvider>();
+      return authProvider.token;
+    } catch (e) {
+      print('Error getting token: $e');
+      return null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
@@ -36,11 +61,8 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
 
-    final authProvider = Provider.of<AuthProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
     final userName = userProvider.userName ?? 'Default User';
-    final userRole = authProvider.userRole ?? 'BASIC';
-    final isplatinum = userRole == 'PLATINUM';
 
     return Scaffold(
       bottomNavigationBar: AppBottomNav(
@@ -66,7 +88,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeaderSection(userName, isplatinum),
+              _buildHeaderSection(userName),
               SizedBox(height: _deviceHeight * 0.05),
               _buildTransactionHistoryCard(),
               SizedBox(height: _deviceHeight * 0.02),
@@ -77,55 +99,99 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-      Widget _buildTransactionHistoryCard() {
-    // Simulasi data transaksi
-    final transactions = [
-      const TransactionItem(title: "Simpanan Wajib", date: "12 Agustus 2025", amount: "Rp. 120.000", isSuccess: false, statusLabel: "Belum Membayar"),
-      const TransactionItem(title: "Simpanan Pokok", date: "12 Agustus 2024", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Wajib", date: "12 Agustus 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Wajib", date: "10 Juli 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Pokok", date: "10 Juni 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Wajib", date: "10 Mei 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Pokok", date: "10 April 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Wajib", date: "10 Maret 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-      const TransactionItem(title: "Simpanan Pokok", date: "10 Februari 2023", amount: "Rp. 120.000", isSuccess: true, statusLabel: "Berhasil"),
-    ];
-
+  Widget _buildTransactionHistoryCard() {
     const int itemsPerPage = 3;
-    int currentPage = 1;
 
-    return StatefulBuilder(
-      builder: (context, setState) {
-        final int totalPages = (transactions.length / itemsPerPage).ceil();
-        final int startIndex = (currentPage - 1) * itemsPerPage;
-        final int endIndex = (startIndex + itemsPerPage) > transactions.length
-            ? transactions.length
-            : (startIndex + itemsPerPage);
-        final visibleTransactions = transactions.sublist(startIndex, endIndex);
-
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(_deviceWidth * 0.04),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade300),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+    return Consumer<TopupProvider>(
+      builder: (context, provider, child) {
+        // Jika loading
+        if (provider.isLoading) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_deviceWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(color: darkGreen),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: AutoSizeText(
+          );
+        }
+
+        // Jika ada error
+        if (provider.errorMessage != null) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_deviceWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Center(
+                child: Text(
+                  provider.errorMessage!,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Convert topup data ke format TransactionItem
+        final transactions = provider.topups.map((topup) {
+          return TransactionItem(
+            title: topup.displayTransactionType,
+            date: topup.displayDate,
+            amount: topup.displayAmount,
+            isSuccess: topup.isSuccess,
+            statusLabel: topup.isPending
+                ? "Menunggu Konfirmasi"
+                : topup.isSuccess
+                    ? "Berhasil"
+                    : "Gagal",
+          );
+        }).toList();
+
+        // Jika tidak ada data
+        if (transactions.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_deviceWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  AutoSizeText(
                     "Riwayat Transaksi",
                     style: GoogleFonts.poppins(
                       fontSize: _deviceWidth * 0.045,
@@ -134,88 +200,145 @@ class _DashboardPageState extends State<DashboardPage> {
                     maxLines: 1,
                     minFontSize: 16,
                   ),
-                ),
-                const Divider(height: 1),
-                SizedBox(height: _deviceHeight * 0.01),
-
-                // tampilkan transaksi per halaman
-                Column(
-                  children: List.generate(
-                    visibleTransactions.length,
-                    (index) => Column(
-                      children: [
-                        visibleTransactions[index],
-                        if (index != visibleTransactions.length - 1)
-                          const Divider(),
-                      ],
+                  const Divider(height: 1),
+                  SizedBox(height: _deviceHeight * 0.02),
+                  Text(
+                    "Belum ada transaksi",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey,
                     ),
                   ),
-                ),
-                SizedBox(height: _deviceHeight * 0.02),
-
-                // Pagination
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // Tombol Previous
-                      TextButton(
-                        onPressed: currentPage > 1
-                            ? () => setState(() => currentPage--)
-                            : null,
-                        child: const Text("Previous"),
-                      ),
-
-                      // Nomor halaman
-                      ...List.generate(totalPages, (index) {
-                        final page = index + 1;
-                        final isCurrent = page == currentPage;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: GestureDetector(
-                            onTap: () => setState(() => currentPage = page),
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isCurrent ? darkGreen : Colors.transparent,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: darkGreen),
-                              ),
-                              child: Text(
-                                "$page",
-                                style: TextStyle(
-                                  color: isCurrent ? Colors.white : darkGreen,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-
-                      // Tombol Next
-                      TextButton(
-                        onPressed: currentPage < totalPages
-                            ? () => setState(() => currentPage++)
-                            : null,
-                        child: const Text("Next"),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          );
+        }
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            int currentPage = 1;
+            final int totalPages = (transactions.length / itemsPerPage).ceil();
+            final int startIndex = (currentPage - 1) * itemsPerPage;
+            final int endIndex = (startIndex + itemsPerPage) > transactions.length
+                ? transactions.length
+                : (startIndex + itemsPerPage);
+            final visibleTransactions = transactions.sublist(startIndex, endIndex);
+
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.06),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(_deviceWidth * 0.04),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: AutoSizeText(
+                        "Riwayat Transaksi",
+                        style: GoogleFonts.poppins(
+                          fontSize: _deviceWidth * 0.045,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        minFontSize: 16,
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    SizedBox(height: _deviceHeight * 0.01),
+
+                    // Tampilkan transaksi per halaman
+                    Column(
+                      children: List.generate(
+                        visibleTransactions.length,
+                        (index) => Column(
+                          children: [
+                            visibleTransactions[index],
+                            if (index != visibleTransactions.length - 1)
+                              const Divider(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: _deviceHeight * 0.02),
+
+                    // Pagination
+                    if (totalPages > 1)
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Tombol Previous
+                            TextButton(
+                              onPressed: currentPage > 1
+                                  ? () => setState(() => currentPage--)
+                                  : null,
+                              child: const Text("Previous"),
+                            ),
+
+                            // Nomor halaman
+                            ...List.generate(totalPages, (index) {
+                              final page = index + 1;
+                              final isCurrent = page == currentPage;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => currentPage = page),
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: isCurrent ? darkGreen : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: darkGreen),
+                                    ),
+                                    child: Text(
+                                      "$page",
+                                      style: TextStyle(
+                                        color: isCurrent ? Colors.white : darkGreen,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+
+                            // Tombol Next
+                            TextButton(
+                              onPressed: currentPage < totalPages
+                                  ? () => setState(() => currentPage++)
+                                  : null,
+                              child: const Text("Next"),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-
-
-  Widget _buildHeaderSection(String userName, bool isplatinum) {
+  Widget _buildHeaderSection(String userName) {
     return Container(
       decoration: BoxDecoration(
         color: lightGreen,
@@ -280,21 +403,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                   vertical: _deviceHeight * 0.004,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: isplatinum
-                                      ? Colors.green
-                                      : const Color(0xFFFFF0E6),
+                                  color: const Color(0xFFFFF0E6),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: isplatinum
-                                        ? Colors.green.shade700
-                                        : orange,
+                                    color: orange,
                                   ),
                                 ),
                                 child: Text(
-                                  isplatinum ? "Member Platinum" : "Member Reguler",
+                                  "Member Reguler",
                                   style: GoogleFonts.poppins(
                                     fontSize: _deviceWidth * 0.020,
-                                    color: isplatinum ? Colors.white : orange,
+                                    color: orange,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -462,7 +581,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               );
                             },
                             child: AutoSizeText(
-                              isplatinum ? "Top Up" : "Join Penyertaan",
+                              "Join Penyertaan",
                               style: GoogleFonts.poppins(
                                 fontSize: _deviceWidth * 0.032,
                                 color: Colors.white,
@@ -483,7 +602,7 @@ class _DashboardPageState extends State<DashboardPage> {
               SizedBox(height: _deviceHeight * 0.03),
               
               // Banner Penyertaan
-              _buildPenyertaanBanner(isplatinum),
+              _buildPenyertaanBanner(),
             ],
           ),
         ),
@@ -547,7 +666,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildPenyertaanBanner(bool isplatinum) {
+  Widget _buildPenyertaanBanner() {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(_deviceWidth * 0.04),
@@ -583,21 +702,18 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (!isplatinum)
-                  AutoSizeText(
-                    "Ingin Mengikuti Penyertaan?",
-                    style: GoogleFonts.poppins(
-                      fontSize: _deviceWidth * 0.035,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 2,
-                    minFontSize: 13,
+                AutoSizeText(
+                  "Ingin Mengikuti Penyertaan?",
+                  style: GoogleFonts.poppins(
+                    fontSize: _deviceWidth * 0.035,
+                    fontWeight: FontWeight.w700,
                   ),
+                  maxLines: 2,
+                  minFontSize: 13,
+                ),
                 SizedBox(height: _deviceHeight * 0.003),
                 AutoSizeText(
-                  isplatinum
-                      ? "Top up saldo minimal dimulai dari Rp500.000"
-                      : "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
+                  "Nikmati Keistimewaan Hanya dengan minimal Rp 500.000",
                   style: GoogleFonts.poppins(
                     fontSize: _deviceWidth * 0.028,
                     fontWeight: FontWeight.w500,
@@ -609,7 +725,8 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
-        ],      ),
+        ],
+      ),
     );
   }
 }

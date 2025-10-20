@@ -1,14 +1,13 @@
+//kode 3
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 
-/// Dialog versi dari halaman PilihNominalPembayaran tanpa mengubah file aslinya.
 class DialogPilihNominalPembayaran extends StatefulWidget {
   const DialogPilihNominalPembayaran({super.key});
 
@@ -89,29 +88,14 @@ class _DialogPilihNominalPembayaranState
     // Tutup dialog pilih nominal
     Navigator.of(context).pop();
 
-    // Langsung tampilkan DetailPembayaranAwalMember
-    DetailPembayaranAwalMember.show(
+    // Navigate ke MunculRekeningMemberBiasa dengan nominal sebagai argument
+    Navigator.pushNamed(
       context,
-      alertTitle: "Detail Pembayaran",
-      alertMessage: "Pastikan data pembayaran sudah benar.",
-      paymentTitle: "Detail Pembayaran",
-      paymentHeader: "Informasi Pembayaran",
-      paymentItems: [
-        PaymentItem(title: "Setoran Awal", price: "Rp 50.000"),
-        PaymentItem(
-          title: "Simpanan Wajib 1 Tahun Member UMKM",
-          price: "Rp 120.000",
-        ),
-        PaymentItem(
-          title: "Simpanan Penyertaan Modal",
-          price: formattedNominal,
-        ),
-      ],
-      totalPrice: _formatRupiah(total),
-      onPressed: () {
-        Navigator.of(context).pop(); // Tutup dialog pembayaran
-        // Navigate ke payment form dengan penyertaan
-        Navigator.pushNamed(context, '/payment-form');
+      '/payment-form',
+      arguments: {
+        'nominalPenyertaan': nominalInt,
+        'totalPembayaran': total,
+        'formattedNominal': formattedNominal,
       },
     );
   }
