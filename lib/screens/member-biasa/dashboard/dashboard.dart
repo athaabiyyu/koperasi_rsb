@@ -27,7 +27,6 @@ class _DashboardPageState extends State<DashboardPage> {
       final token = _getTokenFromContext();
       if (token != null && token.isNotEmpty) {
         context.read<TopupProvider>().fetchTopupHistory(token);
-        print('📲 Dashboard: Fetching topup history');
       }
     });
   }
@@ -38,7 +37,6 @@ class _DashboardPageState extends State<DashboardPage> {
       final authProvider = context.read<AuthProvider>();
       return authProvider.token;
     } catch (e) {
-      print('Error getting token: $e');
       return null;
     }
   }

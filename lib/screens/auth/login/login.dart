@@ -86,12 +86,6 @@ class _LoginPageState extends State<LoginPage> {
       if (success) {
         final userStatus = authProvider.userStatus;
 
-        print('=== LOGIN SUCCESS ===');
-        print('User Status: $userStatus');
-        print('User Role: ${authProvider.userRole}');
-        print('Remember Me: $_rememberMe');
-        print('====================');
-
         switch (userStatus) {
           case 'OTP TERKIRIM':
             ScaffoldMessenger.of(context).showSnackBar(

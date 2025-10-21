@@ -66,10 +66,8 @@ class _AlamatPageState extends State<AlamatPage> {
         setState(() {
           _provinces = provinces;
         });
-        print('Provinces loaded: ${_provinces.length}');
       }
     } catch (e) {
-      print('Error loading provinces: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -99,7 +97,6 @@ class _AlamatPageState extends State<AlamatPage> {
         });
       }
     } catch (e) {
-      print('Error loading regencies: $e');
       if (mounted) {
         setState(() => _isLoadingRegencies = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -128,7 +125,6 @@ class _AlamatPageState extends State<AlamatPage> {
         });
       }
     } catch (e) {
-      print('Error loading districts: $e');
       if (mounted) {
         setState(() => _isLoadingDistricts = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -170,11 +166,7 @@ class _AlamatPageState extends State<AlamatPage> {
               _savedRegencyCode = userData['kota']?.toString().trim();
               _savedDistrictCode = userData['kecamatan']?.toString().trim();
 
-              print('=== DEBUG LOAD DATA ===');
-              print('Saved Province Code: $_savedProvinceCode');
-              print('Saved Regency Code: $_savedRegencyCode');
-              print('Saved District Code: $_savedDistrictCode');
-              print('Available Provinces: ${_provinces.length}');
+          
 
               // Cari dan set provinsi berdasarkan code
               if (_savedProvinceCode != null &&
@@ -184,16 +176,9 @@ class _AlamatPageState extends State<AlamatPage> {
                   final province = _provinces.firstWhere(
                     (p) => p.code.trim() == _savedProvinceCode,
                   );
-
-                  print('Found Province: ${province.name} (${province.code})');
                   _selectedProvince = province;
-
-                  // Load regencies untuk provinsi ini
                   await _loadRegencies(province.code);
 
-                  print('Loaded Regencies: ${_regencies.length}');
-
-                  // Set regency jika ada
                   if (_savedRegencyCode != null &&
                       _savedRegencyCode!.isNotEmpty &&
                       _regencies.isNotEmpty) {
@@ -202,13 +187,10 @@ class _AlamatPageState extends State<AlamatPage> {
                         (r) => r.code.trim() == _savedRegencyCode,
                       );
 
-                      print('Found Regency: ${regency.name} (${regency.code})');
                       _selectedRegency = regency;
 
                       // Load districts untuk regency ini
                       await _loadDistricts(regency.code);
-
-                      print('Loaded Districts: ${_districts.length}');
 
                       // Set district jika ada
                       if (_savedDistrictCode != null &&
@@ -249,7 +231,6 @@ class _AlamatPageState extends State<AlamatPage> {
         }
       }
     } catch (e) {
-      print('Error loading user data: $e');
     } finally {
       if (mounted) {
         setState(() => _isFetching = false);

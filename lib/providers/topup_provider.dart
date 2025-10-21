@@ -57,7 +57,6 @@ class TopupProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      print('❌ Error fetching topup history: $e');
       setError('Terjadi kesalahan: $e');
       setLoading(false);
       return false;
@@ -87,7 +86,6 @@ class TopupProvider with ChangeNotifier {
       }
       return null;
     } catch (e) {
-      print('❌ Error getting topup detail: $e');
       return null;
     }
   }

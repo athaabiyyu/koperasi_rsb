@@ -57,11 +57,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-      print('=== OTP VERIFICATION ATTEMPT ===');
-      print('No HP: ${widget.noHp}');
-      print('OTP: $otpCode');
-      print('================================');
-
       // STEP 1: Login untuk mendapatkan token
       final loginSuccess = await authProvider.login(widget.noHp, widget.password);
 

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/widgets-global/card/top-up-card.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-topUp-saldo-simpanan-wajib.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/wallet_provider.dart';
 import 'package:koperasi_rsb/models/topup_model.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 
 class DompetPage extends StatefulWidget {
   const DompetPage({super.key});
@@ -34,14 +36,20 @@ class _DompetPageState extends State<DompetPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     
-    // Fetch topup history saat page load
+    // Fetch topup history dan wallet saldo saat page load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final token = _getTokenFromContext();
+      final userId = _getUserIdFromContext();
+      
       if (token != null && token.isNotEmpty) {
+        // Fetch topup history
         context.read<TopupProvider>().fetchTopupHistory(token);
-        print('📲 Fetching topup history with token: ${token.substring(0, 20)}...');
+        // Fetch wallet saldo
+        if (userId != null && userId.isNotEmpty) {
+          context.read<WalletProvider>().fetchWalletSaldo(token, userId);
+        } else {
+        }
       } else {
-        print('⚠️ Token not available, cannot fetch topup history');
         context.read<TopupProvider>().setError('Token tidak tersedia');
       }
     });
@@ -61,7 +69,16 @@ class _DompetPageState extends State<DompetPage>
       final authProvider = context.read<AuthProvider>();
       return authProvider.token;
     } catch (e) {
-      print('Error getting token: $e');
+      return null;
+    }
+  }
+
+  // Helper untuk ambil user ID dari AuthProvider
+  String? _getUserIdFromContext() {
+    try {
+      final authProvider = context.read<AuthProvider>();
+      return authProvider.userId;
+    } catch (e) {
       return null;
     }
   }
@@ -71,7 +88,7 @@ class _DompetPageState extends State<DompetPage>
     List<TopupModel> topups,
     String status,
   ) {
-  List<TopupModel> filtered = [];
+    List<TopupModel> filtered = [];
 
     if (status == "Menunggu Konfirmasi") {
       filtered = topups.where((t) => t.isPending).toList();
@@ -114,10 +131,11 @@ class _DompetPageState extends State<DompetPage>
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
-      final authProvider = Provider.of<AuthProvider>(context);
-      final userRole = authProvider.userRole ?? 'BASIC';
-      final isPlatinum = userRole == 'PLATINUM';
-      final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final userRole = authProvider.userRole ?? 'BASIC';
+    final isPlatinum = userRole == 'PLATINUM';
+    final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
 
     return WillPopScope(
       onWillPop: () async {
@@ -172,43 +190,65 @@ class _DompetPageState extends State<DompetPage>
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              SizedBox(
-                                height: 227,
-                                child: PageView(
-                                  controller: _pageController,
-                                  onPageChanged: (index) {
-                                    setState(() => _currentPage = index);
-                                  },
-                                  children: [
-                                     TopUpCard(
-                                        title: "Saldo Top Up",
-                                        amount: "Rp. 10.000.000",
-                                        onPressed: isPlatinum
-                                          ? () {
-                                              showDialogPilihNominalPembayaran(
-                                                  context);
-                                            }
-                                          : null,
-                                    ),
-                                    TopUpCard(
-                                      title: "Simpanan Wajib",
-                                      amount: "Rp 120.000",
-                                      onPressed: () {
-                                        showTopUpSimpananWajibDialog(
-                                          context: context,
-                                          namaAnggota: "Andi Hidayat",
-                                          tagihan: "April 2025",
-                                          nominalTagihan: "Rp 120.000",
-                                        );
+                              
+                              // Consumer WalletProvider untuk data dinamis
+                              Consumer<WalletProvider>(
+                                builder: (context, walletProvider, child) {
+                                  return SizedBox(
+                                    height: 227,
+                                    child: PageView(
+                                      controller: _pageController,
+                                      onPageChanged: (index) {
+                                        setState(() => _currentPage = index);
                                       },
+                                      children: [
+                                        // Card 1: Saldo Top Up
+                                        TopUpCard(
+                                          title: "Saldo Top Up",
+                                          amount: walletProvider.isLoading
+                                              ? "Loading..."
+                                              : walletProvider.formattedSaldoTopup,
+                                          onPressed: isPlatinum
+                                              ? () {
+                                                  showDialogPilihNominalPembayaran(
+                                                      context);
+                                                }
+                                              : null,
+                                        ),
+                                        
+                                        // Card 2: Simpanan Wajib
+                                        TopUpCard(
+                                          title: "Simpanan Wajib",
+                                          amount: walletProvider.isLoading
+                                              ? "Loading..."
+                                              : walletProvider.formattedSimpananWajib,
+                                          onPressed: () {
+                                            showTopUpSimpananWajibDialog(
+                                              context: context,
+                                              namaAnggota: userProvider.userName ?? "Member",
+                                              tagihan: "April 2025",
+                                              nominalTagihan: walletProvider
+                                                  .formattedSimpananWajib,
+                                            );
+                                          },
+                                        ),
+                                        
+                                        // Card 3: Simpanan Pokok
+                                        TopUpCard(
+                                          title: "Simpanan Pokok",
+                                          amount: walletProvider.isLoading
+                                              ? "Loading..."
+                                              : walletProvider.formattedSimpananPokok,
+                                        ),
+                                      ],
                                     ),
-                                    const TopUpCard(
-                                        title: "Simpanan Pokok",
-                                        amount: "Rp. 50.000"),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
+                              
                               const SizedBox(height: 12),
+                              
+                              // Page indicator
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(3, (index) {

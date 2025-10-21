@@ -1,25 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:koperasi_rsb/config/api_config.dart';
-import 'package:koperasi_rsb/models/topup_model.dart';  
-
+import 'package:koperasi_rsb/config/api_endpoint/payment_endpoints.dart';
+import 'package:koperasi_rsb/models/topup_model.dart';
 
 class TopupService {
   // Get topup history by user ID
   static Future<Map<String, dynamic>> getTopupByUserId(String token) async {
     try {
-      print('\n=== 🔄 FETCHING TOPUP HISTORY ===');
-      
-      final url = Uri.parse('${ApiConfig.baseUrl}/topup/user');
-      print('URL: $url');
-      
+      final url = Uri.parse(TopupEndpoints.getUserTopups);
       final response = await http.get(
         url,
         headers: ApiConfig.getAuthHeaders(token),
       );
-
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -31,15 +24,12 @@ class TopupService {
               .toList();
         }
 
-        print('✅ Successfully fetched ${topups.length} topups');
-        
         return {
           'success': true,
           'message': responseData['message'] ?? 'Topups found',
           'data': topups,
         };
       } else if (response.statusCode == 404) {
-        print('ℹ️ No topups found');
         return {
           'success': true,
           'message': 'Belum ada riwayat topup',
@@ -47,8 +37,7 @@ class TopupService {
         };
       } else {
         final errorData = json.decode(response.body);
-        print('❌ Error: ${errorData['message']}');
-        
+
         return {
           'success': false,
           'message': errorData['message'] ?? 'Gagal mengambil data topup',
@@ -56,7 +45,6 @@ class TopupService {
         };
       }
     } catch (e) {
-      print('❌ Exception: $e');
       return {
         'success': false,
         'message': 'Terjadi kesalahan: $e',
@@ -67,7 +55,7 @@ class TopupService {
 
   static Future<Map<String, dynamic>> getTopupById(String token, String topupId) async {
     try {
-      final url = Uri.parse('${ApiConfig.baseUrl}/topup/$topupId');
+      final url = Uri.parse(TopupEndpoints.getTopupById(topupId));
       
       final response = await http.get(
         url,
@@ -94,6 +82,128 @@ class TopupService {
       return {
         'success': false,
         'message': 'Terjadi kesalahan: $e',
+      };
+    }
+  }
+
+  // Get saldo topup
+  static Future<Map<String, dynamic>> getSaldoTopup(String token) async {
+    try {
+      final url = Uri.parse(TopupEndpoints.getSaldoTopup);
+      final response = await http.get(
+        url,
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final total = responseData['total'] ?? 0;
+
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Saldo topup retrieved',
+          'total': total,
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': true,
+          'message': 'No saldo found',
+          'total': 0,
+        };
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'message': errorData['message'] ?? 'Gagal mengambil saldo topup',
+          'total': 0,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: $e',
+        'total': 0,
+      };
+    }
+  }
+
+  // Get simpanan pokok
+  static Future<Map<String, dynamic>> getSimpananPokok(String token) async {
+    try {
+      final url = Uri.parse(TopupEndpoints.getSimpananPokok);
+      final response = await http.get(
+        url,
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final total = responseData['total'] ?? 0;
+      
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Simpanan pokok retrieved',
+          'total': total,
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': true,
+          'message': 'No simpanan pokok found',
+          'total': 0,
+        };
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'message': errorData['message'] ?? 'Gagal mengambil simpanan pokok',
+          'total': 0,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: $e',
+        'total': 0,
+      };
+    }
+  }
+
+  // Get simpanan wajib
+  static Future<Map<String, dynamic>> getSimpananWajib(String token) async {
+    try {
+      final url = Uri.parse(TopupEndpoints.getSimpananWajib);
+      final response = await http.get(
+        url,
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final total = responseData['total'] ?? 0;
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Simpanan wajib retrieved',
+          'total': total,
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': true,
+          'message': 'No simpanan wajib found',
+          'total': 0,
+        };
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'message': errorData['message'] ?? 'Gagal mengambil simpanan wajib',
+          'total': 0,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: $e',
+        'total': 0,
       };
     }
   }

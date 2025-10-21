@@ -47,19 +47,9 @@ class AuthProvider with ChangeNotifier {
           _userId = decodedToken['id'] as String?;
           _userRole = decodedToken['role'] as String?;
         }
-      }
-      
-      print('=== 📂 LOADED SAVED DATA ===');
-      print('Token exists: ${_token != null}');
-      print('User ID: $_userId');
-      print('User Status: $_userStatus');
-      print('User Role: $_userRole');
-      print('Remember Me: $_rememberMe');
-      print('============================');
-      
+      }  
       notifyListeners();
     } catch (e) {
-      print('❌ Error loading saved data: $e');
     }
   }
 
@@ -140,15 +130,6 @@ class AuthProvider with ChangeNotifier {
         );
         
         setLoading(false);
-        
-        print('=== 🎉 LOGIN SUCCESS ===');
-        print('Token: ${_token?.substring(0, 20)}...');
-        print('User ID: $_userId');
-        print('User Role: $_userRole');
-        print('User Status: $_userStatus');
-        print('Remember Me: $rememberMe');
-        print('========================\n');
-        
         notifyListeners();
         return true;
       } else {
@@ -157,9 +138,6 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      print('\n=== ❌ LOGIN ERROR ===');
-      print('Exception: $e');
-      print('======================\n');
       setError('Terjadi kesalahan: $e');
       setLoading(false);
       return false;
@@ -172,12 +150,8 @@ class AuthProvider with ChangeNotifier {
     setError(null);
 
     try {
-      print('\n=== DEBUG REGISTRATION DATA ===');
-      print('Raw _registrationData keys: ${_registrationData.keys.toList()}');
-      print('================================\n');
 
       final userModel = UserModel.fromRegistrationData(_registrationData);
-
       if (!userModel.isValid()) {
         setLoading(false);
         setError('Data registrasi tidak lengkap');
@@ -214,7 +188,6 @@ class AuthProvider with ChangeNotifier {
         return {'success': false, 'message': result['message']};
       }
     } catch (e) {
-      print('Exception: $e');
       setError('Terjadi kesalahan: ${e.toString()}');
       setLoading(false);
       return {'success': false, 'message': _errorMessage};
@@ -244,14 +217,6 @@ class AuthProvider with ChangeNotifier {
         if (_userStatus != null) {
           await SharedPreferencesHelper.saveUserStatus(_userStatus!);
         }
-        
-        print('=== ✅ LOGIN FOR TOKEN SUCCESS ===');
-        print('Token: ${_token?.substring(0, 20)}...');
-        print('User ID: $_userId');
-        print('User Role: $_userRole');
-        print('User Status: $_userStatus');
-        print('==================================');
-        
         setLoading(false);
         notifyListeners();
         return true;
@@ -270,14 +235,12 @@ class AuthProvider with ChangeNotifier {
   // REGISTER AND PAY (Combined flow)
   Future<Map<String, dynamic>> registerAndPay(PaymentModel paymentModel) async {
     try {
-      print('=== STEP 1: REGISTERING USER ===');
       final registerResult = await registerUser();
 
       if (!registerResult['success']) {
         return registerResult;
       }
 
-      print('=== STEP 2: LOGIN FOR TOKEN ===');
       final loginSuccess = await loginForToken();
 
       if (!loginSuccess) {
@@ -287,7 +250,6 @@ class AuthProvider with ChangeNotifier {
         };
       }
 
-      print('=== STEP 3: SUBMITTING PAYMENT ===');
       if (_token == null) {
         return {'success': false, 'message': 'Token tidak ditemukan'};
       }
@@ -312,14 +274,12 @@ Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
   int nominalPenyertaan,
 ) async {
   try {
-    print('=== STEP 1: REGISTERING USER ===');
     final registerResult = await registerUser();
 
     if (!registerResult['success']) {
       return registerResult;
     }
 
-    print('=== STEP 2: LOGIN FOR TOKEN ===');
     final loginSuccess = await loginForToken();
 
     if (!loginSuccess) {
@@ -329,7 +289,6 @@ Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
       };
     }
 
-    print('=== STEP 3: SUBMITTING INITIAL PAYMENT ===');
     if (_token == null) {
       return {'success': false, 'message': 'Token tidak ditemukan'};
     }
@@ -345,7 +304,6 @@ Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
       return paymentResult;
     }
 
-    print('=== STEP 4: UPGRADING TO PLATINUM ===');
     setLoading(true);
     final upgradePlatinumResult = await AuthService.upgradeToPlatinum(
       token: _token!,
@@ -356,9 +314,6 @@ Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
 
     return upgradePlatinumResult;
   } catch (e) {
-    print('\n=== ❌ REGISTER PAY UPGRADE ERROR ===');
-    print('Exception: $e');
-    print('=====================================\n');
     setError('Terjadi kesalahan: ${e.toString()}');
     setLoading(false);
     return {'success': false, 'message': _errorMessage};
@@ -388,20 +343,16 @@ Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
       try {
         final topupProvider = Provider.of<TopupProvider>(context, listen: false);
         topupProvider.clearTopupData();
-        print('🗑️ Topup data cleared');
       } catch (e) {
-        print('⚠️ Could not clear topup data: $e');
       }
     }
     
     // Clear data from SharedPreferences
     if (keepCredentials && _rememberMe) {
       await SharedPreferencesHelper.clearAllExceptCredentials();
-      print('🔓 Logout: Credentials kept');
     } else {
       await SharedPreferencesHelper.clearAll();
       _rememberMe = false;
-      print('🗑️ Logout: All data cleared');
     }
     
     notifyListeners();
@@ -420,7 +371,6 @@ Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
         final topupProvider = Provider.of<TopupProvider>(context, listen: false);
         topupProvider.clearTopupData();
       } catch (e) {
-        print('⚠️ Could not clear topup data: $e');
       }
     }
     

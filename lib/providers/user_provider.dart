@@ -40,7 +40,6 @@ class UserProvider with ChangeNotifier {
     required String token,
   }) async {
     try {
-      print('🔄 Fetching user profile for ID: $userId');
       
       final result = await _userService.getUserById(
         userId: userId,
@@ -55,16 +54,11 @@ class UserProvider with ChangeNotifier {
         if (_userName != null) {
           await SharedPreferencesHelper.saveUserName(_userName!);
         }
-        
-        print('✅ User profile fetched successfully');
-        print('   Name: $_userName');
         notifyListeners();
       } else {
-        print('⚠️ Failed to fetch profile: ${result['message']}');
         setError(result['message']);
       }
     } catch (e) {
-      print('❌ Error fetching profile: $e');
       setError('Terjadi kesalahan: ${e.toString()}');
     }
   }
@@ -75,11 +69,8 @@ class UserProvider with ChangeNotifier {
     required String token,
   }) async {
     try {
-      print('🔄 Refreshing user profile...');
       await fetchUserProfile(userId: userId, token: token);
-      print('✅ Profile refreshed successfully');
     } catch (e) {
-      print('❌ Error refreshing profile: $e');
       setError('Terjadi kesalahan: ${e.toString()}');
     }
   }
@@ -177,7 +168,6 @@ class UserProvider with ChangeNotifier {
     setError(null);
 
     try {
-      print('=== VERIFY OTP ===');
       final result = await _userService.verifyOtp(
         token: token,
         otp: otp,
@@ -193,9 +183,6 @@ class UserProvider with ChangeNotifier {
         return {'success': false, 'message': result['message']};
       }
     } catch (e) {
-      print('=== VERIFY OTP ERROR ===');
-      print('Exception: $e');
-      print('========================');
       setError('Terjadi kesalahan: ${e.toString()}');
       setLoading(false);
       return {'success': false, 'message': _errorMessage};

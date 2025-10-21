@@ -63,7 +63,6 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
       if (token != null && token.isNotEmpty) {
         context.read<TopupProvider>().fetchTopupHistory(token);
         // ignore: avoid_print
-        print('📲 Premium Dashboard: Fetching topup history');
       }
     });
   }
@@ -73,8 +72,6 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
       final authProvider = context.read<AuthProvider>();
       return authProvider.token;
     } catch (e) {
-      // ignore: avoid_print
-      print('Error getting token: $e');
       return null;
     }
   }

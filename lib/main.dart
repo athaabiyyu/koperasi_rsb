@@ -7,12 +7,13 @@ import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
 import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
 import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
-import 'package:koperasi_rsb/screens/member-premium/dashboard/dashboard_premium.dart';
-import 'package:koperasi_rsb/screens/member-premium/detail-penggunaan-token/detail_penggunaan_token.dart';
+import 'package:koperasi_rsb/screens/member-platinum/dashboard/dashboard_platinum.dart';
+import 'package:koperasi_rsb/screens/member-platinum/detail-penggunaan-token/detail_penggunaan_token.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
+import 'package:koperasi_rsb/providers/wallet_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => TopupProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
       ],
       child: MaterialApp(
         title: 'Koperasi RSB',

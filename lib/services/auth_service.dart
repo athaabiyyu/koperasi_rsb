@@ -14,7 +14,6 @@ class AuthService {
     try {
       final parts = token.split('.');
       if (parts.length != 3) {
-        print('❌ JWT token tidak valid: harus 3 bagian');
         return null;
       }
 
@@ -31,17 +30,14 @@ class AuthService {
           payload += '=';
           break;
         default:
-          print('❌ Base64 string tidak valid');
           return null;
       }
       
       final decoded = utf8.decode(base64.decode(payload));
-      print('🔍 JWT Payload (decoded): $decoded');
       final Map<String, dynamic> result = jsonDecode(decoded);
       
       return result;
     } catch (e) {
-      print('❌ Error decoding JWT: $e');
       return null;
     }
   }
@@ -57,11 +53,6 @@ class AuthService {
           'password': password,
         }),
       );
-
-      print('=== LOGIN RESPONSE DEBUG ===');
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-      print('============================');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -80,12 +71,6 @@ class AuthService {
             userId = decodedToken['id'] as String?;
             userStatus = decodedToken['status'] as String?;
             userRole = decodedToken['role'] as String?;
-            
-            print('\n=== ✅ JWT DECODED SUCCESSFULLY ===');
-            print('User ID: $userId');
-            print('Role: $userRole');
-            print('Status: $userStatus');
-            print('===================================\n');
           }
         }
 
@@ -105,9 +90,6 @@ class AuthService {
         };
       }
     } catch (e) {
-      print('\n=== ❌ LOGIN ERROR ===');
-      print('Exception: $e');
-      print('======================\n');
       return {
         'success': false,
         'message': 'Terjadi kesalahan: ${e.toString()}',
@@ -122,13 +104,6 @@ class AuthService {
     required File fotoKtp,
   }) async {
     try {
-      print('\n=== DEBUG USER MODEL ===');
-      print('nama: ${user.nama}');
-      print('no_hp: ${user.noHp}');
-      print('password: ${user.password.isNotEmpty ? "***" : "EMPTY"}');
-      print('isValid: ${user.isValid()}');
-      print('========================\n');
-
       if (!user.isValid()) {
         return {'success': false, 'message': 'Data registrasi tidak lengkap'};
       }
@@ -161,17 +136,8 @@ class AuthService {
         fotoKtp.path,
       );
       request.files.add(fotoKtpMultipart);
-
-      print('=== REGISTER USER DEBUG ===');
-      print('URL: ${AuthEndpoints.register}');
-      print('Files: foto_diri, foto_ktp');
-      print('===========================');
-
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -194,7 +160,6 @@ class AuthService {
         return {'success': false, 'message': errorMessage};
       }
     } catch (e) {
-      print('Exception: $e');
       return {'success': false, 'message': 'Terjadi kesalahan: ${e.toString()}'};
     }
   }
@@ -211,7 +176,7 @@ class AuthService {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse(PaymentEndpoints.payMember),
+        Uri.parse(TopupEndpoints.payMember),
       );
 
       request.headers.addAll({
@@ -229,17 +194,8 @@ class AuthService {
         ),
       );
 
-      print('=== PAY MEMBER DEBUG ===');
-      print('URL: ${PaymentEndpoints.payMember}');
-      print('Fields: ${request.fields}');
-      print('File: bukti_pembayaran');
-      print('========================');
-
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -260,11 +216,6 @@ class AuthService {
   required int nominal,
 }) async {
   try {
-    print('\n=== UPGRADE TO PLATINUM DEBUG ===');
-    print('URL: ${UserEndpoints.upgradePlatinum}');
-    print('Nominal Penyertaan: Rp ${nominal.toString()}');
-    print('Token exists: ${token.isNotEmpty}');
-
     final request = http.MultipartRequest(
       'POST',
       Uri.parse(UserEndpoints.upgradePlatinum),
@@ -280,9 +231,6 @@ class AuthService {
     request.fields['nama_pemilik_rekening'] = payment.namaPemilikRekening;
     request.fields['nominal'] = nominal.toString();
 
-    print('Fields: ${request.fields}');
-    print('File path: ${payment.buktiPembayaran.path}');
-
     // Add file
     final stream = payment.buktiPembayaran.openRead();
     final length = await payment.buktiPembayaran.length();
@@ -295,9 +243,6 @@ class AuthService {
     );
     request.files.add(multipartFile);
 
-    print('Multipart file added: ${multipartFile.filename}');
-    print('Sending request...\n');
-
     final response = await request.send().timeout(
       const Duration(seconds: 30),
       onTimeout: () {
@@ -307,11 +252,6 @@ class AuthService {
 
     final responseBody = await response.stream.bytesToString();
     final result = jsonDecode(responseBody);
-
-    print('=== UPGRADE PLATINUM RESPONSE ===');
-    print('Status Code: ${response.statusCode}');
-    print('Response Body: $result');
-    print('==================================\n');
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       return {
@@ -325,7 +265,6 @@ class AuthService {
       };
     }
   } catch (e) {
-    print('❌ Upgrade platinum error: $e\n');
     return {
       'success': false,
       'message': 'Terjadi kesalahan: $e'
