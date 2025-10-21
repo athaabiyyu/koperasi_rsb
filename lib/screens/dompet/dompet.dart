@@ -9,6 +9,7 @@ import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/models/topup_model.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 
 class DompetPage extends StatefulWidget {
   const DompetPage({super.key});
@@ -70,20 +71,7 @@ class _DompetPageState extends State<DompetPage>
     List<TopupModel> topups,
     String status,
   ) {
-    print('\n🔍 === DEBUG TOPUP DATA ===');
-    for (var i = 0; i < topups.length; i++) {
-      print('Topup $i:');
-      print('  - status: ${topups[i].status}');
-      print('  - isPending: ${topups[i].isPending}');
-      print('  - isSuccess: ${topups[i].isSuccess}');
-      print('  - jenis: ${topups[i].jenis}');
-      print('  - namaBank: ${topups[i].namaBank}');
-      print('  - displayDate: ${topups[i].displayDate}');
-      print('  - displayAmount: ${topups[i].displayAmount}');
-    }
-    print('=== END DEBUG ===\n');
-
-    List<TopupModel> filtered = [];
+  List<TopupModel> filtered = [];
 
     if (status == "Menunggu Konfirmasi") {
       filtered = topups.where((t) => t.isPending).toList();
@@ -97,12 +85,6 @@ class _DompetPageState extends State<DompetPage>
           .toList();
     }
 
-    print('🔍 Filter "$status": ${filtered.length} items');
-    for (var topup in filtered) {
-      print('  - Status: ${topup.status}, Jenis: ${topup.jenis}, Bank: ${topup.namaBank}');
-    }
-
-    // Convert TopupModel ke Map<String, String> untuk TransactionTable
     final result = filtered
         .map((topup) => {
               "tanggal": topup.displayDate,
@@ -111,12 +93,9 @@ class _DompetPageState extends State<DompetPage>
               "nominal": topup.displayAmount,
             })
         .toList();
-    
-    print('📊 Converted to Map: ${result.length} items');
     return result;
   }
-
-  // Filter berdasarkan search query
+  
   List<Map<String, String>> _searchFilter(
     List<Map<String, String>> data,
     String query,
@@ -135,10 +114,14 @@ class _DompetPageState extends State<DompetPage>
   @override
   Widget build(BuildContext context) {
     _deviceWidth = MediaQuery.of(context).size.width;
+      final authProvider = Provider.of<AuthProvider>(context);
+      final userRole = authProvider.userRole ?? 'BASIC';
+      final isPlatinum = userRole == 'PLATINUM';
+      final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushReplacementNamed(context, '/member-reguler');
+        Navigator.pushReplacementNamed(context, homeRoute);
         return false;
       },
       child: Scaffold(
@@ -150,7 +133,7 @@ class _DompetPageState extends State<DompetPage>
             if (!mounted) return;
             switch (i) {
               case 0:
-                Navigator.pushReplacementNamed(context, '/member-reguler');
+                Navigator.pushReplacementNamed(context, homeRoute);
                 break;
               case 1:
                 Navigator.pushReplacementNamed(context, '/my-project');
@@ -197,12 +180,19 @@ class _DompetPageState extends State<DompetPage>
                                     setState(() => _currentPage = index);
                                   },
                                   children: [
-                                    const TopUpCard(
+                                     TopUpCard(
                                         title: "Saldo Top Up",
-                                        amount: "Rp. 10.000.000"),
+                                        amount: "Rp. 10.000.000",
+                                        onPressed: isPlatinum
+                                          ? () {
+                                              showDialogPilihNominalPembayaran(
+                                                  context);
+                                            }
+                                          : null,
+                                    ),
                                     TopUpCard(
                                       title: "Simpanan Wajib",
-                                      amount: "Rp 500.000",
+                                      amount: "Rp 120.000",
                                       onPressed: () {
                                         showTopUpSimpananWajibDialog(
                                           context: context,

@@ -7,6 +7,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 
 class DialogPilihNominalPembayaran extends StatefulWidget {
   const DialogPilihNominalPembayaran({super.key});

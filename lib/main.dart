@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/screens/kontak%20admin/kontak-admin.dart';
-import 'package:koperasi_rsb/screens/member-biasa/dompet/dompet.dart';
+import 'package:koperasi_rsb/screens/dompet/dompet.dart';
 import 'package:koperasi_rsb/screens/profile/alamat_page.dart';
 import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
 import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
@@ -17,12 +17,12 @@ import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page3.dart';
-import 'package:koperasi_rsb/otp/verify_otp.dart';
+import 'package:koperasi_rsb/screens/otp/verify_otp.dart';
 import 'package:koperasi_rsb/splash_screen.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:koperasi_rsb/screens/member-biasa/pembayaran-awal/muncul-rekening-member-biasa.dart';
+import 'package:koperasi_rsb/widgets-global/form/muncul-rekening-member-biasa.dart';
 
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp

@@ -7,7 +7,7 @@ import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
-import 'package:koperasi_rsb/otp/verify_otp.dart';
+import 'package:koperasi_rsb/screens/otp/verify_otp.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
