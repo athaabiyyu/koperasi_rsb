@@ -1,16 +1,20 @@
-//kode 3
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
-import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 
 class DialogPilihNominalPembayaran extends StatefulWidget {
-  const DialogPilihNominalPembayaran({super.key});
+  final bool isTopUpOnly;
+  final bool isPenyertaan; // ✅ Flag baru untuk penyertaan
+  
+  const DialogPilihNominalPembayaran({
+    super.key,
+    this.isTopUpOnly = false,
+    this.isPenyertaan = false, // ✅ Default false
+  });
 
   @override
   State<DialogPilihNominalPembayaran> createState() =>
@@ -31,8 +35,9 @@ class _DialogPilihNominalPembayaranState
 
   void _submit() {
     print('=== _submit() dipanggil ===');
+    print('isTopUpOnly: ${widget.isTopUpOnly}');
+    print('isPenyertaan: ${widget.isPenyertaan}');
 
-    // Validasi form
     if (!_formKey.currentState!.validate()) {
       print('Form tidak valid');
       return;
@@ -40,7 +45,7 @@ class _DialogPilihNominalPembayaranState
 
     print('Form valid, dropdown value: $_dropdownValue');
 
-    // Ambil nominal mentah berdasarkan pilihan
+    // Ambil nominal mentah
     String rawNominal;
     if (_dropdownValue == 'Nominal Lainnya') {
       rawNominal = _nominalLainController.text.trim();
@@ -50,7 +55,7 @@ class _DialogPilihNominalPembayaranState
 
     print('Raw nominal: $rawNominal');
 
-    // Normalisasi string angka - hapus semua karakter non-digit
+    // Normalisasi string angka
     final numericString = rawNominal
         .toUpperCase()
         .replaceAll('RP', '')
@@ -79,17 +84,28 @@ class _DialogPilihNominalPembayaranState
     String formattedNominal = _formatRupiah(nominalInt);
     print('Formatted nominal: $formattedNominal');
 
-    // Hitung total pembayaran
-    final int setoranAwal = 50000;
-    final int simpananWajib = 120000;
-    final int total = setoranAwal + simpananWajib + nominalInt;
+    // ✅ Hitung total berdasarkan tipe transaksi
+    int total;
+    if (widget.isPenyertaan) {
+      // ✅ Penyertaan (upgrade platinum): hanya nominal penyertaan
+      total = nominalInt;
+      print('Penyertaan mode - Total: ${_formatRupiah(total)}');
+    } else if (widget.isTopUpOnly) {
+      // Top-up biasa: hanya nominal top-up
+      total = nominalInt;
+      print('Top-up only mode - Total: ${_formatRupiah(total)}');
+    } else {
+      // Registrasi: termasuk setoran awal + simpanan wajib
+      final int setoranAwal = 50000;
+      final int simpananWajib = 120000;
+      total = setoranAwal + simpananWajib + nominalInt;
+      print('Registration mode - Total: ${_formatRupiah(total)}');
+    }
 
-    print('Total pembayaran: ${_formatRupiah(total)}');
-
-    // Tutup dialog pilih nominal
+    // Tutup dialog
     Navigator.of(context).pop();
 
-    // Navigate ke MunculRekeningMemberBiasa dengan nominal sebagai argument
+    // Navigate dengan parameter
     Navigator.pushNamed(
       context,
       '/payment-form',
@@ -97,6 +113,8 @@ class _DialogPilihNominalPembayaranState
         'nominalPenyertaan': nominalInt,
         'totalPembayaran': total,
         'formattedNominal': formattedNominal,
+        'isTopUpOnly': widget.isTopUpOnly,
+        'isPenyertaan': widget.isPenyertaan, // ✅ Pass flag ke halaman berikutnya
       },
     );
   }
@@ -114,6 +132,14 @@ class _DialogPilihNominalPembayaranState
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    
+    // ✅ Sesuaikan pesan alert berdasarkan tipe transaksi
+    final alertMessage = widget.isPenyertaan
+        ? "Minimal penyertaan Rp500.000 dan berlaku kelipatan Rp500.000"
+        : widget.isTopUpOnly
+            ? "Minimal top-up Rp500.000 dan berlaku kelipatan Rp500.000"
+            : "Minimal setoran Rp500.000 dan berlaku kelipatan Rp500.000";
+    
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       backgroundColor: Colors.transparent,
@@ -139,10 +165,9 @@ class _DialogPilihNominalPembayaranState
                     },
                   ),
                 ),
-                const PembayaranSection(
+                PembayaranSection(
                   imagePath: 'assets/images/ava-payment.png',
-                  alertMessage:
-                      "Minimal setoran Rp500.000 dan berlaku kelipatan Rp500.000",
+                  alertMessage: alertMessage,
                 ),
                 const SizedBox(height: 12),
                 Form(
@@ -255,11 +280,21 @@ class _DialogPilihNominalPembayaranState
   }
 }
 
-Future<T?> showDialogPilihNominalPembayaran<T>(BuildContext context) {
+// ✅ Update fungsi show dialog untuk menerima parameter
+Future<T?> showDialogPilihNominalPembayaran<T>(
+  BuildContext context, {
+  bool isTopUpOnly = false,
+  bool isPenyertaan = false, // ✅ Parameter baru
+}) {
   print('=== showDialogPilihNominalPembayaran called ===');
+  print('isTopUpOnly: $isTopUpOnly');
+  print('isPenyertaan: $isPenyertaan');
   return showDialog<T>(
     context: context,
     barrierDismissible: true,
-    builder: (_) => const DialogPilihNominalPembayaran(),
+    builder: (_) => DialogPilihNominalPembayaran(
+      isTopUpOnly: isTopUpOnly,
+      isPenyertaan: isPenyertaan, // ✅ Pass parameter
+    ),
   );
 }

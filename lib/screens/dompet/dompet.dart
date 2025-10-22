@@ -35,20 +35,19 @@ class _DompetPageState extends State<DompetPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     // Fetch topup history dan wallet saldo saat page load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final token = _getTokenFromContext();
       final userId = _getUserIdFromContext();
-      
+
       if (token != null && token.isNotEmpty) {
         // Fetch topup history
         context.read<TopupProvider>().fetchTopupHistory(token);
         // Fetch wallet saldo
         if (userId != null && userId.isNotEmpty) {
           context.read<WalletProvider>().fetchWalletSaldo(token, userId);
-        } else {
-        }
+        } else {}
       } else {
         context.read<TopupProvider>().setError('Token tidak tersedia');
       }
@@ -112,7 +111,7 @@ class _DompetPageState extends State<DompetPage>
         .toList();
     return result;
   }
-  
+
   List<Map<String, String>> _searchFilter(
     List<Map<String, String>> data,
     String query,
@@ -190,7 +189,7 @@ class _DompetPageState extends State<DompetPage>
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              
+
                               // Consumer WalletProvider untuk data dinamis
                               Consumer<WalletProvider>(
                                 builder: (context, walletProvider, child) {
@@ -207,47 +206,57 @@ class _DompetPageState extends State<DompetPage>
                                           title: "Saldo Top Up",
                                           amount: walletProvider.isLoading
                                               ? "Loading..."
-                                              : walletProvider.formattedSaldoTopup,
+                                              : walletProvider
+                                                  .formattedSaldoTopup,
                                           onPressed: isPlatinum
                                               ? () {
                                                   showDialogPilihNominalPembayaran(
-                                                      context);
+                                                      context,
+                                                      isTopUpOnly: true);
                                                 }
                                               : null,
                                         ),
-                                        
+
                                         // Card 2: Simpanan Wajib
                                         TopUpCard(
                                           title: "Simpanan Wajib",
                                           amount: walletProvider.isLoading
                                               ? "Loading..."
-                                              : walletProvider.formattedSimpananWajib,
-                                          onPressed: () {
-                                            showTopUpSimpananWajibDialog(
-                                              context: context,
-                                              namaAnggota: userProvider.userName ?? "Member",
-                                              tagihan: "April 2025",
-                                              nominalTagihan: walletProvider
+                                              : walletProvider
                                                   .formattedSimpananWajib,
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/payment-form',
+                                              arguments: {
+                                                'nominalPenyertaan': 120000,
+                                                'totalPembayaran': 120000,
+                                                'formattedNominal':
+                                                    'Rp 120.000',
+                                                'isTopUpOnly': false,
+                                                'isSimpananWajib':
+                                                    true, // ✅ FLAG BARU
+                                              },
                                             );
                                           },
                                         ),
-                                        
+
                                         // Card 3: Simpanan Pokok
                                         TopUpCard(
                                           title: "Simpanan Pokok",
                                           amount: walletProvider.isLoading
                                               ? "Loading..."
-                                              : walletProvider.formattedSimpananPokok,
+                                              : walletProvider
+                                                  .formattedSimpananPokok,
                                         ),
                                       ],
                                     ),
                                   );
                                 },
                               ),
-                              
+
                               const SizedBox(height: 12),
-                              
+
                               // Page indicator
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -403,11 +412,13 @@ class _DompetPageState extends State<DompetPage>
                                         }
 
                                         // Filter data by tab
-                                        final menungguData = _filterDataByStatus(
+                                        final menungguData =
+                                            _filterDataByStatus(
                                           provider.topups,
                                           "Menunggu Konfirmasi",
                                         );
-                                        final berhasilData = _filterDataByStatus(
+                                        final berhasilData =
+                                            _filterDataByStatus(
                                           provider.topups,
                                           "Berhasil",
                                         );

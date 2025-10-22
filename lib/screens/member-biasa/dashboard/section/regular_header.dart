@@ -253,7 +253,11 @@ class RegularHeader extends StatelessWidget {
                               showDialogJoinPenyertaan(
                                 context: context,
                                 onJoin: () {
-                                  showDialogPilihNominalPembayaran(context);
+                                  // ✅ Set isPenyertaan = true untuk upgrade platinum
+                                  showDialogPilihNominalPembayaran(
+                                    context,
+                                    isPenyertaan: true,
+                                  );
                                 },
                                 onCancel: () {},
                               );

@@ -8,7 +8,7 @@ class WilayahEndpoints {
   
   static String districts(String regencyCode) => 
       '${ApiConfig.baseUrl}/wilayah/districts/$regencyCode';
-  
+
   static String villages(String districtCode) => 
       '${ApiConfig.baseUrl}/wilayah/villages/$districtCode';
 }

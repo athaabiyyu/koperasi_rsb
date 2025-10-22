@@ -80,6 +80,9 @@ class MyApp extends StatelessWidget {
               nominalPenyertaan: args?['nominalPenyertaan'] as int?,
               totalPembayaran: args?['totalPembayaran'] as int?,
               formattedNominal: args?['formattedNominal'] as String?,
+              isTopUpOnly: args?['isTopUpOnly'] as bool? ?? false,
+              isSimpananWajib: args?['isSimpananWajib'] as bool? ?? false,
+              isPenyertaan: args?['isPenyertaan'] as bool? ?? false,
             );
           },
         },

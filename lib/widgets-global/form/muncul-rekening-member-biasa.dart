@@ -1,9 +1,8 @@
-//kode 6
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-muncul-rekening.dart';
-import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart' 
+import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart'
     as form_konfirmasi;
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 
@@ -11,12 +10,18 @@ class MunculRekeningMemberBiasa extends StatefulWidget {
   final int? nominalPenyertaan;
   final int? totalPembayaran;
   final String? formattedNominal;
+  final bool isTopUpOnly;
+  final bool isSimpananWajib;
+  final bool isPenyertaan; // ✅ Flag baru untuk penyertaan
 
   const MunculRekeningMemberBiasa({
     Key? key,
     this.nominalPenyertaan,
     this.totalPembayaran,
     this.formattedNominal,
+    this.isSimpananWajib = false,
+    this.isTopUpOnly = false,
+    this.isPenyertaan = false, // ✅ Default false
   }) : super(key: key);
 
   @override
@@ -31,11 +36,6 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
   @override
   void initState() {
     super.initState();
-    print('=== MUNCUL REKENING MEMBER ===');
-    print('Nominal Penyertaan: ${widget.nominalPenyertaan}');
-    print('Total Pembayaran: ${widget.totalPembayaran}');
-    print('Formatted Nominal: ${widget.formattedNominal}');
-    print('==============================');
 
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -69,7 +69,7 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                       "•   Mohon transfer sesuai jumlah hingga 3 digit terakhir.",
                 ),
 
-                // Info nominal penyertaan jika ada
+                // ✅ Tampilkan rincian pembayaran berdasarkan tipe transaksi
                 if (widget.nominalPenyertaan != null &&
                     widget.nominalPenyertaan! > 0)
                   Container(
@@ -85,7 +85,13 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Rincian Pembayaran:',
+                          widget.isSimpananWajib
+                              ? 'Rincian Pembayaran Simpanan Wajib:'
+                              : widget.isPenyertaan
+                                  ? 'Rincian Penyertaan Modal:' // ✅ Label untuk penyertaan
+                                  : widget.isTopUpOnly
+                                      ? 'Rincian Top-Up:'
+                                      : 'Rincian Pembayaran:',
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
@@ -93,49 +99,117 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Setoran Awal',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.black54,
+
+                        // ✅ Tampilkan item berbeda berdasarkan tipe transaksi
+                        if (widget.isSimpananWajib) ...[
+                          // Hanya simpanan wajib 120.000
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Simpanan Wajib',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'Rp 50.000',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
+                              Text(
+                                'Rp 120.000',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Simpanan Wajib',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.black54,
+                            ],
+                          ),
+                        ] else if (widget.isPenyertaan) ...[
+                          // ✅ Penyertaan: hanya nominal penyertaan
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Penyertaan Modal',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'Rp 120.000',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
+                              Text(
+                                widget.formattedNominal ?? 'Rp 0',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        if (widget.nominalPenyertaan != null &&
-                            widget.nominalPenyertaan! > 0) ...[
+                            ],
+                          ),
+                        ] else if (widget.isTopUpOnly) ...[
+                          // Top-up biasa: hanya nominal top-up
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Nominal Top-Up',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              Text(
+                                widget.formattedNominal ?? 'Rp 0',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          // Registrasi: Setoran Awal + Simpanan Wajib + Penyertaan
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Setoran Awal',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              Text(
+                                'Rp 50.000',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Simpanan Wajib',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              Text(
+                                'Rp 120.000',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 4),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -158,6 +232,7 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                             ],
                           ),
                         ],
+
                         const Divider(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -171,7 +246,12 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                               ),
                             ),
                             Text(
-                              _formatRupiah(widget.totalPembayaran ?? 170000),
+                              _formatRupiah(widget.isSimpananWajib
+                                  ? 120000
+                                  : widget.totalPembayaran ??
+                                      (widget.isPenyertaan || widget.isTopUpOnly
+                                          ? widget.nominalPenyertaan ?? 0
+                                          : 170000)),
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -192,7 +272,10 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                   bankLogo: "assets/logo/bri-logo.png",
                   noRekening: "372 178 5022",
                   namaPemilik: "Koperasi Produksi Rejeki Sukses Berkah",
-                  totalPembayaran: _formatRupiah(widget.totalPembayaran ?? 170000),
+                  totalPembayaran: _formatRupiah(widget.totalPembayaran ??
+                      (widget.isPenyertaan || widget.isTopUpOnly
+                          ? widget.nominalPenyertaan ?? 0
+                          : 170000)),
                   onCopy: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -204,12 +287,19 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                   onKonfirmasi: () {
                     print('Navigate to KonfirmasiPembayaran');
                     print('Nominal: ${widget.nominalPenyertaan}');
-                    // ✅ Gunakan alias untuk menghindari ambiguity
+                    print('Is Top Up Only: ${widget.isTopUpOnly}');
+                    print('Is Penyertaan: ${widget.isPenyertaan}');
+
+                    // ✅ Pass flag isPenyertaan ke halaman konfirmasi
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => form_konfirmasi.KonfirmasiPembayaran(
+                        builder: (context) =>
+                            form_konfirmasi.KonfirmasiPembayaran(
                           nominalPenyertaan: widget.nominalPenyertaan,
+                          isTopUpOnly: widget.isTopUpOnly,
+                          isSimpananWajib: widget.isSimpananWajib,
+                          isPenyertaan: widget.isPenyertaan, 
                         ),
                       ),
                     );

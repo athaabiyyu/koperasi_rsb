@@ -153,12 +153,12 @@ class PremiumHeader extends StatelessWidget {
                   SizedBox(height: deviceHeight * 0.045),
                 ],
               ),
-              _buildPenyertaanBanner(
-                context,
-                isplatinum,
-                deviceHeight,
-                deviceWidth,
-              ),
+              // _buildPenyertaanBanner(
+              //   context,
+              //   isplatinum,
+              //   deviceHeight,
+              //   deviceWidth,
+              // ),
             ],
           ),
         ),
@@ -303,108 +303,108 @@ class PremiumHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildPenyertaanBanner(
-    BuildContext context,
-    bool isplatinum,
-    double deviceHeight,
-    double deviceWidth,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(deviceWidth * 0.055),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(deviceWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Image.asset(
-                  'assets/icons/join_penyertaan.png',
-                  width: deviceWidth * 0.09,
-                  height: deviceWidth * 0.09,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              SizedBox(width: deviceWidth * 0.03),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!isplatinum) ...[
-                      AutoSizeText(
-                        'Ingin Mengikuti Penyertaan?',
-                        style: GoogleFonts.poppins(
-                          fontSize: deviceWidth * 0.035,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 2,
-                        minFontSize: 12,
-                      ),
-                      SizedBox(height: deviceHeight * 0.008),
-                    ],
-                    AutoSizeText(
-                      isplatinum
-                          ? 'Top up saldo minimal dimulai dari Rp500.000'
-                          : 'Nikmati Keistimewaan Hanya dengan minimal Rp 500.000',
-                      style: GoogleFonts.poppins(
-                        fontSize: deviceWidth * 0.030,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 3,
-                      minFontSize: 11,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: deviceHeight * 0.015),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: orange,
-                padding: EdgeInsets.symmetric(vertical: deviceHeight * 0.015),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 2,
-              ),
-              onPressed: () {
-                showDialogJoinPenyertaan(
-                  context: context,
-                  onJoin: () {
-                    showDialogPilihNominalPembayaran(context);
-                  },
-                  onCancel: () {},
-                );
-              },
-              child: AutoSizeText(
-                isplatinum ? 'Top Up Penyertaan' : 'Join Penyertaan',
-                style: GoogleFonts.poppins(
-                  fontSize: deviceWidth * 0.038,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                minFontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  // Widget _buildPenyertaanBanner(
+  //   BuildContext context,
+  //   bool isplatinum,
+  //   double deviceHeight,
+  //   double deviceWidth,
+  // ) {
+  //   return Container(
+  //     width: double.infinity,
+  //     padding: EdgeInsets.all(deviceWidth * 0.055),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(12),
+  //       border: Border.all(color: Colors.grey.shade300),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Container(
+  //               padding: EdgeInsets.all(deviceWidth * 0.02),
+  //               decoration: BoxDecoration(
+  //                 color: orange.withOpacity(0.1),
+  //                 borderRadius: BorderRadius.circular(8),
+  //               ),
+  //               child: Image.asset(
+  //                 'assets/icons/join_penyertaan.png',
+  //                 width: deviceWidth * 0.09,
+  //                 height: deviceWidth * 0.09,
+  //                 fit: BoxFit.contain,
+  //               ),
+  //             ),
+  //             SizedBox(width: deviceWidth * 0.03),
+  //             Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   if (!isplatinum) ...[
+  //                     AutoSizeText(
+  //                       'Ingin Mengikuti Penyertaan?',
+  //                       style: GoogleFonts.poppins(
+  //                         fontSize: deviceWidth * 0.035,
+  //                         fontWeight: FontWeight.w700,
+  //                       ),
+  //                       maxLines: 2,
+  //                       minFontSize: 12,
+  //                     ),
+  //                     SizedBox(height: deviceHeight * 0.008),
+  //                   ],
+  //                   AutoSizeText(
+  //                     isplatinum
+  //                         ? 'Top up saldo minimal dimulai dari Rp500.000'
+  //                         : 'Nikmati Keistimewaan Hanya dengan minimal Rp 500.000',
+  //                     style: GoogleFonts.poppins(
+  //                       fontSize: deviceWidth * 0.030,
+  //                       fontWeight: FontWeight.w500,
+  //                       color: Colors.black87,
+  //                     ),
+  //                     maxLines: 3,
+  //                     minFontSize: 11,
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         SizedBox(height: deviceHeight * 0.015),
+  //         SizedBox(
+  //           width: double.infinity,
+  //           child: ElevatedButton(
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: orange,
+  //               padding: EdgeInsets.symmetric(vertical: deviceHeight * 0.015),
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(8),
+  //               ),
+  //               elevation: 2,
+  //             ),
+  //             onPressed: () {
+  //               showDialogJoinPenyertaan(
+  //                 context: context,
+  //                 onJoin: () {
+  //                   showDialogPilihNominalPembayaran(context);
+  //                 },
+  //                 onCancel: () {},
+  //               );
+  //             },
+  //             child: AutoSizeText(
+  //               isplatinum ? 'Top Up Penyertaan' : 'Join Penyertaan',
+  //               style: GoogleFonts.poppins(
+  //                 fontSize: deviceWidth * 0.038,
+  //                 color: Colors.white,
+  //                 fontWeight: FontWeight.w600,
+  //               ),
+  //               maxLines: 1,
+  //               minFontSize: 14,
+  //             )
+  //           ),
+  //         ),
+  //       ],
+    //   ),
+    // );
   }
-}
+
