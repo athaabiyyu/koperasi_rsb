@@ -1,10 +1,30 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/uploadFile-Form.dart';
 
 class ModelRencanaBisnisSection extends StatefulWidget {
-  const ModelRencanaBisnisSection({super.key});
+  final ValueChanged<String?>? onProvinsiChanged;
+  final ValueChanged<String?>? onKotaChanged;
+  final ValueChanged<String?>? onKecamatanChanged;
+  final TextEditingController? detailLokasiCtrl;
+  final TextEditingController? pendapatanCtrl;
+  final TextEditingController? pengeluaranCtrl;
+  final ValueChanged<File?>? onBrosurPicked;
+  final ValueChanged<File?>? onProyeksiPicked;
+
+  const ModelRencanaBisnisSection({
+    super.key,
+    this.onProvinsiChanged,
+    this.onKotaChanged,
+    this.onKecamatanChanged,
+    this.detailLokasiCtrl,
+    this.pendapatanCtrl,
+    this.pengeluaranCtrl,
+    this.onBrosurPicked,
+    this.onProyeksiPicked,
+  });
 
   @override
   State<ModelRencanaBisnisSection> createState() =>
@@ -58,12 +78,14 @@ class _ModelRencanaBisnisSectionState extends State<ModelRencanaBisnisSection> {
           hint: 'Pilih Provinsi',
           items: _provinsiList,
           validator: _requiredValue,
+          value: _selectedProvinsi,
           onChanged: (val) {
             setState(() {
               _selectedProvinsi = val;
               _selectedKota = null;
               _selectedKecamatan = null;
             });
+            widget.onProvinsiChanged?.call(val);
           },
         ),
         const SizedBox(height: 18),
@@ -73,12 +95,14 @@ class _ModelRencanaBisnisSectionState extends State<ModelRencanaBisnisSection> {
           label: 'Kabupaten/Kota',
           hint: 'Pilih Kabupaten/Kota',
           items: kotaItems,
+          value: _selectedKota,
           validator: _requiredValue,
           onChanged: (val) {
             setState(() {
               _selectedKota = val;
               _selectedKecamatan = null;
             });
+            widget.onKotaChanged?.call(val);
           },
         ),
         const SizedBox(height: 18),
@@ -88,56 +112,65 @@ class _ModelRencanaBisnisSectionState extends State<ModelRencanaBisnisSection> {
           label: 'Kecamatan',
           hint: 'Pilih Kecamatan',
           items: kecamatanItems,
+          value: _selectedKecamatan,
           validator: _requiredValue,
-          onChanged: (val) => setState(() => _selectedKecamatan = val),
+          onChanged: (val) {
+            setState(() => _selectedKecamatan = val);
+            widget.onKecamatanChanged?.call(val);
+          },
         ),
         const SizedBox(height: 18),
 
         // Detail Lokasi
-        const CustomTextFormField(
+        CustomTextFormField(
           label: 'Detail Lokasi Tempat Usaha',
           hint: 'Detail Lokasi (Nama Jalan, No. Rumah, Blok/Unit No., Patokan)',
           maxLines: 4,
           validator: _required,
+          controller: widget.detailLokasiCtrl,
         ),
         const SizedBox(height: 22),
 
         // Brosur Katalog Produk (Optional)
         const SizedBox(height: 6),
-        const FileUploadForm(
+        FileUploadForm(
           label: 'Brosur Katalog Produk (Opsional)',
           descriptions: ['Maksimum size file 10 MB.'],
           maxFileSizeMB: 10,
+          onFilePicked: widget.onBrosurPicked,
         ),
         const SizedBox(height: 22),
 
         // Pendapatan per bulan
-        const CustomTextFormField(
+        CustomTextFormField(
           label: 'Pendapatan Per Bulan',
           hint: 'Rp',
           keyboardType: TextInputType.number,
           validator: _required,
+          controller: widget.pendapatanCtrl,
         ),
         const SizedBox(height: 18),
 
         // Pengeluaran per bulan
-        const CustomTextFormField(
+        CustomTextFormField(
           label: 'Pengeluaran Per Bulan',
           hint: 'Rp',
           keyboardType: TextInputType.number,
           validator: _required,
+          controller: widget.pengeluaranCtrl,
         ),
         const SizedBox(height: 22),
 
         // Dokumen Proyeksi Proyek (required)
         const SizedBox(height: 6),
-        const FileUploadForm(
+        FileUploadForm(
           label: 'Dokumen Proyeksi Proyek',
           descriptions: [
             'Silakan unduh contoh dokumen di sini: Dokumen Proyeksi Proyek',
             'Maksimum size file 10 MB.',
           ],
           maxFileSizeMB: 10,
+          onFilePicked: widget.onProyeksiPicked,
           // isRequired: true,
         ),
       ],

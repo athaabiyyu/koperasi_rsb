@@ -22,12 +22,27 @@ class ProjectService {
       request.fields.addAll(project.toFormFields());
 
       // Optional file fields
+      MediaType _mediaTypeFromPath(String path) {
+        final ext = path.split('.').last.toLowerCase();
+        switch (ext) {
+          case 'png':
+            return MediaType('image', 'png');
+          case 'jpg':
+          case 'jpeg':
+            return MediaType('image', 'jpeg');
+          case 'pdf':
+            return MediaType('application', 'pdf');
+          default:
+            return MediaType('application', 'octet-stream');
+        }
+      }
+
       if (dokumenPendukung != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
             'dokumen_pendukung',
             dokumenPendukung.path,
-            contentType: MediaType('application', 'pdf'),
+            contentType: _mediaTypeFromPath(dokumenPendukung.path),
           ),
         );
       }
@@ -36,7 +51,7 @@ class ProjectService {
           await http.MultipartFile.fromPath(
             'brosur_produk',
             brosurProduk.path,
-            contentType: MediaType('application', 'pdf'),
+            contentType: _mediaTypeFromPath(brosurProduk.path),
           ),
         );
       }
@@ -45,7 +60,7 @@ class ProjectService {
           await http.MultipartFile.fromPath(
             'dokumen_proyeksi',
             dokumenProyeksi.path,
-            contentType: MediaType('application', 'pdf'),
+            contentType: _mediaTypeFromPath(dokumenProyeksi.path),
           ),
         );
       }

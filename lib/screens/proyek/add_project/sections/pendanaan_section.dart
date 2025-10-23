@@ -3,8 +3,17 @@ import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 
 class PendanaanSection extends StatelessWidget {
   final int? initialNominal;
+  final TextEditingController? nominalController;
+  final TextEditingController? asetJaminanController;
+  final TextEditingController? nilaiAsetController;
 
-  const PendanaanSection({super.key, this.initialNominal});
+  const PendanaanSection({
+    super.key,
+    this.initialNominal,
+    this.nominalController,
+    this.asetJaminanController,
+    this.nilaiAsetController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +25,23 @@ class PendanaanSection extends StatelessWidget {
           hint: 'Rp',
           keyboardType: TextInputType.number,
           validator: _required,
-          initialValue: initialNominal?.toString(),
+          initialValue: nominalController == null ? initialNominal?.toString() : null,
+          controller: nominalController,
         ),
         const SizedBox(height: 18),
-        const CustomTextFormField(
+        CustomTextFormField(
           label: 'Aset Jaminan',
           hint: 'Contoh: Mobil, Motor, dll',
           validator: _required,
+          controller: asetJaminanController,
         ),
         const SizedBox(height: 18),
-        const CustomTextFormField(
+        CustomTextFormField(
           label: 'Nilai Aset Jaminan',
           hint: 'Rp',
           keyboardType: TextInputType.number,
           validator: _required,
+          controller: nilaiAsetController,
         ),
       ],
     );
