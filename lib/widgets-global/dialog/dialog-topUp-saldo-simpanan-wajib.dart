@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:koperasi_rsb/screens/member-biasa/pembayaran-awal/muncul-rekening-member-biasa.dart';
+import 'package:koperasi_rsb/widgets-global/form/muncul-rekening-member-biasa.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 void _handlePayment(BuildContext context) {

@@ -11,22 +11,11 @@ class UserService {
     required String otp,
   }) async {
     try {
-      print('=== VERIFY OTP ===');
-      print('URL: ${UserEndpoints.verifyOtp}');
-      print('Token: ${token.substring(0, 20)}...');
-      print('OTP: $otp');
-      print('==================');
-
       final response = await http.post(
         Uri.parse(UserEndpoints.verifyOtp),
         headers: ApiConfig.getAuthHeaders(token),
         body: jsonEncode({'otp': otp}),
       );
-
-      print('=== VERIFY OTP RESPONSE ===');
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-      print('===========================');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -42,9 +31,6 @@ class UserService {
         };
       }
     } catch (e) {
-      print('=== VERIFY OTP ERROR ===');
-      print('Exception: $e');
-      print('========================');
       return {
         'success': false,
         'message': 'Terjadi kesalahan: ${e.toString()}',
@@ -63,12 +49,6 @@ class UserService {
         headers: ApiConfig.getAuthHeaders(token),
       );
 
-      print('=== GET USER BY ID ===');
-      print('URL: ${UserEndpoints.getUserById(userId)}');
-      print('Status Code: ${response.statusCode}');
-      print('Response: ${response.body}');
-      print('=====================');
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return {
@@ -83,7 +63,6 @@ class UserService {
         };
       }
     } catch (e) {
-      print('Exception: $e');
       return {
         'success': false,
         'message': 'Terjadi kesalahan: ${e.toString()}'
@@ -171,17 +150,8 @@ class UserService {
         request.files.add(fotoProfileMultipart);
       }
 
-      print('=== UPDATE USER DEBUG ===');
-      print('URL: ${UserEndpoints.updateUser(userId)}');
-      print('Fields: ${request.fields}');
-      print('Files: ${request.files.map((f) => f.field).join(", ")}');
-      print('========================');
-
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -198,7 +168,6 @@ class UserService {
         };
       }
     } catch (e) {
-      print('Exception: $e');
       return {
         'success': false,
         'message': 'Terjadi kesalahan: ${e.toString()}'

@@ -1,7 +1,8 @@
+// kode 5
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
-import 'package:koperasi_rsb/screens/member-biasa/pembayaran-awal/muncul-rekening-member-biasa.dart';
+import 'package:koperasi_rsb/widgets-global/form/muncul-rekening-member-biasa.dart';
 
 class PaymentItem {
   final String title;

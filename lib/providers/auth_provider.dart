@@ -37,10 +37,10 @@ class AuthProvider with ChangeNotifier {
     try {
       _token = await SharedPreferencesHelper.getToken();
       _userStatus = await SharedPreferencesHelper.getUserStatus();
-      
+
       final credentials = await SharedPreferencesHelper.getSavedCredentials();
       _rememberMe = credentials['remember_me'] ?? false;
-      
+
       if (_token != null) {
         final decodedToken = AuthService.decodeJwt(_token!);
         if (decodedToken != null) {
@@ -48,19 +48,8 @@ class AuthProvider with ChangeNotifier {
           _userRole = decodedToken['role'] as String?;
         }
       }
-      
-      print('=== 📂 LOADED SAVED DATA ===');
-      print('Token exists: ${_token != null}');
-      print('User ID: $_userId');
-      print('User Status: $_userStatus');
-      print('User Role: $_userRole');
-      print('Remember Me: $_rememberMe');
-      print('============================');
-      
       notifyListeners();
-    } catch (e) {
-      print('❌ Error loading saved data: $e');
-    }
+    } catch (e) {}
   }
 
   // Get saved credentials untuk auto-fill
@@ -110,7 +99,8 @@ class AuthProvider with ChangeNotifier {
   }
 
   // LOGIN
-  Future<bool> login(String noHp, String password, {bool rememberMe = false}) async {
+  Future<bool> login(String noHp, String password,
+      {bool rememberMe = false}) async {
     setLoading(true);
     setError(null);
 
@@ -122,7 +112,7 @@ class AuthProvider with ChangeNotifier {
         _userId = result['userId'];
         _userStatus = result['userStatus'];
         _userRole = result['userRole'];
-        
+
         // Save to SharedPreferences
         if (_token != null) {
           await SharedPreferencesHelper.saveToken(_token!);
@@ -130,7 +120,7 @@ class AuthProvider with ChangeNotifier {
         if (_userStatus != null) {
           await SharedPreferencesHelper.saveUserStatus(_userStatus!);
         }
-        
+
         // Save credentials jika remember me aktif
         _rememberMe = rememberMe;
         await SharedPreferencesHelper.saveCredentials(
@@ -138,17 +128,8 @@ class AuthProvider with ChangeNotifier {
           password: password,
           rememberMe: rememberMe,
         );
-        
+
         setLoading(false);
-        
-        print('=== 🎉 LOGIN SUCCESS ===');
-        print('Token: ${_token?.substring(0, 20)}...');
-        print('User ID: $_userId');
-        print('User Role: $_userRole');
-        print('User Status: $_userStatus');
-        print('Remember Me: $rememberMe');
-        print('========================\n');
-        
         notifyListeners();
         return true;
       } else {
@@ -157,9 +138,6 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      print('\n=== ❌ LOGIN ERROR ===');
-      print('Exception: $e');
-      print('======================\n');
       setError('Terjadi kesalahan: $e');
       setLoading(false);
       return false;
@@ -172,12 +150,7 @@ class AuthProvider with ChangeNotifier {
     setError(null);
 
     try {
-      print('\n=== DEBUG REGISTRATION DATA ===');
-      print('Raw _registrationData keys: ${_registrationData.keys.toList()}');
-      print('================================\n');
-
       final userModel = UserModel.fromRegistrationData(_registrationData);
-
       if (!userModel.isValid()) {
         setLoading(false);
         setError('Data registrasi tidak lengkap');
@@ -186,13 +159,13 @@ class AuthProvider with ChangeNotifier {
 
       File? fotoDiriFile = _registrationData['foto_diri_file'] as File?;
       File? fotoKtpFile = _registrationData['foto_ktp_file'] as File?;
-      
+
       if (fotoDiriFile == null) {
         setError('File foto diri tidak ditemukan');
         setLoading(false);
         return {'success': false, 'message': 'File foto diri tidak ditemukan'};
       }
-      
+
       if (fotoKtpFile == null) {
         setError('File KTP tidak ditemukan');
         setLoading(false);
@@ -214,7 +187,6 @@ class AuthProvider with ChangeNotifier {
         return {'success': false, 'message': result['message']};
       }
     } catch (e) {
-      print('Exception: $e');
       setError('Terjadi kesalahan: ${e.toString()}');
       setLoading(false);
       return {'success': false, 'message': _errorMessage};
@@ -237,21 +209,13 @@ class AuthProvider with ChangeNotifier {
         _userId = result['userId'];
         _userStatus = result['userStatus'];
         _userRole = result['userRole'];
-        
+
         if (_token != null) {
           await SharedPreferencesHelper.saveToken(_token!);
         }
         if (_userStatus != null) {
           await SharedPreferencesHelper.saveUserStatus(_userStatus!);
         }
-        
-        print('=== ✅ LOGIN FOR TOKEN SUCCESS ===');
-        print('Token: ${_token?.substring(0, 20)}...');
-        print('User ID: $_userId');
-        print('User Role: $_userRole');
-        print('User Status: $_userStatus');
-        print('==================================');
-        
         setLoading(false);
         notifyListeners();
         return true;
@@ -270,24 +234,22 @@ class AuthProvider with ChangeNotifier {
   // REGISTER AND PAY (Combined flow)
   Future<Map<String, dynamic>> registerAndPay(PaymentModel paymentModel) async {
     try {
-      print('=== STEP 1: REGISTERING USER ===');
       final registerResult = await registerUser();
 
       if (!registerResult['success']) {
         return registerResult;
       }
 
-      print('=== STEP 2: LOGIN FOR TOKEN ===');
       final loginSuccess = await loginForToken();
 
       if (!loginSuccess) {
         return {
           'success': false,
-          'message': 'Registrasi berhasil, tetapi gagal login otomatis. Silakan login manual.'
+          'message':
+              'Registrasi berhasil, tetapi gagal login otomatis. Silakan login manual.'
         };
       }
 
-      print('=== STEP 3: SUBMITTING PAYMENT ===');
       if (_token == null) {
         return {'success': false, 'message': 'Token tidak ditemukan'};
       }
@@ -307,77 +269,185 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // LOGOUT
-  Future<bool> logout({bool keepCredentials = false, BuildContext? context}) async {
-  setLoading(true);
-  setError(null);
+  // REGISTER, PAY MEMBER, AND UPGRADE PLATINUM (Combined flow)
+  Future<Map<String, dynamic>> registerPayAndUpgradePlatinum(
+    PaymentModel paymentModel,
+    int nominalPenyertaan,
+  ) async {
+    try {
+      final registerResult = await registerUser();
 
-  try {
-    final result = await AuthService.logout(token: _token);
-
-    setLoading(false);
-
-    // Clear state
-    _token = null;
-    _userStatus = null;
-    _userRole = null;
-    _userId = null;
-    _registrationData = {};
-    _errorMessage = null;
-    
-    // Clear topup data from TopupProvider if context is provided
-    if (context != null) {
-      try {
-        final topupProvider = Provider.of<TopupProvider>(context, listen: false);
-        topupProvider.clearTopupData();
-        print('🗑️ Topup data cleared');
-      } catch (e) {
-        print('⚠️ Could not clear topup data: $e');
+      if (!registerResult['success']) {
+        return registerResult;
       }
-    }
-    
-    // Clear data from SharedPreferences
-    if (keepCredentials && _rememberMe) {
-      await SharedPreferencesHelper.clearAllExceptCredentials();
-      print('🔓 Logout: Credentials kept');
-    } else {
-      await SharedPreferencesHelper.clearAll();
-      _rememberMe = false;
-      print('🗑️ Logout: All data cleared');
-    }
-    
-    notifyListeners();
-    return result['success'] == true;
-  } catch (e) {
-    // Clear state even on error
-    _token = null;
-    _userStatus = null;
-    _userRole = null;
-    _userId = null;
-    _registrationData = {};
-    
-    // Clear topup data
-    if (context != null) {
-      try {
-        final topupProvider = Provider.of<TopupProvider>(context, listen: false);
-        topupProvider.clearTopupData();
-      } catch (e) {
-        print('⚠️ Could not clear topup data: $e');
+
+      final loginSuccess = await loginForToken();
+
+      if (!loginSuccess) {
+        return {
+          'success': false,
+          'message':
+              'Registrasi berhasil, tetapi gagal login otomatis. Silakan login manual.'
+        };
       }
+
+      if (_token == null) {
+        return {'success': false, 'message': 'Token tidak ditemukan'};
+      }
+
+      setLoading(true);
+      final paymentResult = await AuthService.payMember(
+        token: _token!,
+        payment: paymentModel,
+      );
+      setLoading(false);
+
+      if (paymentResult['success'] != true) {
+        return paymentResult;
+      }
+
+      setLoading(true);
+      final upgradePlatinumResult = await AuthService.upgradeToPlatinum(
+        token: _token!,
+        payment: paymentModel,
+        nominal: nominalPenyertaan,
+      );
+      setLoading(false);
+
+      return upgradePlatinumResult;
+    } catch (e) {
+      setError('Terjadi kesalahan: ${e.toString()}');
+      setLoading(false);
+      return {'success': false, 'message': _errorMessage};
     }
-    
-    setError('Terjadi kesalahan: $e');
-    setLoading(false);
-    
-    if (keepCredentials && _rememberMe) {
-      await SharedPreferencesHelper.clearAllExceptCredentials();
-    } else {
-      await SharedPreferencesHelper.clearAll();
-      _rememberMe = false;
-    }
-    
-    notifyListeners();
-    return false;
   }
-}
+
+  Future<Map<String, dynamic>> upgradeToPlatinum(
+    PaymentModel paymentModel,
+    int nominalPenyertaan,
+  ) async {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Validasi token
+      if (_token == null || _token!.isEmpty) {
+        setLoading(false);
+        setError('Token tidak valid. Silakan login kembali.');
+        return {
+          'success': false,
+          'message': 'Token tidak valid. Silakan login kembali.'
+        };
+      }
+
+      // Validasi nominal
+      if (nominalPenyertaan <= 0) {
+        setLoading(false);
+        setError('Nominal penyertaan tidak valid');
+        return {'success': false, 'message': 'Nominal penyertaan tidak valid'};
+      }
+
+      // Panggil service upgrade to platinum
+      final result = await AuthService.upgradeToPlatinum(
+        token: _token!,
+        payment: paymentModel,
+        nominal: nominalPenyertaan,
+      );
+
+      setLoading(false);
+
+      if (result['success'] == true) {
+        // Optional: Update user status jika diperlukan
+        // _userStatus = 'pending_platinum';
+        notifyListeners();
+        return {
+          'success': true,
+          'message': result['message'] ?? 'Upgrade platinum berhasil diajukan'
+        };
+      } else {
+        setError(result['message']);
+        return {
+          'success': false,
+          'message': result['message'] ?? 'Upgrade platinum gagal'
+        };
+      }
+    } catch (e) {
+      setError('Terjadi kesalahan: ${e.toString()}');
+      setLoading(false);
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: ${e.toString()}'
+      };
+    }
+  }
+
+  // LOGOUT
+  Future<bool> logout(
+      {bool keepCredentials = false, BuildContext? context}) async {
+    setLoading(true);
+    setError(null);
+
+    try {
+      final result = await AuthService.logout(token: _token);
+
+      setLoading(false);
+
+      // Clear state
+      _token = null;
+      _userStatus = null;
+      _userRole = null;
+      _userId = null;
+      _registrationData = {};
+      _errorMessage = null;
+
+      // Clear topup data from TopupProvider if context is provided
+      if (context != null) {
+        try {
+          final topupProvider =
+              Provider.of<TopupProvider>(context, listen: false);
+          topupProvider.clearTopupData();
+        } catch (e) {}
+      }
+
+      // Clear data from SharedPreferences
+      if (keepCredentials && _rememberMe) {
+        await SharedPreferencesHelper.clearAllExceptCredentials();
+      } else {
+        await SharedPreferencesHelper.clearAll();
+        _rememberMe = false;
+      }
+
+      notifyListeners();
+      return result['success'] == true;
+    } catch (e) {
+      // Clear state even on error
+      _token = null;
+      _userStatus = null;
+      _userRole = null;
+      _userId = null;
+      _registrationData = {};
+
+      // Clear topup data
+      if (context != null) {
+        try {
+          final topupProvider =
+              Provider.of<TopupProvider>(context, listen: false);
+          topupProvider.clearTopupData();
+        } catch (e) {}
+      }
+
+      setError('Terjadi kesalahan: $e');
+      setLoading(false);
+
+      if (keepCredentials && _rememberMe) {
+        await SharedPreferencesHelper.clearAllExceptCredentials();
+      } else {
+        await SharedPreferencesHelper.clearAll();
+        _rememberMe = false;
+      }
+
+      notifyListeners();
+      return false;
+    }
+  }
 }

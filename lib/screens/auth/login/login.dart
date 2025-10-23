@@ -7,7 +7,7 @@ import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
-import 'package:koperasi_rsb/otp/verify_otp.dart';
+import 'package:koperasi_rsb/screens/otp/verify_otp.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -49,7 +49,12 @@ class _LoginPageState extends State<LoginPage> {
 
     if (credentials['no_hp'] != null && credentials['password'] != null) {
       setState(() {
-        _phoneController.text = credentials['no_hp']!;
+        // Remove '62' prefix jika ada untuk display di UI
+        String phoneNumber = credentials['no_hp']!;
+        if (phoneNumber.startsWith('62')) {
+          phoneNumber = phoneNumber.substring(2);
+        }
+        _phoneController.text = phoneNumber;
         _passwordController.text = credentials['password']!;
         _rememberMe = credentials['remember_me'] == 'true';
       });
@@ -80,11 +85,6 @@ class _LoginPageState extends State<LoginPage> {
 
       if (success) {
         final userStatus = authProvider.userStatus;
-
-        print('=== LOGIN SUCCESS ===');
-        print('User Status: $userStatus');
-        print('Remember Me: $_rememberMe');
-        print('====================');
 
         switch (userStatus) {
           case 'OTP TERKIRIM':
@@ -135,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
             break;
 
           case 'AKTIF':
-            // ⭐ TAMBAH: Fetch user profile sebelum navigate ke dashboard
+            // Fetch user profile sebelum navigate ke dashboard
             if (authProvider.userId != null && authProvider.token != null) {
               try {
                 await userProvider.fetchUserProfile(
@@ -145,7 +145,6 @@ class _LoginPageState extends State<LoginPage> {
                 print('✅ User profile fetched successfully after login');
               } catch (e) {
                 print('⚠️ Warning: Failed to fetch user profile: $e');
-                // Tetap lanjut ke dashboard meskipun fetch gagal
               }
             }
 
@@ -179,8 +178,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // Judul dialog
                       Text(
                         'Login berhasil!',
                         textAlign: TextAlign.center,
@@ -190,10 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                           color: darkGreen,
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
-                      // Pesan tambahan
                       Text(
                         'Selamat datang di Koperasi RSB.',
                         textAlign: TextAlign.center,
@@ -210,7 +204,14 @@ class _LoginPageState extends State<LoginPage> {
             );
             Future.delayed(const Duration(seconds: 2), () {
               Navigator.of(context).pop();
-              Navigator.pushReplacementNamed(context, '/dashboard');
+              
+              // Navigate berdasarkan role
+              final userRole = authProvider.userRole;
+              if (userRole == 'PLATINUM') {
+                Navigator.pushReplacementNamed(context, '/member-platinum');
+              } else {
+                Navigator.pushReplacementNamed(context, '/member-reguler');
+              }
             });
             break;
 

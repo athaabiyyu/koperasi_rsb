@@ -3,6 +3,8 @@ import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
 import 'package:koperasi_rsb/screens/proyek/add_project.dart';
 import 'package:koperasi_rsb/screens/proyek/project_detail.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});
@@ -68,13 +70,17 @@ class _MyProjectPageState extends State<MyProjectPage>
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     final _deviceWidth = MediaQuery.of(context).size.width;
     final _deviceHeight = MediaQuery.of(context).size.height;
+    final userRole = authProvider.userRole ?? 'BASIC';
+    final isPlatinum = userRole == 'PLATINUM';
+    final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
 
     return WillPopScope(
       onWillPop: () async {
         // Navigasi ke DashboardPage dan hapus halaman sekarang dari stack
-        Navigator.pushReplacementNamed(context, '/member-reguler');
+        Navigator.pushReplacementNamed(context, homeRoute);
         return false; // mencegah pop default
       },
       child: DefaultTabController(
@@ -88,7 +94,7 @@ class _MyProjectPageState extends State<MyProjectPage>
               if (!mounted) return;
               switch (i) {
                 case 0:
-                  Navigator.pushReplacementNamed(context, '/member-reguler');
+                  Navigator.pushReplacementNamed(context, homeRoute);
                   break;
                 case 2:
                   Navigator.pushReplacementNamed(context, '/wallet');

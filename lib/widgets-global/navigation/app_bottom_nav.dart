@@ -4,17 +4,24 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onItemSelected;
+  final String? userRole; // Tambahkan parameter userRole
 
-  const AppBottomNav(
-      {super.key, required this.currentIndex, this.onItemSelected});
+  const AppBottomNav({
+    super.key,
+    required this.currentIndex,
+    this.onItemSelected,
+    this.userRole, // Tambahkan di constructor
+  });
 
   @override
   Widget build(BuildContext context) {
     final double _deviceHeight = MediaQuery.of(context).size.height;
     final double _deviceWidth = MediaQuery.of(context).size.width;
-    // Responsive sizes per device width (follow the variable style used in dashboard.dart)
+    
+    // Responsive sizes
     final double boxSize = (_deviceWidth * 0.11).clamp(34.0, 48.0);
     final double iconSize = (_deviceWidth * 0.068).clamp(22.0, 28.0);
+    
     return SafeArea(
       top: false,
       child: Container(
@@ -22,9 +29,10 @@ class AppBottomNav extends StatelessWidget {
           color: darkGreen,
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, -2))
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            )
           ],
         ),
         padding: EdgeInsets.only(

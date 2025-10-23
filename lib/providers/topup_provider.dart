@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/models/topup_model.dart';
 import 'package:koperasi_rsb/services/topup_service.dart';
@@ -38,6 +39,126 @@ class TopupProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Tambahkan method baru di class TopupProvider
+  Future<Map<String, dynamic>> submitSimpananWajib({
+    required String token,
+    required String namaBank,
+    required String noRekening,
+    required String namaPemilikRekening,
+    required File buktiPembayaran,
+  }) async {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (token.isEmpty) {
+        throw Exception('Token tidak valid atau kosong');
+      }
+
+      if (!buktiPembayaran.existsSync()) {
+        throw Exception('File bukti pembayaran tidak ditemukan');
+      }
+
+      final result = await TopupService.paySimpananWajib(
+        token: token,
+        namaBank: namaBank,
+        noRekening: noRekening,
+        namaPemilikRekening: namaPemilikRekening,
+        buktiPembayaran: buktiPembayaran,
+      );
+
+      setLoading(false);
+
+      if (result['success'] == true) {
+        // Refresh topup history setelah submit
+        try {
+          await fetchTopupHistory(token);
+        } catch (e) {
+          print('Error refreshing history: $e');
+        }
+
+        return {
+          'success': true,
+          'message': result['message'] ?? 'Simpanan wajib berhasil diajukan',
+        };
+      } else {
+        setError(result['message']);
+        return {
+          'success': false,
+          'message': result['message'] ?? 'Gagal mengajukan simpanan wajib',
+        };
+      }
+    } catch (e) {
+      setLoading(false);
+      setError('Terjadi kesalahan: $e');
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: $e',
+      };
+    }
+  }
+
+  // ✅ SUBMIT TOPUP PAYMENT
+  Future<Map<String, dynamic>> submitTopup({
+    required String token,
+    required String namaBank,
+    required String noRekening,
+    required String namaPemilikRekening,
+    required int nominal,
+    required File buktiPembayaran,
+  }) async {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Validate token
+      if (token.isEmpty) {
+        throw Exception('Token tidak valid atau kosong');
+      }
+
+      // Validate file
+      if (!buktiPembayaran.existsSync()) {
+        throw Exception('File bukti pembayaran tidak ditemukan');
+      }
+
+      final result = await TopupService.payTopup(
+        token: token,
+        namaBank: namaBank,
+        noRekening: noRekening,
+        namaPemilikRekening: namaPemilikRekening,
+        nominal: nominal,
+        buktiPembayaran: buktiPembayaran,
+      );
+
+      setLoading(false);
+
+      if (result['success'] == true) {
+        // ✅ Refresh topup history setelah submit
+        try {
+          await fetchTopupHistory(token);
+        } catch (e) {}
+
+        return {
+          'success': true,
+          'message': result['message'] ?? 'Topup berhasil diajukan',
+        };
+      } else {
+        setError(result['message']);
+        return {
+          'success': false,
+          'message': result['message'] ?? 'Gagal mengajukan topup',
+        };
+      }
+    } catch (e) {
+      setLoading(false);
+      setError('Terjadi kesalahan: $e');
+      return {
+        'success': false,
+        'message': 'Terjadi kesalahan: $e',
+      };
+    }
+  }
+
   // Fetch topup history
   Future<bool> fetchTopupHistory(String token) async {
     setLoading(true);
@@ -45,14 +166,8 @@ class TopupProvider with ChangeNotifier {
 
     try {
       final result = await TopupService.getTopupByUserId(token);
-
       if (result['success'] == true) {
         _topups = result['data'] as List<TopupModel>;
-        
-        print('=== 📊 TOPUP HISTORY LOADED ===');
-        print('Total topups: ${_topups.length}');
-        print('================================');
-        
         setLoading(false);
         notifyListeners();
         return true;
@@ -62,7 +177,6 @@ class TopupProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      print('❌ Error fetching topup history: $e');
       setError('Terjadi kesalahan: $e');
       setLoading(false);
       return false;
@@ -86,13 +200,11 @@ class TopupProvider with ChangeNotifier {
   Future<TopupModel?> getTopupById(String token, String topupId) async {
     try {
       final result = await TopupService.getTopupById(token, topupId);
-      
       if (result['success'] == true) {
         return result['data'] as TopupModel;
       }
       return null;
     } catch (e) {
-      print('❌ Error getting topup detail: $e');
       return null;
     }
   }

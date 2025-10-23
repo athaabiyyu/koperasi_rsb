@@ -1,3 +1,4 @@
+// kode 1
 import 'dart:io';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:path/path.dart' as path;
@@ -62,75 +63,80 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
 
   // Validasi form dan tampilkan dialog
   // Ganti method _onDaftarButtonPressed di RegistrationPage3
-  void _onDaftarButtonPressed() {
-    if (!_formKey.currentState!.validate()) return;
+ void _onDaftarButtonPressed() {
+  if (!_formKey.currentState!.validate()) return;
 
-    // Validasi kedua file harus diupload
-    if (_fotoDiri == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Harap upload foto diri'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (_fotoKtp == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Harap upload foto KTP'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Simpan NIK dan kedua file ke provider
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    authProvider.saveRegistrationStep({
-      'nik': _nikController.text.trim(),
-      'foto_diri_file': _fotoDiri,
-      'foto_ktp_file': _fotoKtp,
-    });
-
-    // Tampilkan dialog join penyertaan
-    showDialogJoinPenyertaan(
-      context: context,
-      onJoin: () {
-        // User memilih join penyertaan - arahkan ke DialogPilihNominalPembayaran
-        print("User joined penyertaan");
-        Navigator.of(context).pop(); // Tutup dialog join penyertaan
-
-        // Tampilkan dialog pilih nominal
-        // Dialog akan langsung menampilkan DetailPembayaranAwalMember setelah submit
-        showDialogPilihNominalPembayaran(context);
-      },
-      onCancel: () {
-        // User memilih skip penyertaan, tampilkan detail pembayaran tanpa penyertaan
-        Navigator.of(context).pop(); // Tutup dialog join penyertaan
-        DetailPembayaranAwalMember.show(
-          context,
-          alertTitle: "Detail Pembayaran",
-          alertMessage: "Pastikan data pembayaran sudah benar.",
-          paymentTitle: "Detail Pembayaran",
-          paymentHeader: "Informasi Pembayaran",
-          paymentItems: [
-            PaymentItem(title: "Setoran Awal", price: "Rp 50.000"),
-            PaymentItem(
-                title: "Simpanan Wajib 1 Tahun Member UMKM",
-                price: "Rp 120.000"),
-          ],
-          totalPrice: "Rp 170.000",
-          onPressed: () {
-            Navigator.of(context).pop(); // Tutup dialog pembayaran
-            // Navigate ke payment form tanpa penyertaan
-            Navigator.pushNamed(context, '/payment-form');
-          },
-        );
-      },
+  if (_fotoDiri == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Harap upload foto diri'),
+        backgroundColor: Colors.red,
+      ),
     );
+    return;
   }
+
+  if (_fotoKtp == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Harap upload foto KTP'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
+  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  authProvider.saveRegistrationStep({
+    'nik': _nikController.text.trim(),
+    'foto_diri_file': _fotoDiri,
+    'foto_ktp_file': _fotoKtp,
+  });
+
+  showDialogJoinPenyertaan(
+    context: context,
+    onJoin: () {
+      Navigator.of(context).pop();
+      // Tampilkan dialog pilih nominal untuk penyertaan
+      showDialogPilihNominalPembayaran(context);
+    },
+    onCancel: () {
+      Navigator.of(context).pop();
+      // Skip penyertaan, langsung ke pembayaran awal
+      _proceedWithPaymentOnly();
+    },
+  );
+}
+
+// Helper method untuk skip penyertaan
+void _proceedWithPaymentOnly() {
+  DetailPembayaranAwalMember.show(
+    context,
+    alertTitle: "Detail Pembayaran",
+    alertMessage: "Pastikan data pembayaran sudah benar.",
+    paymentTitle: "Detail Pembayaran",
+    paymentHeader: "Informasi Pembayaran",
+    paymentItems: [
+      PaymentItem(title: "Setoran Awal", price: "Rp 50.000"),
+      PaymentItem(
+        title: "Simpanan Wajib 1 Tahun Member UMKM",
+        price: "Rp 120.000",
+      ),
+    ],
+    totalPrice: "Rp 170.000",
+    onPressed: () {
+      Navigator.of(context).pop();
+      Navigator.pushNamed(context, '/payment-form',
+       arguments: {
+          'nominalPenyertaan': 0,  
+          'totalPembayaran': 170000,
+          'formattedNominal': 'Rp 0',
+       }
+      );
+
+    },
+  );
+}
 
 // Tambahkan helper method untuk format rupiah
   String _formatRupiah(int value) {

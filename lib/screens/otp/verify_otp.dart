@@ -41,96 +41,97 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   }
 
   Future<void> _handleVerifyOtp() async {
-  final otpCode = otpControllers.map((c) => c.text).join();
-  if (otpCode.length != otpLength) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Masukkan kode OTP dengan benar.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  setState(() => _isLoading = true);
-  try {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    print('=== OTP VERIFICATION ATTEMPT ===');
-    print('No HP: ${widget.noHp}');
-    print('OTP: $otpCode');
-    print('================================');
-
-    // STEP 1: Login untuk mendapatkan token
-    final loginSuccess = await authProvider.login(widget.noHp, widget.password);
-    
-    if (!loginSuccess || authProvider.token == null) {
-      setState(() => _isLoading = false);
-      if (!mounted) return;
-      
+    final otpCode = otpControllers.map((c) => c.text).join();
+    if (otpCode.length != otpLength) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Gagal login. Silakan periksa nomor HP dan password Anda.'),
+          content: Text('Masukkan kode OTP dengan benar.'),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
         ),
       );
       return;
     }
 
-    // STEP 2: Verify OTP menggunakan UserProvider
-    final result = await userProvider.verifyOtp(
-      token: authProvider.token!,
-      otp: otpCode,
-    );
+    setState(() => _isLoading = true);
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    setState(() => _isLoading = false);
+      // STEP 1: Login untuk mendapatkan token
+      final loginSuccess = await authProvider.login(widget.noHp, widget.password);
 
-    if (!mounted) return;
+      if (!loginSuccess || authProvider.token == null) {
+        setState(() => _isLoading = false);
+        if (!mounted) return;
 
-    if (result['success']) {
-      // Update user status to AKTIF di AuthProvider
-      authProvider.setUserStatus('AKTIF');
-      await SharedPreferencesHelper.saveUserStatus('AKTIF');
-      
-      // Clear registration data
-      authProvider.clearRegistrationData();
-      
-      // Fetch user profile setelah OTP berhasil
-      if (authProvider.userId != null) {
-        await userProvider.fetchUserProfile(
-          userId: authProvider.userId!,
-          token: authProvider.token!,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal login. Silakan periksa nomor HP dan password Anda.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      // STEP 2: Verify OTP menggunakan UserProvider
+      final result = await userProvider.verifyOtp(
+        token: authProvider.token!,
+        otp: otpCode,
+      );
+
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+
+      if (result['success']) {
+        // Update user status to AKTIF di AuthProvider
+        authProvider.setUserStatus('AKTIF');
+        await SharedPreferencesHelper.saveUserStatus('AKTIF');
+
+        // Clear registration data
+        authProvider.clearRegistrationData();
+
+        // Fetch user profile setelah OTP berhasil
+        if (authProvider.userId != null) {
+          await userProvider.fetchUserProfile(
+            userId: authProvider.userId!,
+            token: authProvider.token!,
+          );
+        }
+
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          // Navigate berdasarkan role
+          final userRole = authProvider.userRole;
+          if (userRole == 'PLATINUM') {
+            Navigator.pushReplacementNamed(context, '/member-platinum');
+          } else {
+            Navigator.pushReplacementNamed(context, '/member-reguler');
+          }
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Verifikasi OTP gagal'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
-      
-      await Future.delayed(const Duration(seconds: 1));
+    } catch (e) {
+      setState(() => _isLoading = false);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Terjadi kesalahan: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Verifikasi OTP gagal'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
-  } catch (e) {
-    setState(() => _isLoading = false);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Terjadi kesalahan: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 4),
-        ),
-      );
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {

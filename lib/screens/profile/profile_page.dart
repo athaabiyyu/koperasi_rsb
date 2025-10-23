@@ -123,24 +123,26 @@ class _ProfilePageState extends State<ProfilePage> {
     final userName = userProvider.userName ?? 'User';
     final userRole = authProvider.userRole ?? 'BASIC';
     final isPlatinum = userRole == 'PLATINUM';
+    final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
 
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushReplacementNamed(context, '/member-reguler');
-        return false;
-      },
+        Navigator.pushReplacementNamed(context, homeRoute);
+      return false;
+    },
       child: Scaffold(
         backgroundColor: lightGreen,
         bottomNavigationBar: AppBottomNav(
           currentIndex: 3,
+          userRole : userRole,
           onItemSelected: (i) {
             if (i == 3) return;
             if (!mounted) return;
             switch (i) {
               case 0:
-                Navigator.pushReplacementNamed(context, '/member-reguler');
+                Navigator.pushReplacementNamed(context, homeRoute);
                 break;
               case 1:
                 Navigator.pushReplacementNamed(context, '/my-project');
