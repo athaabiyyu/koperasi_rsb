@@ -136,24 +136,35 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Detail Penggunaan Token',
-                style: GoogleFonts.poppins(
-                  fontSize: _deviceWidth * 0.045,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: AutoSizeText(
+                  'Detail Penggunaan Token',
+                  style: GoogleFonts.poppins(
+                    fontSize: _deviceWidth * 0.045,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  minFontSize: 12,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/member-premium/token-usage');
-                },
-                child: Text(
-                  'Lihat lainnya',
-                  style: GoogleFonts.poppins(
-                    color: darkGreen,
-                    fontWeight: FontWeight.w600,
+              SizedBox(width: _deviceWidth * 0.02),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/member-premium/token-usage');
+                  },
+                  child: AutoSizeText(
+                    'Lihat lainnya',
+                    style: GoogleFonts.poppins(
+                      color: darkGreen,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
