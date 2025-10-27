@@ -14,8 +14,10 @@ class CustomTextFormField extends StatefulWidget {
   // Optional: when true and keyboardType is number, format with thousands separator (e.g., 1.000.000)
   final bool formatRupiah;
   final TextEditingController? controller;
-  final List<TextInputFormatter>? inputFormatters; // Tambahkan parameter ini
+  final List<TextInputFormatter>? inputFormatters;
   final bool enabled;
+  final void Function(String)? onChanged; // ADDED: onChanged callback
+  final void Function(String?)? onSaved;   // ADDED: onSaved callback
 
   const CustomTextFormField({
     Key? key,
@@ -28,9 +30,10 @@ class CustomTextFormField extends StatefulWidget {
     this.initialValue,
     this.formatRupiah = false,
     this.controller,
-    this.inputFormatters, // Tambahkan parameter ini
+    this.inputFormatters,
     this.enabled = true,
-
+    this.onChanged, // ADDED
+    this.onSaved,   // ADDED
   }) : super(key: key);
 
   @override
@@ -89,8 +92,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           validator: widget.validator,
           maxLines: widget.maxLines,
           initialValue: widget.initialValue,
-          // inputFormatters: inputFormatters,
-          inputFormatters: widget.inputFormatters, // Tambahkan ini
+          enabled: widget.enabled,
+          inputFormatters: widget.inputFormatters ?? inputFormatters,
+          onChanged: widget.onChanged,  // ADDED
+          onSaved: widget.onSaved,      // ADDED
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: GoogleFonts.poppins(color: strokeGray, fontSize: 14),
@@ -109,6 +114,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: grayFont, width: 1.5),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: strokeGray.withOpacity(0.5), width: 1.0),
             ),
             suffixIcon: widget.obscureText
                 ? IconButton(

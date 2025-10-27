@@ -14,6 +14,7 @@ import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/providers/wallet_provider.dart';
+import 'package:koperasi_rsb/providers/project_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => TopupProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),
+        ChangeNotifierProvider(create: (_) => ProjectProvider()),
       ],
       child: MaterialApp(
         title: 'Koperasi RSB',
