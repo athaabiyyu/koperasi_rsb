@@ -7,6 +7,7 @@ import 'package:koperasi_rsb/screens/profile/data_diri_page.dart';
 import 'package:koperasi_rsb/screens/profile/dokumen_pelengkap_page.dart';
 import 'package:koperasi_rsb/screens/profile/profile_page.dart';
 import 'package:koperasi_rsb/screens/proyek/my_project.dart';
+import 'package:koperasi_rsb/screens/proyek/project_list.dart';
 import 'package:koperasi_rsb/screens/member-platinum/dashboard/dashboard_platinum.dart';
 import 'package:koperasi_rsb/screens/member-platinum/detail-penggunaan-token/detail_penggunaan_token.dart';
 import 'package:provider/provider.dart';
@@ -66,6 +67,7 @@ class MyApp extends StatelessWidget {
           '/member-reguler': (context) => const DashboardPage(),
           '/member-platinum': (context) => const PremiumDashboardPage(),
           '/my-project': (context) => const MyProjectPage(),
+          '/project-list': (context) => const ProjectListPage(),
           '/wallet': (context) => const DompetPage(),
           '/profile': (context) => const ProfilePage(),
           '/profile/data-diri': (context) => const DataDiriPage(),
