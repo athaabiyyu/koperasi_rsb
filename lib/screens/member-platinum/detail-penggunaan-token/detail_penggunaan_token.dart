@@ -18,16 +18,93 @@ class _TokenUsageListPageState extends State<TokenUsageListPage> {
   @override
   void initState() {
     super.initState();
-    _allItems = List.generate(
-      20,
-      (i) => {
-        'title': 'Proyek #$i',
-        'owner': 'Pemilik #$i',
-        'status': i % 3 == 0 ? 'Proyek Selesai' : 'Proyek Berjalan',
-        'modal': 20 + i,
-        'hasil': 8 + (i % 20),
+    // Dummy data yang lebih realistis (bukan "Proyek #1" dst)
+    _allItems = [
+      {
+        'title': 'Stand Pisang Nugget',
+        'owner': 'Budi Santoso',
+        'status': 'Proyek Berjalan',
+        'modal': 40,
+        'hasil': 12,
       },
-    );
+      {
+        'title': 'Kopi Senja Nusantara',
+        'owner': 'Sinta Dewi',
+        'status': 'Proyek Berjalan',
+        'modal': 55,
+        'hasil': 9,
+      },
+      {
+        'title': 'Laundry Kiloan Bersih',
+        'owner': 'Rama Genta',
+        'status': 'Proyek Selesai',
+        'modal': 30,
+        'hasil': 15,
+      },
+      {
+        'title': 'Warung Sehat Harian',
+        'owner': 'Wulan Pertiwi',
+        'status': 'Proyek Berjalan',
+        'modal': 25,
+        'hasil': 7,
+      },
+      {
+        'title': 'Ayam Bakar Madu',
+        'owner': 'Rizal Akbar',
+        'status': 'Proyek Berjalan',
+        'modal': 60,
+        'hasil': 10,
+      },
+      {
+        'title': 'Martabak Mantul',
+        'owner': 'Nadia Putri',
+        'status': 'Proyek Selesai',
+        'modal': 35,
+        'hasil': 18,
+      },
+      {
+        'title': 'Toko Sembako Harapan',
+        'owner': 'Hendri Wijaya',
+        'status': 'Proyek Berjalan',
+        'modal': 48,
+        'hasil': 11,
+      },
+      {
+        'title': 'Percetakan Cepat Jadi',
+        'owner': 'Sari Melati',
+        'status': 'Proyek Berjalan',
+        'modal': 28,
+        'hasil': 6,
+      },
+      {
+        'title': 'Frozen Food UMKM',
+        'owner': 'Yoga Prasetyo',
+        'status': 'Proyek Selesai',
+        'modal': 52,
+        'hasil': 20,
+      },
+      {
+        'title': 'Bengkel Motor Jaya',
+        'owner': 'Dedi Firmansyah',
+        'status': 'Proyek Berjalan',
+        'modal': 45,
+        'hasil': 8,
+      },
+      {
+        'title': 'Katering Rumahan Lestari',
+        'owner': 'Desi Anggraini',
+        'status': 'Proyek Berjalan',
+        'modal': 33,
+        'hasil': 9,
+      },
+      {
+        'title': 'Usaha Jahit Keluarga',
+        'owner': 'Teguh Wibowo',
+        'status': 'Proyek Selesai',
+        'modal': 22,
+        'hasil': 13,
+      },
+    ];
     _visibleItems = List.from(_allItems);
   }
 

@@ -95,7 +95,8 @@ class TransactionHistorySection extends StatelessWidget {
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
-            isPremium: _isPremium,
+            // Explicitly hide pay button when list is empty (both variants)
+            isPremium: false,
             title: 'Riwayat Transaksi',
             child: Center(
               child: Text(
@@ -113,7 +114,8 @@ class TransactionHistorySection extends StatelessWidget {
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
-            isPremium: true,
+            // Hide the pay button for premium dashboard as requested
+            isPremium: false,
             title: 'Riwayat Transaksi',
             child: Column(
               children: [
