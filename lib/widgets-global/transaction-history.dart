@@ -59,7 +59,7 @@ class TransactionItem extends StatelessWidget {
           // Nominal + Status
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center, // ⬅️ sejajar tengah juga
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 amount,

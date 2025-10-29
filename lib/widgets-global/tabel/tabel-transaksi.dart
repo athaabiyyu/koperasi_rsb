@@ -22,6 +22,7 @@ class TransactionTable extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, 
         children: [
           // HEADER
           Container(
@@ -35,142 +36,96 @@ class TransactionTable extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'Tanggal',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'Nama Bank',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'Jenis Transaksi',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'Nominal',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
+                _buildHeader('Tanggal'),
+                _buildHeader('Nama Bank', center: true),
+                _buildHeader('Jenis Transaksi', center: true),
+                _buildHeader('Nominal', alignRight: true),
               ],
             ),
           ),
 
           // DATA
-          Expanded(
-            child: validData.isEmpty
-                ? Center(
-                    child: Text(
-                      'Tidak ada data',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.black,
+          if (validData.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Tidak ada data',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true, 
+              physics:
+                  const NeverScrollableScrollPhysics(), 
+              itemCount: validData.length,
+              itemBuilder: (context, index) {
+                final tx = validData[index];
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          _buildCell(tx['tanggal']),
+                          _buildCell(tx['metode'], center: true),
+                          _buildCell(tx['jenis'], center: true),
+                          _buildCell(tx['nominal'], alignRight: true),
+                        ],
                       ),
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: validData.length,
-                    itemBuilder: (context, index) {
-                      final tx = validData[index];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: darkGreen.withOpacity(0.2),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                tx['tanggal'] ?? '-',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                tx['metode'] ?? '-',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                tx['jenis'] ?? '-',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                tx['nominal'] ?? '-',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
-                                ),
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
+                    // Divider untuk setiap baris (termasuk terakhir)
+                    Container(
+                      height: 1,
+                      color: darkGreen.withOpacity(0.2),
+                    ),
+                  ],
+                );
+              },
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(String text,
+      {bool center = false, bool alignRight = false}) {
+    return Expanded(
+      flex: 2,
+      child: Text(
+        text,
+        textAlign: alignRight
+            ? TextAlign.right
+            : (center ? TextAlign.center : TextAlign.left),
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCell(String? text,
+      {bool center = false, bool alignRight = false}) {
+    return Expanded(
+      flex: 2,
+      child: Text(
+        text ?? '-',
+        textAlign: alignRight
+            ? TextAlign.right
+            : (center ? TextAlign.center : TextAlign.left),
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: Colors.black,
+        ),
       ),
     );
   }

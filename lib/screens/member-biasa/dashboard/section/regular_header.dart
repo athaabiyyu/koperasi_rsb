@@ -294,160 +294,154 @@ class RegularHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             color: Colors.white,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
             children: [
-              // Header warna hijau lembut + icon info
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                decoration: BoxDecoration(
-                  color: lightGreen.withOpacity(0.3),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header dengan icon + teks sejajar
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: Colors.black,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Informasi Pembayaran',
+                          style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: darkGreen.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(14),
-                      child: const Icon(
-                        Icons.info_outline,
-                        color: darkGreen,
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    Text(
-                      'Informasi Pembayaran',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: darkGreen,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    // Card detail pembayaran wajib
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.15),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        // Card detail pembayaran wajib
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Icon(Icons.credit_card,
-                                  color: Colors.green),
-                              const SizedBox(width: 10),
+                              Row(
+                                children: [
+                                  const Icon(Icons.credit_card,
+                                      color: Colors.green),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Simpanan Wajib',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green.shade900,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               Text(
-                                'Simpanan Wajib',
+                                'Rp 120.000',
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: darkGreen,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.green.shade900,
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            'Rp 120.000',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: darkGreen,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
 
-                    const SizedBox(height: 10),
+                        const SizedBox(height: 10),
 
-                    // Card detail pembayaran pokok
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.15),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                        // Card detail pembayaran pokok
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Icon(Icons.savings, color: orange),
-                              const SizedBox(width: 10),
+                              Row(
+                                children: [
+                                  const Icon(Icons.savings,
+                                      color: Colors.orange),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Simpanan Pokok',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.orange.shade800,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               Text(
-                                'Simpanan Pokok',
+                                'Rp 50.000',
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: orange,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.orange.shade800,
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            'Rp 50.000',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: orange,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
               ),
 
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: TextButton(
+              // Tombol close di pojok kanan atas
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.grey),
                   onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    foregroundColor: darkGreen,
-                  ),
-                  child: Text(
-                    'Tutup',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
                 ),
               ),
             ],

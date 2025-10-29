@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/widgets-global/navigation/pagination_table.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
 import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
@@ -86,8 +87,8 @@ class TransactionHistorySection extends StatelessWidget {
             statusLabel: topup.isPending
                 ? 'Menunggu Konfirmasi'
                 : topup.isSuccess
-                ? 'Berhasil'
-                : 'Gagal',
+                    ? 'Berhasil'
+                    : 'Gagal',
           );
         }).toList();
 
@@ -108,9 +109,8 @@ class TransactionHistorySection extends StatelessWidget {
         }
 
         if (_isPremium) {
-          final transactions = allTransactions
-              .take(maxItemsForPremium)
-              .toList();
+          final transactions =
+              allTransactions.take(maxItemsForPremium).toList();
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
@@ -124,7 +124,7 @@ class TransactionHistorySection extends StatelessWidget {
                   (index) => Column(
                     children: [
                       transactions[index],
-                      if (index != transactions.length - 1) const Divider(),
+                      const Divider(),
                     ],
                   ),
                 ),
@@ -132,17 +132,18 @@ class TransactionHistorySection extends StatelessWidget {
             ),
           );
         } else {
-          // Regular with pagination
+          int currentPage = 1;
           return StatefulBuilder(
             builder: (context, setState) {
-              int currentPage = 1;
               final totalPages =
                   (allTransactions.length / itemsPerPageForRegular).ceil();
+
               final startIndex = (currentPage - 1) * itemsPerPageForRegular;
               final endIndex =
                   (startIndex + itemsPerPageForRegular) > allTransactions.length
-                  ? allTransactions.length
-                  : (startIndex + itemsPerPageForRegular);
+                      ? allTransactions.length
+                      : (startIndex + itemsPerPageForRegular);
+
               final visibleTransactions = allTransactions.sublist(
                 startIndex,
                 endIndex,
@@ -162,63 +163,26 @@ class TransactionHistorySection extends StatelessWidget {
                         (index) => Column(
                           children: [
                             visibleTransactions[index],
-                            if (index != visibleTransactions.length - 1)
-                              const Divider(),
+                            const Divider(),
                           ],
                         ),
                       ),
                     ),
                     SizedBox(height: deviceHeight * 0.02),
                     if (totalPages > 1)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: currentPage > 1
-                                ? () => setState(() => currentPage--)
-                                : null,
-                            child: const Text('Previous'),
-                          ),
-                          ...List.generate(totalPages, (index) {
-                            final page = index + 1;
-                            final isCurrent = page == currentPage;
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4.0,
-                              ),
-                              child: GestureDetector(
-                                onTap: () => setState(() => currentPage = page),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isCurrent
-                                        ? darkGreen
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: darkGreen),
-                                  ),
-                                  child: Text(
-                                    '$page',
-                                    style: TextStyle(
-                                      color: isCurrent
-                                          ? Colors.white
-                                          : darkGreen,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                          TextButton(
-                            onPressed: currentPage < totalPages
-                                ? () => setState(() => currentPage++)
-                                : null,
-                            child: const Text('Next'),
-                          ),
-                        ],
+                      PaginationWidget(
+                        currentPage: currentPage,
+                        totalPages: totalPages,
+                        onPrevious: () {
+                          setState(() {
+                            currentPage--;
+                          });
+                        },
+                        onNext: () {
+                          setState(() {
+                            currentPage++;
+                          });
+                        },
                       ),
                   ],
                 ),

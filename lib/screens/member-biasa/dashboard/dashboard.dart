@@ -78,13 +78,13 @@ class _DashboardPageState extends State<DashboardPage> {
           }
         },
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.white, 
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               RegularHeader(userName: userName),
-              SizedBox(height: _deviceHeight * 0.02),
+              SizedBox(height: _deviceHeight * 0.05),
               const TransactionHistorySection(
                 variant: TransactionHistoryVariant.regular,
               ),
