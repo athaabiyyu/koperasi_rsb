@@ -89,60 +89,60 @@ class ProjectListPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             // Grid Project
-            Expanded(
-              child: GridView.count(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _deviceWidth * 0.02,
-                  vertical: _deviceHeight * 0.01,
-                ),
-                crossAxisCount: 2,
-                crossAxisSpacing: _deviceWidth * 0.02,
-                mainAxisSpacing: _deviceHeight * 0.015,
-                childAspectRatio: 0.72, // (Card Size)
-                children: const [
-                  ProjectListCard(
-                    imageUrl:
-                        "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
-                    status: "Pendanaan Dibuka",
-                    title: "Pendanaan Kolam Ikan Lele Bioflok",
-                    owner: "Marlina Siahaan",
-                    collectedToken: 75,
-                    remainingDays: 10,
-                    maxToken: 100,
-                  ),
-                  ProjectListCard(
-                    imageUrl:
-                        "https://dkpp.bulelengkab.go.id/uploads/konten/cara-budidaya-lele-dengan-sistem-bioflok-97.jpg",
-                    status: "Pendanaan Dibuka",
-                    title: "Greenhouse",
-                    owner: "Sigura Liche",
-                    collectedToken: 25,
-                    remainingDays: 7,
-                    maxToken: 50,
-                  ),
-                  ProjectListCard(
-                    imageUrl:
-                        "https://img-global.cpcdn.com/recipes/7da1ed7a3f0596f0/1200x630cq80/photo.jpg",
-                    status: "Pendanaan Dibuka",
-                    title: "Stand Pisang Nugget Pak Bahlil Komedian ",
-                    owner: "Marlina Siahaan",
-                    collectedToken: 10,
-                    remainingDays: 10,
-                    maxToken: 100,
-                  ),
-                  ProjectListCard(
-                    imageUrl:
-                        "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
-                    status: "Pendanaan Dibuka",
-                    title: "Greenhouse",
-                    owner: "Sigura Liche",
-                    collectedToken: 40,
-                    remainingDays: 3,
-                    maxToken: 50,
-                  ),
-                ],
-              ),
-            ),
+            // Expanded(
+            //   child: GridView.count(
+            //     padding: EdgeInsets.symmetric(
+            //       horizontal: _deviceWidth * 0.02,
+            //       vertical: _deviceHeight * 0.01,
+            //     ),
+            //     crossAxisCount: 2,
+            //     crossAxisSpacing: _deviceWidth * 0.02,
+            //     mainAxisSpacing: _deviceHeight * 0.015,
+            //     childAspectRatio: 0.72, // (Card Size)
+            //     children: const [
+            //       ProjectListCard(
+            //         imageUrl:
+            //             "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
+            //         status: "Pendanaan Dibuka",
+            //         title: "Pendanaan Kolam Ikan Lele Bioflok",
+            //         owner: "Marlina Siahaan",
+            //         collectedToken: 75,
+            //         remainingDays: 10,
+            //         maxToken: 100,
+            //       ),
+            //       ProjectListCard(
+            //         imageUrl:
+            //             "https://dkpp.bulelengkab.go.id/uploads/konten/cara-budidaya-lele-dengan-sistem-bioflok-97.jpg",
+            //         status: "Pendanaan Dibuka",
+            //         title: "Greenhouse",
+            //         owner: "Sigura Liche",
+            //         collectedToken: 25,
+            //         remainingDays: 7,
+            //         maxToken: 50,
+            //       ),
+            //       ProjectListCard(
+            //         imageUrl:
+            //             "https://img-global.cpcdn.com/recipes/7da1ed7a3f0596f0/1200x630cq80/photo.jpg",
+            //         status: "Pendanaan Dibuka",
+            //         title: "Stand Pisang Nugget Pak Bahlil Komedian ",
+            //         owner: "Marlina Siahaan",
+            //         collectedToken: 10,
+            //         remainingDays: 10,
+            //         maxToken: 100,
+            //       ),
+            //       ProjectListCard(
+            //         imageUrl:
+            //             "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
+            //         status: "Pendanaan Dibuka",
+            //         title: "Greenhouse",
+            //         owner: "Sigura Liche",
+            //         collectedToken: 40,
+            //         remainingDays: 3,
+            //         maxToken: 50,
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),

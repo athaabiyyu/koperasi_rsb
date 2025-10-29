@@ -1,172 +1,225 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:koperasi_rsb/widgets-global/colors.dart';
 
 class TimelineStepItem extends StatelessWidget {
   final int index;
   final bool isLast;
   final String title;
+  final String overallStatus; // overall status for this step
   final List<Map<String, dynamic>> events;
+  final bool showContractButton;
+  final bool hasAgreement;
+  final bool isLoadingAgreement;
+  final VoidCallback? onDownloadContract;
+  final VoidCallback? onSignContract;
+  final bool showRetryButton;
+  final VoidCallback? onRetrySubmit;
 
   const TimelineStepItem({
     super.key,
     required this.index,
     required this.isLast,
     required this.title,
+    this.overallStatus = 'upcoming',
     required this.events,
+    this.showContractButton = false,
+    this.hasAgreement = false,
+    this.isLoadingAgreement = false,
+    this.onDownloadContract,
+    this.onSignContract,
+    this.showRetryButton = false,
+    this.onRetrySubmit,
   });
 
-  bool get isDone => events.isNotEmpty;
+  Color _getStatusColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'success':
+        return Colors.green;
+      case 'error':
+      case 'failed':
+        return Colors.red;
+      case 'current':
+        return Colors.blue;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getBackgroundColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'success':
+        return Colors.green.shade50;
+      case 'error':
+      case 'failed':
+        return Colors.red.shade50;
+      case 'current':
+        return Colors.blue.shade50;
+      case 'pending':
+        return Colors.orange.shade50;
+      default:
+        return Colors.grey.shade50;
+    }
+  }
+
+  IconData _getStatusIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'success':
+        return Icons.check;
+      case 'error':
+      case 'failed':
+        return Icons.close;
+      case 'current':
+        return Icons.access_time;
+      case 'pending':
+        return Icons.schedule;
+      default:
+        return Icons.lock;
+    }
+  }
+
+  String _getOverallStatus() {
+    if (events.isEmpty) return 'upcoming';
+    // Return the latest event's status
+    return events.last['type'] ?? 'upcoming';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.of(context).size.width;
-    final deviceHeight = MediaQuery.of(context).size.height;
-    const lineColor = lightGreen;
-    const successColor = Color(0xFF12B76A);
-    const neutralColor = Color(0xFF98A2B3);
-    const dangerColor = Colors.red;
+    final overallStatus = _getOverallStatus();
+    final statusColor = _getStatusColor(overallStatus);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: deviceHeight * 0.02),
+      padding: const EdgeInsets.only(bottom: 32),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 32,
-            child: Center(
-              child: isDone
-                  ? Container(
-                      width: 26,
-                      height: 26,
-                      decoration: const BoxDecoration(
-                        color: successColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    )
-                  : Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF0F0F0),
-                        border: Border.all(color: lineColor),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "${index + 1}",
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          color: neutralColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-            ),
+          // Status indicator
+          Column(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(
+                    _getStatusIcon(overallStatus),
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: deviceWidth * 0.02),
+          const SizedBox(width: 16),
+          // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title
                 Text(
                   title,
                   style: GoogleFonts.roboto(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: successColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  "22 Januari, 2022 4:23 PM by",
-                  style: GoogleFonts.roboto(fontSize: 12, color: neutralColor),
-                ),
-                const SizedBox(height: 10),
-                ...events.map((event) {
-                  final type = event['type'] as String? ?? 'info';
-                  Color borderColor;
-                  Color? bgColor;
-                  Color textColor;
-                  switch (type) {
-                    case 'success':
-                      borderColor = successColor;
-                      bgColor = const Color(0xFFECF9F3);
-                      textColor = successColor;
-                      break;
-                    case 'error':
-                      borderColor = dangerColor;
-                      bgColor = const Color(0xFFFFF1F1);
-                      textColor = dangerColor;
-                      break;
-                    default:
-                      borderColor = const Color(0xFFD0D5DD);
-                      bgColor = Colors.white;
-                      textColor = Colors.black;
-                  }
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: ShapeDecoration(
-                      color: bgColor,
-                      shape: DashedBorderShape(
-                        color: borderColor,
-                        strokeWidth: 1.2,
-                        dashLength: 6,
-                        gapLength: 4,
-                        borderRadius: 8,
+                const SizedBox(height: 8),
+                // Events
+                ...events.map((event) => _buildEventCard(event)),
+                
+                // Contract button (only for Kontrak Perjanjian step or after)
+                if (showContractButton) ...[
+                  const SizedBox(height: 12),
+                  if (isLoadingAgreement)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          event['message'] ?? '',
-                          style: GoogleFonts.roboto(
-                            fontSize: 13,
-                            color: textColor,
-                            fontWeight: FontWeight.w500,
+                    )
+                  else if (hasAgreement)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: onDownloadContract,
+                        icon: const Icon(Icons.download, size: 18),
+                        label: const Text('Download Kontrak'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        if (event['date'] != null)
-                          Text(
-                            event['date'],
-                            style: GoogleFonts.roboto(
-                              fontSize: 12,
-                              color: neutralColor,
-                            ),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: onSignContract,
+                        icon: const Icon(Icons.edit, size: 18),
+                        label: const Text('Tanda Tangani Kontrak'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.blue,
+                          side: const BorderSide(color: Colors.blue),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        if (event['actionLabel'] != null) ...[
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: successColor),
-                                foregroundColor: successColor,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              onPressed: () {},
-                              child: Text(event['actionLabel']),
-                            ),
-                          ),
-                        ],
-                      ],
+                        ),
+                      ),
                     ),
-                  );
-                }).toList(),
+                ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventCard(Map<String, dynamic> event) {
+    final type = event['type'] as String;
+    final message = event['message'] as String;
+    final date = event['date'] as String;
+    final backgroundColor = _getBackgroundColor(type);
+    final textColor = _getStatusColor(type);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            date,
+            style: GoogleFonts.roboto(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              message,
+              style: GoogleFonts.roboto(
+                fontSize: 13,
+                color: textColor,
+              ),
             ),
           ),
         ],
@@ -175,103 +228,53 @@ class TimelineStepItem extends StatelessWidget {
   }
 }
 
+// Dashed line widget (keep existing implementation)
 class DashedLineVertical extends StatelessWidget {
-  final double thickness;
   final Color color;
+  final double thickness;
+
   const DashedLineVertical({
     super.key,
-    this.thickness = 1,
     required this.color,
+    required this.thickness,
   });
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const double dashLength = 4;
-        const double gapLength = 4;
-        final height = constraints.maxHeight;
-        final dashCount = (height / (dashLength + gapLength)).floor();
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(dashCount, (index) {
-            return SizedBox(
-              height: dashLength,
-              child: Center(
-                child: Container(width: thickness, color: color),
-              ),
-            );
-          }),
-        );
-      },
+    return CustomPaint(
+      painter: _DashedLinePainter(color: color, thickness: thickness),
+      size: const Size(1, double.infinity),
     );
   }
 }
 
-class DashedBorderShape extends OutlinedBorder {
+class _DashedLinePainter extends CustomPainter {
   final Color color;
-  final double strokeWidth;
-  final double dashLength;
-  final double gapLength;
-  final double borderRadius;
+  final double thickness;
 
-  const DashedBorderShape({
-    required this.color,
-    this.strokeWidth = 1,
-    this.dashLength = 6,
-    this.gapLength = 4,
-    this.borderRadius = 8,
-  });
+  _DashedLinePainter({required this.color, required this.thickness});
 
   @override
-  OutlinedBorder copyWith({
-    BorderSide? side,
-    BorderRadiusGeometry? borderRadius,
-  }) {
-    return DashedBorderShape(
-      color: color,
-      strokeWidth: strokeWidth,
-      dashLength: dashLength,
-      gapLength: gapLength,
-      borderRadius: this.borderRadius,
-    );
-  }
-
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) => Path()
-    ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)));
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) => Path()
-    ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)));
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
-    final path = Path()..addRRect(rrect);
+  void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = color;
-    final dashedPath = _createDashedPath(path, dashLength, gapLength);
-    canvas.drawPath(dashedPath, paint);
-  }
+      ..color = color
+      ..strokeWidth = thickness
+      ..style = PaintingStyle.stroke;
 
-  Path _createDashedPath(Path source, double dashLength, double gapLength) {
-    final Path dashedPath = Path();
-    for (final metric in source.computeMetrics()) {
-      double distance = 0.0;
-      while (distance < metric.length) {
-        final double next = distance + dashLength;
-        dashedPath.addPath(
-          metric.extractPath(distance, next.clamp(0.0, metric.length)),
-          Offset.zero,
-        );
-        distance = next + gapLength;
-      }
+    const dashHeight = 5.0;
+    const dashSpace = 3.0;
+    double startY = 0;
+
+    while (startY < size.height) {
+      canvas.drawLine(
+        Offset(0, startY),
+        Offset(0, startY + dashHeight),
+        paint,
+      );
+      startY += dashHeight + dashSpace;
     }
-    return dashedPath;
   }
 
   @override
-  ShapeBorder scale(double t) => this;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -16,7 +16,6 @@ class _ProyekSectionState extends State<ProyekSection> {
   @override
   void initState() {
     super.initState();
-    // Load categories when widget initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProjectProvider>().loadCategories();
     });
@@ -26,25 +25,15 @@ class _ProyekSectionState extends State<ProyekSection> {
   Widget build(BuildContext context) {
     return Consumer<ProjectProvider>(
       builder: (context, provider, child) {
-        // ✅ Filter categories: hapus yang kosong atau duplikat
         final categories = provider.categories
-            .where((c) => c.name.trim().isNotEmpty)  // Hapus yang kosong
+            .where((c) => c.name.trim().isNotEmpty)
             .toList();
         
-        // ✅ Ambil nama unik saja (hapus duplikat)
         final categoryNames = categories
             .map((c) => c.name)
-            .toSet()  // Set otomatis hapus duplikat
+            .toSet()
             .toList();
         
-        // ✅ Debug: cek apakah ada masalah
-        print('📋 Categories loaded: ${categories.length}');
-        print('📋 Unique names: ${categoryNames.length}');
-        if (categories.length != categoryNames.length) {
-          print('⚠️ WARNING: Ada kategori duplikat!');
-        }
-        
-        // ✅ Validasi value sebelum digunakan
         final currentKategori = provider.formData['kategori'];
         final validValue = (currentKategori != null && 
                            currentKategori.toString().trim().isNotEmpty &&
@@ -93,18 +82,13 @@ class _ProyekSectionState extends State<ProyekSection> {
                         hint: 'Pilih Kategori Proyek',
                         items: categoryNames,
                         validator: _requiredValue,
-                        value: validValue,  // ✅ Gunakan validated value
+                        value: validValue,
                         onChanged: (value) {
                           if (value == null) return;
                           
-                          // ✅ Find category by name
                           final category = categories.firstWhere(
                             (c) => c.name == value,
                           );
-                          
-                          print('📝 Category selected:');
-                          print('  Name: ${category.name}');
-                          print('  ID: ${category.id}');
                           
                           provider.updateMultipleFormData({
                             'kategori': value,
@@ -125,25 +109,197 @@ class _ProyekSectionState extends State<ProyekSection> {
             ),
             const SizedBox(height: 22),
 
-            // Dokumen Pendukung
-            FileUploadForm(
-              label: 'Dokumen Pendukung (Foto Toko, NPWP, dsb)',
-              maxFileSizeMB: 10,
-              descriptions: const [
-                'Contoh: foto produk, NPWP, foto toko, slide pitch deck, dsb.',
-                'Maksimum size file 10 MB.',
-              ],
-              onFilePicked: (file) {
-                if (file != null) {
-                  provider.addDokumenFile(file);
-                  print('📎 File added: ${file.path}');
-                }
-              },
-            ),
+            // ✅ DOKUMEN PENDUKUNG - MULTIPLE FILES (MAX 4)
+            _buildMultipleFileUpload(provider),
           ],
         );
       },
     );
+  }
+
+  // ✅ Widget untuk upload multiple files
+  Widget _buildMultipleFileUpload(ProjectProvider provider) {
+    // Get uploaded files from provider
+    final uploadedFiles = provider.dokumenFiles ?? [];
+    final canAddMore = uploadedFiles.length < 4;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label
+        Row(
+          children: [
+            const Text(
+              'Dokumen Pendukung',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF344054),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '(${uploadedFiles.length}/4)',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        
+        // Deskripsi
+        Text(
+          'Contoh: foto produk, NPWP, foto toko, slide pitch deck, dsb.',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+            height: 1.4,
+          ),
+        ),
+        Text(
+          'Maksimum 4 file, ukuran max 10 MB per file.',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // List uploaded files
+        if (uploadedFiles.isNotEmpty) ...[
+          ...uploadedFiles.asMap().entries.map((entry) {
+            final index = entry.key;
+            final file = entry.value;
+            final fileName = file.path.split('/').last;
+            final fileSize = _formatFileSize(file.lengthSync());
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Row(
+                children: [
+                  // File icon
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF12B76A).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.insert_drive_file,
+                      color: Color(0xFF12B76A),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  
+                  // File info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fileName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF101828),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          fileSize,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Delete button
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () {
+                      provider.removeDokumenFile(index);
+                      print('🗑️ File removed at index: $index');
+                    },
+                    color: Colors.red[400],
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 8),
+        ],
+
+        // Upload button
+        if (canAddMore)
+          FileUploadForm(
+            label: '', // Label sudah ada di atas
+            maxFileSizeMB: 10,
+            descriptions: const [], // Descriptions sudah ada di atas
+            onFilePicked: (file) {
+              if (file != null) {
+                if (uploadedFiles.length >= 4) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Maksimum 4 file'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                provider.addDokumenFile(file);
+                print('📎 File added: ${file.path}');
+                print('📦 Total files: ${provider.dokumenFiles?.length ?? 0}');
+              }
+            },
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 18, color: Colors.grey[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Maksimum 4 file telah tercapai',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ✅ Helper untuk format ukuran file
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
 

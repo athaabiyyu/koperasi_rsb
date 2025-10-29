@@ -9,7 +9,7 @@ class UserModel {
   final String? kecamatan;
   final String? alamat;
   final String? nik;
-  final String role; // ⭐ TAMBAHAN BARU
+  final String role; 
 
   UserModel({
     required this.nama,

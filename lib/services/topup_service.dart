@@ -22,7 +22,7 @@ class TopupService {
         };
       }
 
-      final url = Uri.parse('${TopupEndpoints.payTopup}/topup/pay-topup');
+      final url = Uri.parse('${TopupEndpoints.payTopup}');
       var request = http.MultipartRequest('POST', url);
 
       final headers = ApiConfig.getAuthHeaders(token);

@@ -10,9 +10,9 @@ class CreateProjectRequest {
   final int pendapatanPerbulan;
   final int pengeluaranPerbulan;
   final int limitSiklus;
-  final int bagianPelaksana;  // ✅ Ubah dari double ke int
-  final int bagianKoperasi;   // ✅ Ubah dari double ke int
-  final int bagianPemilik;    // ✅ Ubah dari double ke int
+  final int bagianPelaksana; 
+  final int bagianKoperasi;   
+  final int bagianPemilik;    
   final int bagianPendana;
 
   // File paths

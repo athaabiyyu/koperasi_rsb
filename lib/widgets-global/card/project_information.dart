@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// Removed unused colors import; status colors are defined inline here to match MyProjectCard
+import 'package:intl/intl.dart';
 
 class ProjectHeaderInfo extends StatelessWidget {
   final String imageUrl;
@@ -9,6 +9,10 @@ class ProjectHeaderInfo extends StatelessWidget {
   final int collectedToken;
   final int remainingDays;
   final int maxToken;
+  final int nominalDisetujui;
+  final int hargaPerUnit;
+  final int minimalPembelian;
+  final int maksimalPembelian;
 
   const ProjectHeaderInfo({
     super.key,
@@ -19,14 +23,31 @@ class ProjectHeaderInfo extends StatelessWidget {
     required this.collectedToken,
     required this.remainingDays,
     required this.maxToken,
+    required this.nominalDisetujui,
+    required this.hargaPerUnit,
+    required this.minimalPembelian,
+    required this.maksimalPembelian,
   });
+
+  String _formatRupiah(int amount) {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return formatter.format(amount);
+  }
 
   @override
   Widget build(BuildContext context) {
     final _deviceWidth = MediaQuery.of(context).size.width;
     final _deviceHeight = MediaQuery.of(context).size.height;
-    final progress = (collectedToken / maxToken).clamp(0.0, 1.0);
+    final progress = maxToken > 0 ? (collectedToken / maxToken).clamp(0.0, 1.0) : 0.0;
     final style = _getStatusStyle(status);
+
+    // Calculate min and max in rupiah
+    final minBeliRupiah = minimalPembelian * hargaPerUnit;
+    final maxBeliRupiah = maksimalPembelian * hargaPerUnit;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,6 +59,10 @@ class ProjectHeaderInfo extends StatelessWidget {
             CircleAvatar(
               radius: _deviceWidth * 0.08,
               backgroundImage: NetworkImage(imageUrl),
+              onBackgroundImageError: (_, __) {},
+              child: imageUrl.isEmpty
+                  ? const Icon(Icons.business, size: 32)
+                  : null,
             ),
             SizedBox(width: _deviceWidth * 0.04),
             Expanded(
@@ -57,6 +82,7 @@ class ProjectHeaderInfo extends StatelessWidget {
                     style: TextStyle(
                       color: style["fg"],
                       fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -132,16 +158,24 @@ class ProjectHeaderInfo extends StatelessWidget {
         SizedBox(height: _deviceHeight * 0.015),
 
         // Info detail target/token/dll
-        _buildInfoRow("Target Dana", "Rp 250.000.000", _deviceHeight),
+        _buildInfoRow("Target Dana", _formatRupiah(nominalDisetujui), _deviceHeight),
         _buildInfoRow(
           "Token Rilis",
           "${maxToken - collectedToken}",
           _deviceHeight,
         ),
         _buildInfoRow("Jumlah Token", "$maxToken", _deviceHeight),
-        _buildInfoRow("Harga per Token", "Rp 250.000", _deviceHeight),
-        _buildInfoRow("Min Pembelian", "2 atau Rp 500.000", _deviceHeight),
-        _buildInfoRow("Maks Pembelian", "10 atau Rp 2.500.000", _deviceHeight),
+        _buildInfoRow("Harga per Token", _formatRupiah(hargaPerUnit), _deviceHeight),
+        _buildInfoRow(
+          "Min Pembelian",
+          "$minimalPembelian atau ${_formatRupiah(minBeliRupiah)}",
+          _deviceHeight,
+        ),
+        _buildInfoRow(
+          "Maks Pembelian",
+          "$maksimalPembelian atau ${_formatRupiah(maxBeliRupiah)}",
+          _deviceHeight,
+        ),
       ],
     );
   }
@@ -151,11 +185,23 @@ class ProjectHeaderInfo extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: deviceHeight * 0.001),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.right,
+            ),
           ),
         ],
       ),
@@ -174,6 +220,16 @@ class ProjectHeaderInfo extends StatelessWidget {
         return {"bg": const Color(0xFFFFDDD6), "fg": const Color(0xFF922922)};
       case "Draft Proyek":
         return {"bg": const Color(0xFFF8F8F8), "fg": const Color(0xFF000000)};
+      case "Proses Verifikasi":
+        return {"bg": const Color(0xFFFFF4E6), "fg": const Color(0xFFD97706)};
+      case "Revisi":
+        return {"bg": const Color(0xFFFEF3C7), "fg": const Color(0xFFB45309)};
+      case "Approval":
+        return {"bg": const Color(0xFFDDEAFF), "fg": const Color(0xFF1E40AF)};
+      case "TTD Kontrak":
+        return {"bg": const Color(0xFFE0E7FF), "fg": const Color(0xFF4338CA)};
+      case "Ditolak":
+        return {"bg": const Color(0xFFFFE4E6), "fg": const Color(0xFFDC2626)};
       default:
         return {"bg": Colors.grey.shade200, "fg": Colors.grey.shade700};
     }

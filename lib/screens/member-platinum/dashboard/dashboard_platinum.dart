@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
-import 'package:koperasi_rsb/screens/proyek/project_detail.dart';
+import 'package:koperasi_rsb/screens/proyek/detail_project/project_detail.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
@@ -202,6 +202,7 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => ProjectDetailPage(
+                              projectId: item['id'] ?? '',
                               imageUrl: item['imageUrl'],
                               status: item['status'],
                               title: item['title'],

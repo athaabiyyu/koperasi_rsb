@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
 import 'package:koperasi_rsb/screens/proyek/add_project.dart';
-import 'package:koperasi_rsb/screens/proyek/project_detail.dart';
+import 'package:koperasi_rsb/screens/proyek/detail_project/project_detail.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
+import 'package:koperasi_rsb/providers/project_provider.dart';
+import 'package:koperasi_rsb/models/project_list_model.dart';
 import 'package:provider/provider.dart';
+
 
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});
@@ -16,81 +20,69 @@ class MyProjectPage extends StatefulWidget {
 class _MyProjectPageState extends State<MyProjectPage>
     with SingleTickerProviderStateMixin {
   int _sortIndex = 0; // 0 = Terbaru, 1 = Terlama
+  bool _isInitialized = false;
 
-  // Contoh data dummy
-  final List<Map<String, dynamic>> _projects = [
-    {
-      "imageUrl": "https://picsum.photos/200",
-      "status": "Pendanaan Dibuka",
-      "title":
-          "Perkebunan Pisang Desa Bono, Pakel, Tulungagung, Jawa Timur, Indonesia, Asia Tenggara",
-      "tokenDitawarkan": 1000,
-      "minBeli": 100,
-      "terkumpul": 500,
-      "sisaHari": 12,
-    },
-    {
-      "imageUrl": "https://picsum.photos/200",
-      "status": "Proyek Berjalan",
-      "title": "Perkebunan Jagung Desa Makmur, Jawa Barat",
-      "tokenDitawarkan": 2000,
-      "minBeli": 20,
-      "terkumpul": 2000,
-      "sisaHari": 0,
-    },
-    {
-      "imageUrl": "https://picsum.photos/200",
-      "status": "Proyek Selesai",
-      "title": "Ternak Ayam Desa Rukun, Bali",
-      "tokenDitawarkan": 1500,
-      "minBeli": 150,
-      "terkumpul": 1500,
-      "sisaHari": 0,
-    },
-    {
-      "imageUrl": "https://picsum.photos/200",
-      "status": "Proyek Dibatalkan",
-      "title": "Kebun Kopi Desa Sentosa, Sumatera",
-      "tokenDitawarkan": 1200,
-      "minBeli": 120,
-      "terkumpul": 300,
-      "sisaHari": 0,
-    },
-    {
-      "imageUrl": "https://picsum.photos/200",
-      "status": "Draft Proyek",
-      "title": "Budidaya Ikan Lele Desa Harapan, Kalimantan",
-      "tokenDitawarkan": 0,
-      "minBeli": 0,
-      "terkumpul": 0,
-      "sisaHari": 0,
-      "isDraft": true,
-    },
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _loadProjects();
+      _isInitialized = true;
+    }
+  }
+
+  Future<void> _loadProjects() async {
+    final projectProvider =
+        Provider.of<ProjectProvider>(context, listen: false);
+    await projectProvider.loadUserProjects();
+  }
+
+  Future<void> _refreshProjects() async {
+    await _loadProjects();
+  }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final projectProvider = Provider.of<ProjectProvider>(context);
     final _deviceWidth = MediaQuery.of(context).size.width;
     final _deviceHeight = MediaQuery.of(context).size.height;
     final userRole = authProvider.userRole ?? 'BASIC';
     final isPlatinum = userRole == 'PLATINUM';
     final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
 
+    // Count projects by status
+    final pendanaanDibukaCount =
+        projectProvider.getProjectCountByStatus('PENDANAAN DIBUKA');
+    // Count BERJALAN including all cycles
+    final berjalanCount = projectProvider.userProjects
+        .where((p) => p.status == 'BERJALAN' || p.status.startsWith('BERJALAN SIKLUS'))
+        .length;
+    final selesaiCount = projectProvider.getProjectCountByStatus('SELESAI');
+    final dibatalkanCount =
+        projectProvider.getProjectCountByStatus('DIBATALKAN');
+    final draftCount = projectProvider.getProjectCountByStatus('DRAFT');
+    final prosesVerifikasiCount = projectProvider.getProjectCountByStatuses([
+      'PROSES VERIFIKASI',
+      'REVISI',
+      'APPROVAL',
+      'TTD KONTRAK',
+      'DITOLAK',
+    ]);
+
     return WillPopScope(
       onWillPop: () async {
-        // Navigasi ke DashboardPage dan hapus halaman sekarang dari stack
         Navigator.pushReplacementNamed(context, homeRoute);
-        return false; // mencegah pop default
+        return false;
       },
       child: DefaultTabController(
-        length: 5,
+        length: 6, // ✅ Tambah jadi 6 tab
         child: Scaffold(
           backgroundColor: const Color(0xFFF3FFFA),
           bottomNavigationBar: AppBottomNav(
             currentIndex: 1,
             onItemSelected: (i) {
-              if (i == 1) return; // already on Proyek
+              if (i == 1) return;
               if (!mounted) return;
               switch (i) {
                 case 0:
@@ -115,42 +107,41 @@ class _MyProjectPageState extends State<MyProjectPage>
                     vertical: _deviceHeight * 0.02,
                   ),
                   color: Colors.white,
-                  child: Row(
-                    children: [
-                      const Text(
-                        "Proyek Saya",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      "Proyek Saya",
+                      style: GoogleFonts.poppins(
+                        fontSize: _deviceWidth * 0.07,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
+                    ),
                   ),
                 ),
 
                 // Tab
                 Container(
                   color: Colors.white,
-                  child: const TabBar(
+                  child: TabBar(
                     labelColor: Colors.green,
                     unselectedLabelColor: Colors.black,
                     indicatorColor: Colors.green,
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
-                    labelStyle: TextStyle(
+                    labelStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
-                    labelPadding: EdgeInsets.symmetric(horizontal: 16),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 16),
                     tabs: [
                       Tab(
                         child: Column(
                           children: [
-                            Text("Pendanaan Dibuka"),
-                            SizedBox(height: 4),
+                            const Text("Proses Verifikasi"),
+                            const SizedBox(height: 4),
                             Text(
-                              "(1)",
-                              style: TextStyle(
+                              "($prosesVerifikasiCount)",
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -161,11 +152,11 @@ class _MyProjectPageState extends State<MyProjectPage>
                       Tab(
                         child: Column(
                           children: [
-                            Text("Proyek Berjalan"),
-                            SizedBox(height: 4),
+                            const Text("Pendanaan Dibuka"),
+                            const SizedBox(height: 4),
                             Text(
-                              "(0)",
-                              style: TextStyle(
+                              "($pendanaanDibukaCount)",
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -176,11 +167,11 @@ class _MyProjectPageState extends State<MyProjectPage>
                       Tab(
                         child: Column(
                           children: [
-                            Text("Proyek Selesai"),
-                            SizedBox(height: 4),
+                            const Text("Proyek Berjalan"),
+                            const SizedBox(height: 4),
                             Text(
-                              "(0)",
-                              style: TextStyle(
+                              "($berjalanCount)",
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -191,11 +182,11 @@ class _MyProjectPageState extends State<MyProjectPage>
                       Tab(
                         child: Column(
                           children: [
-                            Text("Proyek Dibatalkan"),
-                            SizedBox(height: 4),
+                            const Text("Proyek Selesai"),
+                            const SizedBox(height: 4),
                             Text(
-                              "(0)",
-                              style: TextStyle(
+                              "($selesaiCount)",
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -206,11 +197,26 @@ class _MyProjectPageState extends State<MyProjectPage>
                       Tab(
                         child: Column(
                           children: [
-                            Text("Draft Proyek"),
-                            SizedBox(height: 4),
+                            const Text("Proyek Dibatalkan"),
+                            const SizedBox(height: 4),
                             Text(
-                              "(0)",
-                              style: TextStyle(
+                              "($dibatalkanCount)",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Column(
+                          children: [
+                            const Text("Draft Proyek"),
+                            const SizedBox(height: 4),
+                            Text(
+                              "($draftCount)",
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -296,17 +302,48 @@ class _MyProjectPageState extends State<MyProjectPage>
                   ),
                 ),
 
-                // List Proyek sesuai tab
+                // Content area with loading/error handling
                 Expanded(
-                  child: TabBarView(
-                    children: [
-                      _buildProjectList("Pendanaan Dibuka"),
-                      _buildProjectList("Proyek Berjalan"),
-                      _buildProjectList("Proyek Selesai"),
-                      _buildProjectList("Proyek Dibatalkan"),
-                      _buildProjectList("Draft Proyek"),
-                    ],
-                  ),
+                  child: projectProvider.isLoadingProjects
+                      ? const Center(child: CircularProgressIndicator())
+                      : projectProvider.projectsError != null
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.error_outline,
+                                    size: 48,
+                                    color: Colors.red,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 32),
+                                    child: Text(
+                                      projectProvider.projectsError!,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: _refreshProjects,
+                                    child: const Text('Coba Lagi'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : TabBarView(
+                              children: [
+                                _buildProjectList("PROSES_VERIFIKASI"),
+                                _buildProjectList("PENDANAAN DIBUKA"),
+                                _buildProjectList("BERJALAN"),
+                                _buildProjectList("SELESAI"),
+                                _buildProjectList("DIBATALKAN"),
+                                _buildProjectList("DRAFT"),
+                              ],
+                            ),
                 ),
 
                 // Button Buat Proyek Baru
@@ -331,7 +368,7 @@ class _MyProjectPageState extends State<MyProjectPage>
                         MaterialPageRoute(
                           builder: (_) => const AddProjectPage(),
                         ),
-                      );
+                      ).then((_) => _refreshProjects());
                     },
                     child: const Text(
                       "Buat Proyek Baru",
@@ -347,19 +384,42 @@ class _MyProjectPageState extends State<MyProjectPage>
     );
   }
 
-  /// List builder dengan filter status
   Widget _buildProjectList(String statusFilter) {
-    // Filter sesuai status
-    List<Map<String, dynamic>> filteredProjects = _projects
-        .where((project) => project["status"] == statusFilter)
-        .toList();
+    final projectProvider = Provider.of<ProjectProvider>(context);
 
-    // Sort sesuai _sortIndex
-    if (_sortIndex == 0) {
-      filteredProjects = filteredProjects.reversed.toList(); // terbaru
+    // Get projects with sorting
+    List<ProjectListItem> projects;
+    
+    // Handle special filter for verification process
+    if (statusFilter == "PROSES_VERIFIKASI") {
+      projects = projectProvider.getProjectsByStatuses(
+        ['PROSES VERIFIKASI', 'REVISI', 'APPROVAL', 'TTD KONTRAK', 'DITOLAK'],
+        newest: _sortIndex == 0,
+      );
+    } 
+    // Handle BERJALAN status (include all cycles)
+    else if (statusFilter == "BERJALAN") {
+      // Get all projects with BERJALAN or BERJALAN SIKLUS X
+      final allProjects = projectProvider.userProjects;
+      projects = allProjects
+          .where((p) => p.status == 'BERJALAN' || p.status.startsWith('BERJALAN SIKLUS'))
+          .toList();
+      
+      // Sort
+      if (_sortIndex == 0) {
+        projects.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      } else {
+        projects.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      }
+    }
+    else {
+      projects = projectProvider.getProjectsByStatus(
+        statusFilter,
+        newest: _sortIndex == 0,
+      );
     }
 
-    if (filteredProjects.isEmpty) {
+    if (projects.isEmpty) {
       return const Center(
         child: Text(
           "Belum ada proyek",
@@ -368,54 +428,84 @@ class _MyProjectPageState extends State<MyProjectPage>
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: MediaQuery.of(context).size.width * 0.01,
-        vertical: MediaQuery.of(context).size.height * 0.015,
-      ),
-      itemCount: filteredProjects.length,
-      itemBuilder: (context, index) {
-        final project = filteredProjects[index];
-        return MyProjectCard(
-          imageUrl: project["imageUrl"],
-          status: project["status"],
-          title: project["title"],
-          tokenDitawarkan: project["tokenDitawarkan"],
-          minBeli: project["minBeli"],
-          terkumpul: project["terkumpul"],
-          sisaHari: project["sisaHari"],
-          isDraft: project["isDraft"] == true,
-          onTap: () {
-            final bool isDraft = project["isDraft"] == true;
-            if (isDraft) {
-              // Open AddProjectPage with draft prefill
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      AddProjectPage(isEditingDraft: true, draftData: project),
-                ),
-              );
-            } else {
-              // Open ProjectDetailPage for non-draft items
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProjectDetailPage(
-                    imageUrl: project["imageUrl"],
-                    status: project["status"],
-                    title: project["title"],
-                    owner: "Anda",
-                    collectedToken: project["terkumpul"],
-                    remainingDays: project["sisaHari"],
-                    maxToken: project["tokenDitawarkan"],
+    return RefreshIndicator(
+      onRefresh: _refreshProjects,
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.01,
+          vertical: MediaQuery.of(context).size.height * 0.015,
+        ),
+        itemCount: projects.length,
+        itemBuilder: (context, index) {
+          final project = projects[index];
+
+          return MyProjectCard(
+            imageUrl: project.mainImageUrl,
+            status: project.statusDisplay,
+            title: project.judul,
+            tokenDitawarkan: project.tokenDitawarkan,
+            minBeli: project.minBeli,
+            terkumpul: 0, // TODO: Calculate from funding transactions
+            sisaHari: project.sisaHari,
+            isDraft: project.isDraft,
+            onTap: () {
+              if (project.isDraft) {
+                // Open AddProjectPage for editing draft
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AddProjectPage(
+                      isEditingDraft: true,
+                      draftData: _convertProjectToMap(project),
+                    ),
                   ),
-                ),
-              );
-            }
-          },
-        );
-      },
+                ).then((_) => _refreshProjects());
+              } else {
+                // Open ProjectDetailPage with projectId
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProjectDetailPage(
+                      projectId: project.id,
+                      imageUrl: project.mainImageUrl,
+                      status: project.statusDisplay,
+                      title: project.judul,
+                      owner: project.user.name,
+                      collectedToken: 0,
+                      remainingDays: project.sisaHari,
+                      maxToken: project.tokenDitawarkan,
+                    ),
+                  ),
+                );
+              }
+            },
+          );
+        },
+      ),
     );
+  }
+
+  // Helper to convert ProjectListItem to Map for draft editing
+  Map<String, dynamic> _convertProjectToMap(ProjectListItem project) {
+    return {
+      'id': project.id,
+      'id_kategori': project.idKategori,
+      'judul': project.judul,
+      'deskripsi': project.deskripsi,
+      'nominal': project.nominal,
+      'asset_jaminan': project.assetJaminan,
+      'nilai_jaminan': project.nilaiJaminan,
+      'lokasi_usaha': project.lokasiUsaha,
+      'detail_lokasi': project.detailLokasi,
+      'pendapatan_perbulan': project.pendapatanPerbulan,
+      'pengeluaran_perbulan': project.pengeluaranPerbulan,
+      'limit_siklus': project.limitSiklus,
+      'bagian_pelaksana': 0,
+      'bagian_koperasi': 0,
+      'bagian_pemilik': 0,
+      'bagian_pendana': 0,
+      'brosur_produk': project.brosurProduk,
+      'dokumen_proyeksi': project.dokumenProyeksi,
+    };
   }
 }
