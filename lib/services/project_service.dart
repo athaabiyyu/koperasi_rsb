@@ -10,6 +10,7 @@ import '../models/project_model.dart';
 import '../utils/shared_preferences_helper.dart';
 import '../models/project_list_model.dart';
 import '../models/agreement_model.dart';
+import '../models/project_investor_model.dart';
 
 class ProjectService {
   // Get token dari SharedPreferencesHelper
@@ -25,7 +26,6 @@ class ProjectService {
       }
 
       final url = '${ApiConfig.baseUrl}/project/$projectId';
-      print('📡 Fetching project detail from: $url');
 
       final response = await http.get(
         Uri.parse(url),
@@ -37,8 +37,6 @@ class ProjectService {
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        print('📦 Full Response: $jsonResponse'); // Tambahkan ini
-        print('📦 DokumenTambahan: ${jsonResponse['data']?['dokumenTambahan']}'); // Dan ini
 
         Map<String, dynamic> projectData;
         if (jsonResponse is Map && jsonResponse.containsKey('data')) {
@@ -59,7 +57,6 @@ class ProjectService {
     } on SocketException {
       throw Exception('Tidak ada koneksi internet');
     } catch (e) {
-      print('❌ Error loading project detail: $e');
       throw Exception('Error: ${e.toString()}');
     }
   }
@@ -159,7 +156,7 @@ class ProjectService {
           contentType: MediaType('application', 'octet-stream'),
         );
         request.files.add(multipartFile);
-      } else {}
+      }
 
       // Add dokumen_proyeksi file (required)
       final proyeksiFile = await http.MultipartFile.fromPath(
@@ -190,6 +187,93 @@ class ProjectService {
     }
   }
 
+  // Tambahkan method update project
+  Future<ProjectResponse> updateProject({
+    required String projectId,
+    required CreateProjectRequest project,
+    List<File>? dokumenFiles,
+    File? brosurProdukFile,
+    File? dokumenProyeksiFile,
+  }) async {
+    try {
+      final token = await _getToken();
+      if (token == null) throw Exception('Token tidak ditemukan');
+
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('${ApiConfig.baseUrl}/project/update'),
+      );
+
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add project ID to body
+      request.fields['id'] = projectId;
+
+      // Add all project fields
+      request.fields['id_kategori'] = project.idKategori;
+      request.fields['judul'] = project.judul;
+      request.fields['deskripsi'] = project.deskripsi;
+      request.fields['nominal'] = project.nominal.toString();
+      request.fields['asset_jaminan'] = project.assetJaminan;
+      request.fields['nilai_jaminan'] = project.nilaiJaminan.toString();
+      request.fields['lokasi_usaha'] = project.lokasiUsaha;
+      request.fields['detail_lokasi'] = project.detailLokasi;
+      request.fields['pendapatan_perbulan'] =
+          project.pendapatanPerbulan.toString();
+      request.fields['pengeluaran_perbulan'] =
+          project.pengeluaranPerbulan.toString();
+      request.fields['limit_siklus'] = project.limitSiklus.toString();
+      request.fields['bagian_pelaksana'] = project.bagianPelaksana.toString();
+      request.fields['bagian_koperasi'] = project.bagianKoperasi.toString();
+      request.fields['bagian_pemilik'] = project.bagianPemilik.toString();
+      request.fields['bagian_pendana'] = project.bagianPendana.toString();
+
+      // Add files
+      if (dokumenFiles != null && dokumenFiles.isNotEmpty) {
+        for (var file in dokumenFiles) {
+          request.files
+              .add(await http.MultipartFile.fromPath('dokumen', file.path));
+        }
+      }
+
+      if (brosurProdukFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+            'brosur_produk', brosurProdukFile.path));
+      }
+
+      if (dokumenProyeksiFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+            'dokumen_proyeksi', dokumenProyeksiFile.path));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      // Check for 200 OR 201 status code
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+
+        // Handle response that only has "message" field
+        if (data is Map && data.containsKey('message')) {
+          // Return a success response object
+          return ProjectResponse(
+            message: data['message'] as String,
+            data: null, // Backend tidak return project data
+          );
+        }
+
+        // If backend returns full project data
+        return ProjectResponse.fromJson(data);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+            'Gagal update project: ${errorData['error'] ?? errorData['message'] ?? response.body}');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<ProjectListItem>> getUserProjects({
     String? status,
     String? search,
@@ -214,7 +298,6 @@ class ProjectService {
         url += '?${queryParams.join('&')}';
       }
 
-      print('📡 Fetching projects from: $url');
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -223,11 +306,9 @@ class ProjectService {
         },
       );
 
-      print('📥 Response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        // ✅ FIX: Handle response with 'data' wrapper
+        // Handle response with 'data' wrapper
         List<dynamic> projectsData;
         if (jsonResponse is List) {
           projectsData = jsonResponse;
@@ -237,14 +318,11 @@ class ProjectService {
           throw Exception('Format response tidak valid');
         }
 
-        print('✅ Loaded ${projectsData.length} projects');
-
         return projectsData
             .map((json) => ProjectListItem.fromJson(json))
             .toList();
       } else if (response.statusCode == 404) {
         // No projects found, return empty list
-        print('ℹ️ No projects found');
         return [];
       } else {
         final errorBody = json.decode(response.body);
@@ -253,11 +331,56 @@ class ProjectService {
     } on SocketException {
       throw Exception('Tidak ada koneksi internet');
     } catch (e) {
-      print('❌ Error loading projects: $e');
       throw Exception('Error: ${e.toString()}');
     }
   }
-   Future<AgreementLetter?> getAgreementByProjectId(String projectId) async {
+  Future<Map<String, dynamic>> signAgreementLetter({
+    required String projectId,
+    required File signatureFile,
+  }) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login kembali.');
+      }
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${ApiConfig.baseUrl}/project/agreement-letter'),
+      );
+
+      // Add authorization header
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add project ID
+      request.fields['id_projek'] = projectId;
+
+      // Add signature file
+      var signatureMultipart = await http.MultipartFile.fromPath(
+        'tanda_tangan',
+        signatureFile.path,
+        contentType: MediaType('image', 'png'),
+      );
+      request.files.add(signatureMultipart);
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        print('✅ Agreement signed successfully');
+        return data;
+      } else {
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Gagal menandatangani kontrak';
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<AgreementLetter?> getAgreementByProjectId(String projectId) async {
     try {
       final token = await _getToken();
       if (token == null || token.isEmpty) {
@@ -265,7 +388,6 @@ class ProjectService {
       }
 
       final url = '${ApiConfig.baseUrl}/project/$projectId/agreement-letter';
-      print('📡 Fetching agreement letter from: $url');
 
       final response = await http.get(
         Uri.parse(url),
@@ -275,11 +397,8 @@ class ProjectService {
         },
       );
 
-      print('📥 Agreement Response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        print('📦 Agreement Response: $jsonResponse');
 
         // Handle response structure
         dynamic agreementData;
@@ -300,11 +419,10 @@ class ProjectService {
         if (agreementData != null) {
           return AgreementLetter.fromJson(agreementData);
         }
-        
+
         return null;
       } else if (response.statusCode == 404) {
         // No agreement found yet (normal case for new projects)
-        print('ℹ️ No agreement letter found for project $projectId');
         return null;
       } else {
         final errorBody = json.decode(response.body);
@@ -313,9 +431,9 @@ class ProjectService {
     } on SocketException {
       throw Exception('Tidak ada koneksi internet');
     } catch (e) {
-      print('❌ Error loading agreement letter: $e');
       // Don't throw error if agreement not found, return null instead
-      if (e.toString().contains('404') || e.toString().contains('No agreements found')) {
+      if (e.toString().contains('404') ||
+          e.toString().contains('No agreements found')) {
         return null;
       }
       throw Exception('Error: ${e.toString()}');
@@ -355,4 +473,61 @@ class ProjectService {
       throw Exception('Gagal menghapus draft: ${e.toString()}');
     }
   }
+  Future<List<InvestorSummary>> getProjectInvestors(String projectId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login kembali.');
+      }
+
+      final url = Uri.parse('${ApiConfig.baseUrl}/project/$projectId/user');
+      
+      print('\n🔍 === GET PROJECT INVESTORS ===');
+      print('URL: $url');
+      print('Project ID: $projectId');
+
+      final response = await http.get(
+        url,
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        
+        // ✅ Check if data exists (backend doesn't always send 'success' field)
+        if (jsonResponse.containsKey('data') && jsonResponse['data'] != null) {
+          final List<dynamic> data = jsonResponse['data'] as List<dynamic>;
+          
+          final investors = data
+              .map((json) => InvestorSummary.fromJson(json as Map<String, dynamic>))
+              .toList();
+          
+          // Sort by total token value descending
+          investors.sort((a, b) => b.totalNilaiToken.compareTo(a.totalNilaiToken));
+          
+          print('✅ Successfully loaded ${investors.length} investors');
+          return investors;
+        } else {
+          throw Exception(jsonResponse['message'] ?? 'Format response tidak valid');
+        }
+      } else if (response.statusCode == 404) {
+        // No investors found - return empty list
+        print('ℹ️ No investors found for this project');
+        return [];
+      } else if (response.statusCode == 401) {
+        throw Exception('Sesi Anda telah berakhir. Silakan login kembali.');
+      } else {
+        final errorResponse = json.decode(response.body);
+        throw Exception(errorResponse['message'] ?? 'Gagal memuat data investor');
+      }
+    } catch (e) {
+      print('❌ Error in getProjectInvestors: $e');
+      rethrow;
+    }
+  }
 }
+
+

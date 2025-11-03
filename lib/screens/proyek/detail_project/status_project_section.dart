@@ -6,7 +6,8 @@ import 'package:koperasi_rsb/models/project_list_model.dart';
 import 'package:koperasi_rsb/models/history_project_model.dart';
 import 'package:koperasi_rsb/providers/project_provider.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/sign_contract_dialog.dart';
-
+import 'package:koperasi_rsb/screens/proyek/add_project.dart';
+import 'dart:io';
 
 class SubmissionStatusTab extends StatefulWidget {
   final ProjectListItem project;
@@ -24,7 +25,6 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
   @override
   void initState() {
     super.initState();
-    // Load both agreement and history when tab opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<ProjectProvider>();
       provider.loadAgreementLetter(widget.project.id);
@@ -39,7 +39,6 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
 
     return Consumer<ProjectProvider>(
       builder: (context, provider, child) {
-        // Get timeline steps with real data
         final timelineSteps = provider.getTimelineSteps();
 
         return SingleChildScrollView(
@@ -49,7 +48,6 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
             children: [
               const SizedBox(height: 15),
               
-              // Title
               Text(
                 "Progres Status Pengajuan Project",
                 style: GoogleFonts.roboto(
@@ -59,7 +57,6 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
               ),
               SizedBox(height: deviceHeight * 0.02),
 
-              // Loading state
               if (provider.isLoadingHistory)
                 const Center(
                   child: Padding(
@@ -67,7 +64,6 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
                     child: CircularProgressIndicator(),
                   ),
                 )
-              // Error state
               else if (provider.historyError != null)
                 Center(
                   child: Padding(
@@ -113,11 +109,9 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
                     ),
                   ),
                 )
-              // Timeline with real data
               else
                 Stack(
                   children: [
-                    // Background dashed vertical line
                     Positioned.fill(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 16),
@@ -134,33 +128,33 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
                       ),
                     ),
                     
-                    // Timeline steps
                     Column(
                       children: List.generate(
                         timelineSteps.length,
                         (index) {
                           final step = timelineSteps[index];
                           final isKontrakStep = step.stepName == "Kontrak Perjanjian";
-                          final isAfterKontrak = index > timelineSteps.indexWhere(
-                            (s) => s.stepName == "Kontrak Perjanjian"
-                          );
 
-                          // Determine current step
-                          final isCurrent = _isCurrentStep(timelineSteps, index);
+                          final displayStatus = _getDisplayStatus(timelineSteps, index);
+                          
+                          // ✅ Check if should show retry button
+                          final shouldShowRetry = _shouldShowRetryButton(step);
+
+                          // ✅ NEW: Show contract button ONLY at "Kontrak Perjanjian" step
+                          // AND only if it hasn't been signed yet (no SUCCESS in histories)
+                          final shouldShowContractButton = isKontrakStep && 
+                              step.hasHistories && 
+                              !step.isSuccess;
 
                           return TimelineStepItem(
                             index: index,
                             isLast: index == timelineSteps.length - 1,
                             title: step.stepName,
-                            overallStatus: isCurrent ? 'current' : step.overallStatus.toLowerCase(),
+                            overallStatus: displayStatus,
                             events: step.toTimelineEvents(),
-                            showContractButton: isKontrakStep || isAfterKontrak,
-                            hasAgreement: provider.hasAgreementLetter(),
-                            isLoadingAgreement: provider.isLoadingAgreement,
-                            onDownloadContract: () => _handleDownloadContract(context, provider),
+                            showContractButton: shouldShowContractButton,
                             onSignContract: () => _handleSignContract(context, provider),
-                            // Show "Ajukan Ulang" button if step failed
-                            showRetryButton: step.isFailed,
+                            showRetryButton: shouldShowRetry,
                             onRetrySubmit: () => _handleRetrySubmit(context),
                           );
                         },
@@ -175,22 +169,41 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
     );
   }
 
-  /// Determine if step is current (active)
-  bool _isCurrentStep(List<TimelineStepData> steps, int index) {
-    // If this step has pending status, it's current
-    if (steps[index].isPending) return true;
-
-    // If previous step is success and current has no history, it's current
-    if (index > 0 && steps[index - 1].isSuccess && !steps[index].hasHistories) {
-      return true;
+  String _getDisplayStatus(List<TimelineStepData> steps, int index) {
+    final currentStep = steps[index];
+    
+    if (currentStep.hasHistories) {
+      final hasSuccess = currentStep.histories.any((h) => h.isSuccess);
+      
+      if (hasSuccess) return 'success';
+      if (currentStep.isFailed) return 'failed';
+      if (currentStep.isPending) return 'pending';
     }
-
-    // If it's first step and has no history, it's current
-    if (index == 0 && !steps[index].hasHistories) {
-      return true;
+    
+    if (index == 0 && !currentStep.hasHistories) {
+      return 'current';
     }
+    
+    if (index > 0 && steps[index - 1].isSuccess && !currentStep.hasHistories) {
+      return 'current';
+    }
+    
+    return 'upcoming';
+  }
 
-    return false;
+  /// ✅ Show retry button only if latest history is FAILED
+  bool _shouldShowRetryButton(TimelineStepData step) {
+    if (!step.hasHistories) return false;
+    
+    // Sort histories chronologically (oldest to newest)
+    final sortedHistories = List<HistoryProject>.from(step.histories);
+    sortedHistories.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    
+    // Get the latest (most recent) history
+    final latestHistory = sortedHistories.last;
+    
+    // Show button ONLY if latest status is FAILED
+    return latestHistory.isFailed;
   }
 
   void _handleDownloadContract(BuildContext context, ProjectProvider provider) {
@@ -203,28 +216,273 @@ class _SubmissionStatusTabState extends State<SubmissionStatusTab> {
       );
       return;
     }
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Downloading kontrak...'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 
+  /// ✅ UPDATED: Now uses SignatureInputDialog directly
   void _handleSignContract(BuildContext context, ProjectProvider provider) {
-    showSignContractDialog(
-      context,
-      projectId: widget.project.id,
-      onSuccess: () {
-        // Reload agreement and history after signing
-        provider.loadAgreementLetter(widget.project.id);
-        provider.loadProjectHistory(widget.project.id);
-      },
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => _SignContractConfirmDialog(
+        projectId: widget.project.id,
+        onSuccess: () {
+          provider.loadAgreementLetter(widget.project.id);
+          provider.loadProjectHistory(widget.project.id);
+        },
+      ),
     );
   }
 
   void _handleRetrySubmit(BuildContext context) {
-    // TODO: Navigate to edit project page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Silakan perbaiki dokumen dan ajukan ulang'),
-        backgroundColor: Colors.orange,
+    final provider = context.read<ProjectProvider>();
+    
+    provider.loadProjectForEdit(widget.project.id).then((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AddProjectPage(),
+        ),
+      ).then((_) {
+        provider.loadProjectHistory(widget.project.id);
+        provider.loadUserProjects();
+      });
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memuat data: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
+}
+
+/// ✅ Sign Contract Confirmation Dialog
+class _SignContractConfirmDialog extends StatefulWidget {
+  final String projectId;
+  final VoidCallback? onSuccess;
+
+  const _SignContractConfirmDialog({
+    required this.projectId,
+    this.onSuccess,
+  });
+
+  @override
+  State<_SignContractConfirmDialog> createState() => _SignContractConfirmDialogState();
+}
+
+class _SignContractConfirmDialogState extends State<_SignContractConfirmDialog> {
+  bool _isProcessing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 500),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(Icons.description, color: const Color(0xFF12B76A), size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Tanda Tangani Kontrak',
+                    style: GoogleFonts.roboto(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: _isProcessing ? null : () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Info text
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Dengan menandatangani kontrak ini, Anda menyetujui semua syarat dan ketentuan yang berlaku.',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: Colors.blue.shade900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isProcessing ? null : () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey.shade700,
+                      side: BorderSide(color: Colors.grey.shade300),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Batal'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isProcessing ? null : _handleSignContract,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: _isProcessing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                        : const Text('Tanda Tangani'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
-    
+  }
+
+  void _handleSignContract() async {
+    // ✅ Show signature input dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext signatureContext) => SignatureInputDialog(
+        onSignatureSubmitted: (File signatureFile) {
+          // Process the signature
+          _submitSignature(signatureFile);
+        },
+      ),
+    );
+  }
+
+  void _submitSignature(File signatureFile) async {
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final provider = context.read<ProjectProvider>();
+
+      print('\n📝 === SUBMITTING SIGNATURE ===');
+      print('Project ID: ${widget.projectId}');
+      print('Signature file: ${signatureFile.path}');
+
+      final success = await provider.signAgreementLetter(
+        widget.projectId,
+        signatureFile,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        // Close this dialog
+        Navigator.pop(context);
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Kontrak berhasil ditandatangani'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        // Call success callback
+        widget.onSuccess?.call();
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    provider.signAgreementError ?? 'Gagal menandatangani kontrak',
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text('Error: ${e.toString()}')),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 }

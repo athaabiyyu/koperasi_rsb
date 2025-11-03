@@ -1,5 +1,3 @@
-// lib/models/history_project_model.dart
-
 class HistoryProject {
   final String id;
   final String idProjek;
@@ -26,11 +24,11 @@ class HistoryProject {
       history: json['history'] ?? '',
       keterangan: _stripHtmlTags(json['keterangan']), // ✅ Strip HTML tags
       status: json['status'] ?? 'PENDING',
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : DateTime.now(),
-      updatedAt: json['updated_at'] != null 
-          ? DateTime.parse(json['updated_at']) 
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
           : null,
     );
   }
@@ -38,13 +36,13 @@ class HistoryProject {
   // ✅ Helper method to strip HTML tags
   static String? _stripHtmlTags(dynamic htmlString) {
     if (htmlString == null) return null;
-    
+
     final text = htmlString.toString();
-    
+
     // Remove HTML tags
     final RegExp exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
     String result = text.replaceAll(exp, '');
-    
+
     // Decode HTML entities
     result = result
         .replaceAll('&nbsp;', ' ')
@@ -57,10 +55,10 @@ class HistoryProject {
         .replaceAll('<br>', '\n')
         .replaceAll('<br/>', '\n')
         .replaceAll('<br />', '\n');
-    
+
     // Clean up extra whitespace
     result = result.trim();
-    
+
     return result.isEmpty ? null : result;
   }
 
@@ -92,10 +90,24 @@ class HistoryProject {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}, ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+
+    // ✅ Convert to WIB (GMT+7)
+    final wibDate = date.toUtc().add(const Duration(hours: 7));
+
+    return '${wibDate.day} ${months[wibDate.month - 1]} ${wibDate.year}, ${wibDate.hour}:${wibDate.minute.toString().padLeft(2, '0')}';
   }
 }
 
@@ -111,26 +123,27 @@ class TimelineStepData {
     required this.stepIndex,
   });
 
-  // Get latest history for this step
+  // Get latest history for this step (newest first)
   HistoryProject? get latestHistory {
     if (histories.isEmpty) return null;
-    histories.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return histories.first;
+    final sorted = List<HistoryProject>.from(histories);
+    sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return sorted.first;
   }
 
   // Get overall step status
   String get overallStatus {
     if (histories.isEmpty) return 'UPCOMING';
-    
-    // If any failed, mark as failed
+
+    // ✅ If ANY history is SUCCESS, mark as success (even if there was FAILED before)
+    if (histories.any((h) => h.isSuccess)) return 'SUCCESS';
+
+    // ❌ If any failed (and no success), mark as failed
     if (histories.any((h) => h.isFailed)) return 'FAILED';
-    
-    // If all success, mark as success
-    if (histories.every((h) => h.isSuccess)) return 'SUCCESS';
-    
-    // If has pending, mark as pending
+
+    // ⏳ If has pending, mark as pending
     if (histories.any((h) => h.isPending)) return 'PENDING';
-    
+
     return 'UPCOMING';
   }
 
@@ -140,8 +153,13 @@ class TimelineStepData {
   bool get isPending => overallStatus == 'PENDING';
   bool get isUpcoming => overallStatus == 'UPCOMING';
 
-  // Convert to timeline events format for UI
+  // ✅ Convert to timeline events format for UI (OLDEST to NEWEST)
   List<Map<String, dynamic>> toTimelineEvents() {
-    return histories.map((h) => h.toTimelineEvent()).toList();
+    // Sort histories from oldest to newest
+    final sortedHistories = List<HistoryProject>.from(histories);
+    sortedHistories.sort(
+        (a, b) => a.createdAt.compareTo(b.createdAt)); // ✅ Ascending order
+
+    return sortedHistories.map((h) => h.toTimelineEvent()).toList();
   }
 }

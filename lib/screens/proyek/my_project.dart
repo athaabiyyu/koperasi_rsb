@@ -363,6 +363,10 @@ class _MyProjectPageState extends State<MyProjectPage>
                       ),
                     ),
                     onPressed: () {
+                      final provider = context.read<ProjectProvider>();
+                      provider.clearEditMode();
+                      provider.clearFormData(); // Clear form data juga
+                      
                       Navigator.push(
                         context,
                         MaterialPageRoute(

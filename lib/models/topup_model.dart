@@ -39,13 +39,6 @@ class TopupModel {
     final walletData = json['wallet'];
     final userData = json['user'];
 
-    // ✅ DEBUG: Print untuk melihat data yang diterima
-    print('📦 Parsing topup data:');
-    print('  - jenis: ${topupData['jenis']}');
-    print('  - nama: ${topupData['nama']}');
-    print('  - status: ${topupData['status']}');
-    print('  - nominal: ${topupData['nominal']}');
-
     return TopupModel(
       id: topupData['id'] ?? '',
       idWallet: topupData['id_wallet'] ?? '',

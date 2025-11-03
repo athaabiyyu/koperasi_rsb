@@ -7,7 +7,6 @@ import '../models/project_list_model.dart';
 import '../models/agreement_model.dart';
 import '../models/history_project_model.dart';
 
-
 enum ProjectStatus { idle, loading, success, error }
 
 class ProjectProvider extends ChangeNotifier {
@@ -22,7 +21,11 @@ class ProjectProvider extends ChangeNotifier {
   List<ProjectListItem> _userProjects = [];
   bool _isLoadingProjects = false;
   String? _projectsError;
-  
+
+  // Add update mode state
+  String? _editingProjectId;
+  bool _isUpdateMode = false;
+
   // Project detail state
   ProjectListItem? _projectDetail;
   bool _isLoadingDetail = false;
@@ -32,6 +35,10 @@ class ProjectProvider extends ChangeNotifier {
   AgreementLetter? _agreementLetter;
   bool _isLoadingAgreement = false;
   String? _agreementError;
+
+  // Sign agreement state
+  bool _isSigningAgreement = false;
+  String? _signAgreementError;
 
   // History project state
   List<HistoryProject> _projectHistories = [];
@@ -57,16 +64,24 @@ class ProjectProvider extends ChangeNotifier {
   List<File> get dokumenFiles => _dokumenFiles;
   File? get brosurProdukFile => _brosurProdukFile;
   File? get dokumenProyeksiFile => _dokumenProyeksiFile;
-  
+
   // Project detail getters
   ProjectListItem? get projectDetail => _projectDetail;
   bool get isLoadingDetail => _isLoadingDetail;
   String? get detailError => _detailError;
 
+  // Update mode getters
+  bool get isUpdateMode => _isUpdateMode;
+  String? get editingProjectId => _editingProjectId;
+
   // Agreement letter getters
   AgreementLetter? get agreementLetter => _agreementLetter;
   bool get isLoadingAgreement => _isLoadingAgreement;
   String? get agreementError => _agreementError;
+
+  // Sign agreement getters
+  bool get isSigningAgreement => _isSigningAgreement;
+  String? get signAgreementError => _signAgreementError;
 
   // History project getters
   List<HistoryProject> get projectHistories => _projectHistories;
@@ -84,13 +99,6 @@ class ProjectProvider extends ChangeNotifier {
       notifyListeners();
 
       _categories = await _projectService.getProjectCategories();
-      for (var cat in _categories) {
-        print('  - "${cat.name}" (ID: ${cat.id}) [Length: ${cat.name.length}]');
-      }
-      
-      final emptyNames = _categories.where((c) => c.name.trim().isEmpty);
-      if (emptyNames.isNotEmpty) {
-      }
 
       _isCategoriesLoading = false;
       notifyListeners();
@@ -101,6 +109,40 @@ class ProjectProvider extends ChangeNotifier {
     }
   }
 
+  // Load project data for editing
+  Future<void> loadProjectForEdit(String projectId) async {
+    try {
+      final project = await getProjectDetail(projectId);
+
+      // Populate form data
+      _formData = {
+        'id_kategori': project.idKategori,
+        'judul': project.judul,
+        'deskripsi': project.deskripsi,
+        'nominal': project.nominal.toString(),
+        'asset_jaminan': project.assetJaminan,
+        'nilai_jaminan': project.nilaiJaminan.toString(),
+        'lokasi_usaha': project.lokasiUsaha,
+        'detail_lokasi': project.detailLokasi,
+        'pendapatan_perbulan': project.pendapatanPerbulan.toString(),
+        'pengeluaran_perbulan': project.pengeluaranPerbulan.toString(),
+        'limit_siklus': project.limitSiklus.toString(),
+        'bagian_pelaksana': project.bagianPelaksana.toString(),
+        'bagian_koperasi': project.bagianKoperasi.toString(),
+        'bagian_pemilik': project.bagianPemilik.toString(),
+        'bagian_pendana': project.bagianPendana.toString(),
+        'brosur_produk': project.brosurProduk,
+        'dokumen_proyeksi': project.dokumenProyeksi,
+      };
+
+      _editingProjectId = projectId;
+      _isUpdateMode = true;
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Get project detail
   Future<ProjectListItem> getProjectDetail(String projectId) async {
     try {
@@ -108,19 +150,14 @@ class ProjectProvider extends ChangeNotifier {
       _detailError = null;
       notifyListeners();
 
-      print('📡 Loading project detail: $projectId');
-      
       final detail = await _projectService.getProjectDetail(projectId);
-      
+
       _projectDetail = detail;
       _isLoadingDetail = false;
       notifyListeners();
-      
-      print('✅ Project detail loaded successfully');
+
       return detail;
-      
     } catch (e) {
-      print('❌ Error loading project detail: $e');
       _isLoadingDetail = false;
       _detailError = e.toString().replaceAll('Exception: ', '');
       _projectDetail = null;
@@ -144,22 +181,13 @@ class ProjectProvider extends ChangeNotifier {
       _agreementError = null;
       notifyListeners();
 
-      print('📡 Loading agreement letter for project: $projectId');
-      
-      final agreement = await _projectService.getAgreementByProjectId(projectId);
-      
+      final agreement =
+          await _projectService.getAgreementByProjectId(projectId);
+
       _agreementLetter = agreement;
       _isLoadingAgreement = false;
       notifyListeners();
-      
-      if (agreement != null) {
-        print('✅ Agreement letter loaded successfully');
-      } else {
-        print('ℹ️ No agreement letter found');
-      }
-      
     } catch (e) {
-      print('❌ Error loading agreement letter: $e');
       _isLoadingAgreement = false;
       _agreementError = e.toString().replaceAll('Exception: ', '');
       _agreementLetter = null;
@@ -187,22 +215,146 @@ class ProjectProvider extends ChangeNotifier {
       _historyError = null;
       notifyListeners();
 
-      print('📡 Loading project history for: $projectId');
-      
-      final histories = await _historyProjectService.getProjectHistory(projectId);
-      
+      final histories =
+          await _historyProjectService.getProjectHistory(projectId);
+
       _projectHistories = histories;
       _isLoadingHistory = false;
       notifyListeners();
-      
-      print('✅ Loaded ${histories.length} history items');
-      
     } catch (e) {
-      print('❌ Error loading project history: $e');
       _isLoadingHistory = false;
       _historyError = e.toString().replaceAll('Exception: ', '');
       _projectHistories = [];
       notifyListeners();
+    }
+  }
+
+  // Update existing project
+  Future<bool> updateProject() async {
+    if (_editingProjectId == null) {
+      _errorMessage = 'ID project tidak ditemukan';
+      return false;
+    }
+
+    try {
+      _status = ProjectStatus.loading;
+      _errorMessage = null;
+      notifyListeners();
+
+      print('\n🔄 === UPDATE PROJECT PROVIDER ===');
+      print('Project ID: $_editingProjectId');
+      print('Form Data: $_formData');
+
+      // Validation - dokumen proyeksi bisa dari file baru atau existing
+      if (_dokumenProyeksiFile == null &&
+          (_formData['dokumen_proyeksi'] == null ||
+              _formData['dokumen_proyeksi'].isEmpty)) {
+        throw Exception('Dokumen proyeksi wajib ada');
+      }
+
+      // Parse values
+      final idKategori = _formData['id_kategori'] ?? '';
+      final judul = _formData['judul'] ?? '';
+      final deskripsi = _formData['deskripsi'] ?? '';
+      final nominal = int.tryParse(_formData['nominal']
+                  ?.toString()
+                  .replaceAll(RegExp(r'[^0-9]'), '') ??
+              '0') ??
+          0;
+      final assetJaminan = _formData['asset_jaminan'] ?? '';
+      final nilaiJaminan = int.tryParse(_formData['nilai_jaminan']
+                  ?.toString()
+                  .replaceAll(RegExp(r'[^0-9]'), '') ??
+              '0') ??
+          0;
+      final lokasiUsaha = _formData['lokasi_usaha'] ?? '';
+      final detailLokasi = _formData['detail_lokasi'] ?? '';
+      final pendapatanPerbulan = int.tryParse(_formData['pendapatan_perbulan']
+                  ?.toString()
+                  .replaceAll(RegExp(r'[^0-9]'), '') ??
+              '0') ??
+          0;
+      final pengeluaranPerbulan = int.tryParse(_formData['pengeluaran_perbulan']
+                  ?.toString()
+                  .replaceAll(RegExp(r'[^0-9]'), '') ??
+              '0') ??
+          0;
+      final limitSiklus =
+          int.tryParse(_formData['limit_siklus']?.toString() ?? '0') ?? 0;
+      final bagianPelaksana =
+          int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
+      final bagianKoperasi =
+          int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
+      final bagianPemilik =
+          int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
+      final bagianPendana =
+          int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
+
+      // Validation
+      final validationErrors = <String>[];
+      if (idKategori.isEmpty) validationErrors.add('ID Kategori kosong');
+      if (judul.isEmpty) validationErrors.add('Judul kosong');
+      if (deskripsi.isEmpty) validationErrors.add('Deskripsi kosong');
+      if (nominal <= 0) validationErrors.add('Nominal tidak valid: $nominal');
+      if (assetJaminan.isEmpty) validationErrors.add('Asset Jaminan kosong');
+      if (nilaiJaminan <= 0)
+        validationErrors.add('Nilai Jaminan tidak valid: $nilaiJaminan');
+      if (lokasiUsaha.isEmpty) validationErrors.add('Lokasi Usaha kosong');
+      if (detailLokasi.isEmpty) validationErrors.add('Detail Lokasi kosong');
+      if (pendapatanPerbulan <= 0)
+        validationErrors.add('Pendapatan tidak valid: $pendapatanPerbulan');
+      if (pengeluaranPerbulan <= 0)
+        validationErrors.add('Pengeluaran tidak valid: $pengeluaranPerbulan');
+      if (limitSiklus <= 0)
+        validationErrors.add('Limit Siklus tidak valid: $limitSiklus');
+
+      if (validationErrors.isNotEmpty) {
+        throw Exception('Validation failed: ${validationErrors.join(", ")}');
+      }
+
+      final request = CreateProjectRequest(
+        idKategori: idKategori,
+        judul: judul,
+        deskripsi: deskripsi,
+        nominal: nominal,
+        assetJaminan: assetJaminan,
+        nilaiJaminan: nilaiJaminan,
+        lokasiUsaha: lokasiUsaha,
+        detailLokasi: detailLokasi,
+        pendapatanPerbulan: pendapatanPerbulan,
+        pengeluaranPerbulan: pengeluaranPerbulan,
+        limitSiklus: limitSiklus,
+        bagianPelaksana: bagianPelaksana,
+        bagianKoperasi: bagianKoperasi,
+        bagianPemilik: bagianPemilik,
+        bagianPendana: bagianPendana,
+        // ✅ Kirim path file baru atau existing path
+        dokumenProyeksi:
+            _dokumenProyeksiFile?.path ?? _formData['dokumen_proyeksi'],
+      );
+
+      print('🚀 Calling updateProject service...');
+      _response = await _projectService.updateProject(
+        projectId: _editingProjectId!,
+        project: request,
+        dokumenFiles: _dokumenFiles.isNotEmpty ? _dokumenFiles : null,
+        brosurProdukFile: _brosurProdukFile,
+        dokumenProyeksiFile:
+            _dokumenProyeksiFile, // Could be null if using existing
+      );
+
+      _status = ProjectStatus.success;
+      notifyListeners();
+
+      print('✅ Update successful in provider');
+      return true;
+    } catch (e) {
+      _status = ProjectStatus.error;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+
+      print('❌ Update failed in provider: $_errorMessage');
+      return false;
     }
   }
 
@@ -258,40 +410,41 @@ class ProjectProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Create project with detailed debugging
+  // Create project
   Future<bool> createProject() async {
     try {
       _status = ProjectStatus.loading;
       _errorMessage = null;
       notifyListeners();
 
-      _formData.forEach((key, value) {
-      });
-      for (int i = 0; i < _dokumenFiles.length; i++) {
-      }
-
       if (_dokumenProyeksiFile == null) {
         throw Exception('Dokumen proyeksi wajib diupload');
       }
-      
+
       final idKategori = _formData['id_kategori'] ?? '';
       final judul = _formData['judul'] ?? '';
       final deskripsi = _formData['deskripsi'] ?? '';
       final nominalStr = _formData['nominal']?.toString() ?? '0';
-      final nominal = int.tryParse(nominalStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      final nominal =
+          int.tryParse(nominalStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
       final assetJaminan = _formData['asset_jaminan'] ?? '';
       final nilaiJaminanStr = _formData['nilai_jaminan']?.toString() ?? '0';
-      final nilaiJaminan = int.tryParse(nilaiJaminanStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0; 
+      final nilaiJaminan =
+          int.tryParse(nilaiJaminanStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
       final lokasiUsaha = _formData['lokasi_usaha'] ?? '';
       final detailLokasi = _formData['detail_lokasi'] ?? '';
       final pendapatanStr = _formData['pendapatan_perbulan']?.toString() ?? '0';
-      final pendapatanPerbulan = int.tryParse(pendapatanStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-      final pengeluaranStr = _formData['pengeluaran_perbulan']?.toString() ?? '0';
-      final pengeluaranPerbulan = int.tryParse(pengeluaranStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      final pendapatanPerbulan =
+          int.tryParse(pendapatanStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      final pengeluaranStr =
+          _formData['pengeluaran_perbulan']?.toString() ?? '0';
+      final pengeluaranPerbulan =
+          int.tryParse(pengeluaranStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
       final limitSiklusStr = _formData['limit_siklus']?.toString() ?? '0';
       final limitSiklus = int.tryParse(limitSiklusStr) ?? 0;
-      
-      final bagianPelaksanaStr = _formData['bagian_pelaksana']?.toString() ?? '0';
+
+      final bagianPelaksanaStr =
+          _formData['bagian_pelaksana']?.toString() ?? '0';
       final bagianPelaksana = int.tryParse(bagianPelaksanaStr) ?? 0;
       final bagianKoperasiStr = _formData['bagian_koperasi']?.toString() ?? '0';
       final bagianKoperasi = int.tryParse(bagianKoperasiStr) ?? 0;
@@ -306,16 +459,18 @@ class ProjectProvider extends ChangeNotifier {
       if (deskripsi.isEmpty) validationErrors.add('Deskripsi kosong');
       if (nominal <= 0) validationErrors.add('Nominal tidak valid: $nominal');
       if (assetJaminan.isEmpty) validationErrors.add('Asset Jaminan kosong');
-      if (nilaiJaminan <= 0) validationErrors.add('Nilai Jaminan tidak valid: $nilaiJaminan');
+      if (nilaiJaminan <= 0)
+        validationErrors.add('Nilai Jaminan tidak valid: $nilaiJaminan');
       if (lokasiUsaha.isEmpty) validationErrors.add('Lokasi Usaha kosong');
       if (detailLokasi.isEmpty) validationErrors.add('Detail Lokasi kosong');
-      if (pendapatanPerbulan <= 0) validationErrors.add('Pendapatan tidak valid: $pendapatanPerbulan');
-      if (pengeluaranPerbulan <= 0) validationErrors.add('Pengeluaran tidak valid: $pengeluaranPerbulan');
-      if (limitSiklus <= 0) validationErrors.add('Limit Siklus tidak valid: $limitSiklus');
-      
+      if (pendapatanPerbulan <= 0)
+        validationErrors.add('Pendapatan tidak valid: $pendapatanPerbulan');
+      if (pengeluaranPerbulan <= 0)
+        validationErrors.add('Pengeluaran tidak valid: $pengeluaranPerbulan');
+      if (limitSiklus <= 0)
+        validationErrors.add('Limit Siklus tidak valid: $limitSiklus');
+
       if (validationErrors.isNotEmpty) {
-        for (var error in validationErrors) {
-        }
         throw Exception('Validation failed: ${validationErrors.join(", ")}');
       }
 
@@ -338,33 +493,75 @@ class ProjectProvider extends ChangeNotifier {
         bagianPendana: bagianPendana,
         dokumenProyeksi: _dokumenProyeksiFile!.path,
       );
-      print('  Request object created ✓');
 
       // Call service
-      print('\n🚀 Calling Project Service...');
       _response = await _projectService.createProject(
         project: request,
         dokumenFiles: _dokumenFiles.isNotEmpty ? _dokumenFiles : null,
         brosurProdukFile: _brosurProdukFile,
         dokumenProyeksiFile: _dokumenProyeksiFile!,
       );
-      
+
       _status = ProjectStatus.success;
       notifyListeners();
 
       clearFormData();
-      
+
       return true;
-      
     } catch (e) {
-      
       _status = ProjectStatus.error;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
-      
 
       return false;
     }
+  }
+
+  Future<bool> signAgreementLetter(String projectId, File signatureFile) async {
+    try {
+      _isSigningAgreement = true;
+      _signAgreementError = null;
+      notifyListeners();
+
+      print('\n📝 === SIGNING AGREEMENT IN PROVIDER ===');
+      print('Project ID: $projectId');
+      print('Signature file: ${signatureFile.path}');
+
+      final result = await _projectService.signAgreementLetter(
+        projectId: projectId,
+        signatureFile: signatureFile,
+      );
+
+      print('✅ Agreement signed successfully');
+      print('Result: $result');
+
+      // Refresh agreement data
+      await loadAgreementLetter(projectId);
+
+      // Refresh project detail
+      await getProjectDetail(projectId);
+
+      // Refresh history
+      await loadProjectHistory(projectId);
+
+      _isSigningAgreement = false;
+      notifyListeners();
+
+      return true;
+    } catch (e) {
+      _isSigningAgreement = false;
+      _signAgreementError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+
+      print('❌ Sign agreement failed in provider: $_signAgreementError');
+      return false;
+    }
+  }
+
+  /// Clear sign agreement error
+  void clearSignAgreementError() {
+    _signAgreementError = null;
+    notifyListeners();
   }
 
   // Save draft
@@ -384,7 +581,6 @@ class ProjectProvider extends ChangeNotifier {
       if (draft != null) {
         _formData = draft;
         notifyListeners();
-      } else {
       }
     } catch (e) {
       _errorMessage = 'Gagal memuat draft: ${e.toString()}';
@@ -425,28 +621,31 @@ class ProjectProvider extends ChangeNotifier {
   }
 
   // Get projects by status with sorting
-  List<ProjectListItem> getProjectsByStatus(String status, {bool newest = true}) {
+  List<ProjectListItem> getProjectsByStatus(String status,
+      {bool newest = true}) {
     var filtered = _userProjects.where((p) => p.status == status).toList();
-    
+
     if (newest) {
       filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     } else {
       filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     }
-    
+
     return filtered;
   }
 
   // Get projects by multiple statuses with sorting
-  List<ProjectListItem> getProjectsByStatuses(List<String> statuses, {bool newest = true}) {
-    var filtered = _userProjects.where((p) => statuses.contains(p.status)).toList();
-    
+  List<ProjectListItem> getProjectsByStatuses(List<String> statuses,
+      {bool newest = true}) {
+    var filtered =
+        _userProjects.where((p) => statuses.contains(p.status)).toList();
+
     if (newest) {
       filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     } else {
       filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     }
-    
+
     return filtered;
   }
 
@@ -467,27 +666,37 @@ class ProjectProvider extends ChangeNotifier {
     _status = ProjectStatus.idle;
     _errorMessage = null;
     _response = null;
+    _editingProjectId = null;
+    _isUpdateMode = false;
     notifyListeners();
   }
 
   // Validate percentage total (should be 100%)
   bool validatePercentages() {
-    final pelaksana = int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
-    final koperasi = int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
-    final pemilik = int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
-    final pendana = int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
+    final pelaksana =
+        int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
+    final koperasi =
+        int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
+    final pemilik =
+        int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
+    final pendana =
+        int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
 
     final total = pelaksana + koperasi + pemilik + pendana;
     final isValid = total == 100;
-    
+
     return isValid;
   }
 
   String getPercentageTotal() {
-    final pelaksana = int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
-    final koperasi = int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
-    final pemilik = int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
-    final pendana = int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
+    final pelaksana =
+        int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
+    final koperasi =
+        int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
+    final pemilik =
+        int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
+    final pendana =
+        int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
 
     return (pelaksana + koperasi + pemilik + pendana).toString();
   }
@@ -496,6 +705,13 @@ class ProjectProvider extends ChangeNotifier {
   void resetStatus() {
     _status = ProjectStatus.idle;
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  // Clear edit mode
+  void clearEditMode() {
+    _editingProjectId = null;
+    _isUpdateMode = false;
     notifyListeners();
   }
 }

@@ -65,16 +65,19 @@ class CreateProjectRequest {
 class ProjectResponse {
   final String message;
   final String? projectId;
+  final dynamic data;
 
   ProjectResponse({
     required this.message,
     this.projectId,
+    this.data,
   });
 
   factory ProjectResponse.fromJson(Map<String, dynamic> json) {
     return ProjectResponse(
       message: json['message'] ?? 'Project created successfully',
       projectId: json['projectId'],
+      data: json['data'],
     );
   }
 }

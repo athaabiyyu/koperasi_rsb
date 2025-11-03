@@ -5,12 +5,9 @@ class TimelineStepItem extends StatelessWidget {
   final int index;
   final bool isLast;
   final String title;
-  final String overallStatus; // overall status for this step
+  final String overallStatus;
   final List<Map<String, dynamic>> events;
   final bool showContractButton;
-  final bool hasAgreement;
-  final bool isLoadingAgreement;
-  final VoidCallback? onDownloadContract;
   final VoidCallback? onSignContract;
   final bool showRetryButton;
   final VoidCallback? onRetrySubmit;
@@ -23,9 +20,6 @@ class TimelineStepItem extends StatelessWidget {
     this.overallStatus = 'upcoming',
     required this.events,
     this.showContractButton = false,
-    this.hasAgreement = false,
-    this.isLoadingAgreement = false,
-    this.onDownloadContract,
     this.onSignContract,
     this.showRetryButton = false,
     this.onRetrySubmit,
@@ -79,15 +73,8 @@ class TimelineStepItem extends StatelessWidget {
     }
   }
 
-  String _getOverallStatus() {
-    if (events.isEmpty) return 'upcoming';
-    // Return the latest event's status
-    return events.last['type'] ?? 'upcoming';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final overallStatus = _getOverallStatus();
     final statusColor = _getStatusColor(overallStatus);
 
     return Padding(
@@ -133,51 +120,60 @@ class TimelineStepItem extends StatelessWidget {
                 const SizedBox(height: 8),
                 // Events
                 ...events.map((event) => _buildEventCard(event)),
-                
-                // Contract button (only for Kontrak Perjanjian step or after)
+
+                // Contract button
                 if (showContractButton) ...[
                   const SizedBox(height: 12),
-                  if (isLoadingAgreement)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  else if (hasAgreement)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: onDownloadContract,
-                        icon: const Icon(Icons.download, size: 18),
-                        label: const Text('Download Kontrak'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: onSignContract,
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Tanda Tangani Kontrak'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.blue,
-                          side: const BorderSide(color: Colors.blue),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onSignContract,
+                      icon: const Icon(Icons.edit, size: 18),
+                      label: const Text('Tanda Tangani Kontrak'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.blue,
+                        side: const BorderSide(color: Colors.blue),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
+                  ),
+                ],
+
+                // Retry button for failed steps
+                if (showRetryButton) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onRetrySubmit,
+                      icon: const Icon(
+                        Icons.refresh,
+                        size: 18,
+                        color: Color.fromARGB(218, 241, 61, 61),
+                      ),
+                      label: const Text(
+                        'Ajukan Ulang',
+                        style: TextStyle(
+                          color: Color.fromARGB(218, 241, 61, 61),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color.fromARGB(218, 241, 61, 61),
+                          width: 1.5,
+                        ),
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -228,7 +224,7 @@ class TimelineStepItem extends StatelessWidget {
   }
 }
 
-// Dashed line widget (keep existing implementation)
+// Dashed line widget
 class DashedLineVertical extends StatelessWidget {
   final Color color;
   final double thickness;

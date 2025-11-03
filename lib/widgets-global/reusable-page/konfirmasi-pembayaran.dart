@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/form/form-konfirmasi-pembayaran.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
 
 class KonfirmasiPembayaran extends StatefulWidget {

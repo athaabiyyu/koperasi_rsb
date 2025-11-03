@@ -128,14 +128,13 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     }
 
     final project = _projectDetail!;
-    final bool isRunning = project.status == 'PENDANAAN DIBUKA';
     
-    // Build tabs based on project status
+    // ✅ All tabs always visible regardless of status
     final tabs = <Tab>[
       const Tab(text: 'Informasi Proyek'),
       const Tab(text: 'Status Pengajuan'),
-      if (isRunning) const Tab(text: 'Penanam Modal'),
-      if (isRunning) const Tab(text: 'Riwayat Pendanaan Dari Koperasi'),
+      const Tab(text: 'Penanam Modal'),
+      const Tab(text: 'Riwayat Pendanaan Dari Koperasi'),
     ];
 
     return DefaultTabController(
@@ -153,7 +152,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
             indicatorColor: darkGreen,
             labelColor: darkGreen,
             unselectedLabelColor: Colors.grey,
-            isScrollable: isRunning,
+            isScrollable: true,
             tabs: tabs,
           ),
         ),
@@ -165,11 +164,11 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
             // Tab 2: Status Pengajuan
             SubmissionStatusTab(project: project),
             
-            // Tab 3: Penanam Modal (only if running)
-            if (isRunning) InvestorsTab(project: project),
+            // Tab 3: Penanam Modal
+            InvestorsTab(project: project),
             
-            // Tab 4: Riwayat Pendanaan (only if running)
-            if (isRunning) FundingHistoryTab(project: project),
+            // Tab 4: Riwayat Pendanaan
+            FundingHistoryTab(project: project),
           ],
         ),
       ),

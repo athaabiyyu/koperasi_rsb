@@ -60,67 +60,95 @@ class _AddProjectPageState extends State<AddProjectPage> {
     });
   }
 
-  void _selanjutnya() async {
-    final currentKey = _formKeys[_step];
-    if (currentKey.currentState?.validate() != true) return;
+ void _selanjutnya() async {
+  final currentKey = _formKeys[_step];
+  if (currentKey.currentState?.validate() != true) return;
 
-    // Validate percentages on last step
-    if (_step == 3) {
-      final provider = context.read<ProjectProvider>();
-      if (!provider.validatePercentages()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Total persentase harus 100%. Saat ini: ${provider.getPercentageTotal()}%'
-            ),
-            backgroundColor: Colors.red,
+  // Validate percentages on last step
+  if (_step == 3) {
+    final provider = context.read<ProjectProvider>();
+    
+    print('\n🎯 === FINAL STEP VALIDATION ===');
+    print('Step: 3 (Pembagian Hasil)');
+    print('Mode: ${provider.isUpdateMode ? "UPDATE" : "CREATE"}');
+    
+    if (!provider.validatePercentages()) {
+      print('❌ Percentage validation failed: ${provider.getPercentageTotal()}%');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Total persentase harus 100%. Saat ini: ${provider.getPercentageTotal()}%'
           ),
-        );
-        return;
-      }
-
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
+          backgroundColor: Colors.red,
         ),
       );
-
-      final success = await provider.createProject();
-
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Proyek berhasil dibuat!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pushReplacementNamed(context, '/my-project');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(provider.errorMessage ?? 'Gagal membuat proyek'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
       return;
     }
 
-    // Move to next step
-    setState(() => _step++);
-    _pageController.animateToPage(
-      _step,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
+
+    // Check mode and call appropriate method
+    bool success;
+    if (provider.isUpdateMode) {
+      print('🔄 Calling UPDATE method...\n');
+      success = await provider.updateProject();
+    } else {
+      print('➕ Calling CREATE method...\n');
+      success = await provider.createProject();
+    }
+
+    if (mounted) {
+      Navigator.pop(context); // Close loading dialog
+
+      if (success) {
+        print('✅ ${provider.isUpdateMode ? "UPDATE" : "CREATE"} SUCCESS!\n');
+        
+        // ✅ Clear edit mode setelah sukses submit
+        provider.clearEditMode();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              provider.isUpdateMode 
+                ? 'Proyek berhasil diupdate!' 
+                : 'Proyek berhasil dibuat!'
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacementNamed(context, '/my-project');
+      } else {
+        print('❌ ${provider.isUpdateMode ? "UPDATE" : "CREATE"} FAILED!');
+        print('Error: ${provider.errorMessage}\n');
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.errorMessage ?? 'Gagal membuat proyek'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+    return;
   }
+
+  // Move to next step
+  print('➡️ Moving to step ${_step + 1}');
+  setState(() => _step++);
+  _pageController.animateToPage(
+    _step,
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeInOut,
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -148,13 +176,18 @@ class _AddProjectPageState extends State<AddProjectPage> {
             }
           },
         ),
-        title: Text(
-          'Buat Proyek',
-          style: GoogleFonts.poppins(
-            fontSize: deviceWidth * 0.05,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
+        // ✅ DYNAMIC TITLE BASED ON MODE
+        title: Consumer<ProjectProvider>(
+          builder: (context, provider, child) {
+            return Text(
+              provider.isUpdateMode ? 'Edit Proyek' : 'Buat Proyek',
+              style: GoogleFonts.poppins(
+                fontSize: deviceWidth * 0.05,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            );
+          },
         ),
       ),
       body: Padding(
@@ -202,32 +235,38 @@ class _AddProjectPageState extends State<AddProjectPage> {
             decoration: const BoxDecoration(color: lightGreen),
             child: Row(
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: deviceHeight * 0.015),
-                      side: const BorderSide(color: darkGreen, width: 1.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                // ✅ HIDE DRAFT BUTTON IN UPDATE MODE
+                if (!provider.isUpdateMode) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: deviceHeight * 0.015),
+                        side: const BorderSide(color: darkGreen, width: 1.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    onPressed: provider.status == ProjectStatus.loading 
-                        ? () {} 
-                        : _simpanDraft,
-                    child: Text(
-                      'Draft',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: darkGreen,
+                      onPressed: provider.status == ProjectStatus.loading 
+                          ? () {} 
+                          : _simpanDraft,
+                      child: Text(
+                        'Draft',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: darkGreen,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(width: deviceWidth * 0.04),
+                  SizedBox(width: deviceWidth * 0.04),
+                ],
                 Expanded(
                   child: CustomButton(
-                    text: _step < 3 ? 'Selanjutnya' : 'Buat Proyek',
+                    // ✅ DYNAMIC BUTTON TEXT
+                    text: _step < 3 
+                      ? 'Selanjutnya' 
+                      : (provider.isUpdateMode ? 'Update Proyek' : 'Buat Proyek'),
                     color: darkGreen,
                     textColor: Colors.white,
                     radius: 10,
