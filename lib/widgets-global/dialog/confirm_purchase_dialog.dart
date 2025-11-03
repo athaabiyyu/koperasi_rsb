@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/utils/currency_helper.dart';
 
 Future<bool?> showConfirmPurchaseDialog(
   BuildContext context, {
@@ -79,21 +80,6 @@ class _ConfirmPurchaseContent extends StatefulWidget {
 class _ConfirmPurchaseContentState extends State<_ConfirmPurchaseContent> {
   bool _agree = false;
   bool _walletSelected = true;
-
-  String _formatRupiah(int number) {
-    final s = number.toString();
-    final buffer = StringBuffer();
-    int count = 0;
-    for (int i = s.length - 1; i >= 0; i--) {
-      buffer.write(s[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return 'Rp ${buffer.toString().split('').reversed.join()}';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +199,7 @@ class _ConfirmPurchaseContentState extends State<_ConfirmPurchaseContent> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _formatRupiah(widget.walletBalance),
+                          CurrencyUtils.formatRupiah(widget.walletBalance),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -280,7 +266,7 @@ class _ConfirmPurchaseContentState extends State<_ConfirmPurchaseContent> {
                   ? () => Navigator.of(context).pop(true)
                   : null,
               child: Text(
-                'Bayar${total > 0 ? ' • ' + _formatRupiah(total) : ''}',
+                'Bayar${total > 0 ? ' • ' + CurrencyUtils.formatRupiah(total) : ''}',
               ),
             ),
           ),

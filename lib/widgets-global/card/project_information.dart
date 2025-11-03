@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
+import 'package:koperasi_rsb/utils/currency_helper.dart';
 class ProjectHeaderInfo extends StatelessWidget {
   final String imageUrl;
   final String status;
@@ -28,15 +27,6 @@ class ProjectHeaderInfo extends StatelessWidget {
     required this.minimalPembelian,
     required this.maksimalPembelian,
   });
-
-  String _formatRupiah(int amount) {
-    final formatter = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
-    return formatter.format(amount);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,22 +148,22 @@ class ProjectHeaderInfo extends StatelessWidget {
         SizedBox(height: _deviceHeight * 0.015),
 
         // Info detail target/token/dll
-        _buildInfoRow("Target Dana", _formatRupiah(nominalDisetujui), _deviceHeight),
+        _buildInfoRow("Target Dana", CurrencyUtils.formatRupiah(nominalDisetujui), _deviceHeight),
         _buildInfoRow(
           "Token Rilis",
           "${maxToken - collectedToken}",
           _deviceHeight,
         ),
         _buildInfoRow("Jumlah Token", "$maxToken", _deviceHeight),
-        _buildInfoRow("Harga per Token", _formatRupiah(hargaPerUnit), _deviceHeight),
+        _buildInfoRow("Harga per Token", CurrencyUtils.formatRupiah(hargaPerUnit), _deviceHeight),
         _buildInfoRow(
           "Min Pembelian",
-          "$minimalPembelian atau ${_formatRupiah(minBeliRupiah)}",
+          "$minimalPembelian atau ${CurrencyUtils.formatRupiah(minBeliRupiah)}",
           _deviceHeight,
         ),
         _buildInfoRow(
           "Maks Pembelian",
-          "$maksimalPembelian atau ${_formatRupiah(maxBeliRupiah)}",
+          "$maksimalPembelian atau ${CurrencyUtils.formatRupiah(maxBeliRupiah)}",
           _deviceHeight,
         ),
       ],

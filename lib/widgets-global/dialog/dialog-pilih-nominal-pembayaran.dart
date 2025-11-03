@@ -5,6 +5,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/form/dropDownFormField.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/reusable-page/pembayaran-section.dart';
+import 'package:koperasi_rsb/utils/currency_helper.dart';
 
 class DialogPilihNominalPembayaran extends StatefulWidget {
   final bool isTopUpOnly;
@@ -81,7 +82,7 @@ class _DialogPilihNominalPembayaranState
       return;
     }
 
-    String formattedNominal = _formatRupiah(nominalInt);
+    String formattedNominal = CurrencyUtils.formatRupiah(nominalInt);
     print('Formatted nominal: $formattedNominal');
 
     // ✅ Hitung total berdasarkan tipe transaksi
@@ -89,17 +90,17 @@ class _DialogPilihNominalPembayaranState
     if (widget.isPenyertaan) {
       // ✅ Penyertaan (upgrade platinum): hanya nominal penyertaan
       total = nominalInt;
-      print('Penyertaan mode - Total: ${_formatRupiah(total)}');
+      print('Penyertaan mode - Total: ${CurrencyUtils.formatRupiah(total)}');
     } else if (widget.isTopUpOnly) {
       // Top-up biasa: hanya nominal top-up
       total = nominalInt;
-      print('Top-up only mode - Total: ${_formatRupiah(total)}');
+      print('Top-up only mode - Total: ${CurrencyUtils.formatRupiah(total)}');
     } else {
       // Registrasi: termasuk setoran awal + simpanan wajib
       final int setoranAwal = 50000;
       final int simpananWajib = 120000;
       total = setoranAwal + simpananWajib + nominalInt;
-      print('Registration mode - Total: ${_formatRupiah(total)}');
+      print('Registration mode - Total: ${CurrencyUtils.formatRupiah(total)}');
     }
 
     // Tutup dialog
@@ -117,16 +118,6 @@ class _DialogPilihNominalPembayaranState
         'isPenyertaan': widget.isPenyertaan, // ✅ Pass flag ke halaman berikutnya
       },
     );
-  }
-
-  String _formatRupiah(int value) {
-    final chars = value.toString().split('').reversed.toList();
-    final buffer = StringBuffer();
-    for (int i = 0; i < chars.length; i++) {
-      if (i != 0 && i % 3 == 0) buffer.write('.');
-      buffer.write(chars[i]);
-    }
-    return 'Rp ' + buffer.toString().split('').reversed.join();
   }
 
   @override

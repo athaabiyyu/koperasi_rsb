@@ -12,6 +12,10 @@ class CardPembayaranBank extends StatelessWidget {
   final String totalPembayaran;
   final VoidCallback? onCopy;
   final VoidCallback? onKonfirmasi;
+  
+  // ✅ Parameter baru untuk rincian pembayaran
+  final String? rincianTitle;
+  final List<RincianItem>? rincianItems;
 
   const CardPembayaranBank({
     super.key,
@@ -22,6 +26,8 @@ class CardPembayaranBank extends StatelessWidget {
     required this.totalPembayaran,
     this.onCopy,
     this.onKonfirmasi,
+    this.rincianTitle,
+    this.rincianItems,
   });
 
   @override
@@ -132,6 +138,53 @@ class CardPembayaranBank extends StatelessWidget {
               ),
             ),
 
+            // ✅ Rincian Pembayaran (jika ada)
+            if (rincianTitle != null && rincianItems != null && rincianItems!.isNotEmpty) ...[
+              Text(
+                rincianTitle!,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              // List item rincian
+              ...rincianItems!.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      item.label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    Text(
+                      item.value,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+
+              const SizedBox(
+                width: double.infinity,
+                child: Divider(
+                  color: secGrayFont,
+                  thickness: 0.2,
+                  height: 20,
+                ),
+              ),
+            ],
+
             // Total Pembayaran
             Text(
               "Total Pembayaran",
@@ -178,4 +231,12 @@ class CardPembayaranBank extends StatelessWidget {
       ),
     );
   }
+}
+
+// ✅ Class helper untuk item rincian
+class RincianItem {
+  final String label;
+  final String value;
+
+  RincianItem({required this.label, required this.value});
 }

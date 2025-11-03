@@ -11,6 +11,7 @@ import 'package:koperasi_rsb/models/payment-member_model.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/utils/currency_helper.dart';
 
 class KonfirmasiPembayaran extends StatefulWidget {
   final int? nominalPenyertaan;
@@ -386,10 +387,10 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
                             widget.isSimpananWajib
                                 ? 'Nominal simpanan wajib: Rp 120.000'
                                 : widget.isPenyertaan
-                                    ? 'Nominal penyertaan modal: ${_formatRupiah(widget.nominalPenyertaan!)}'
+                                    ? 'Nominal penyertaan modal: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}'
                                     : widget.isTopUpOnly
-                                        ? 'Nominal top-up: ${_formatRupiah(widget.nominalPenyertaan!)}'
-                                        : 'Anda akan di-upgrade ke Platinum dengan nominal penyertaan: ${_formatRupiah(widget.nominalPenyertaan!)}',
+                                        ? 'Nominal top-up: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}'
+                                        : 'Anda akan di-upgrade ke Platinum dengan nominal penyertaan: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: darkGreen,
@@ -485,15 +486,5 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
         ),
       ),
     );
-  }
-
-  String _formatRupiah(int value) {
-    final chars = value.toString().split('').reversed.toList();
-    final buffer = StringBuffer();
-    for (int i = 0; i < chars.length; i++) {
-      if (i != 0 && i % 3 == 0) buffer.write('.');
-      buffer.write(chars[i]);
-    }
-    return 'Rp ' + buffer.toString().split('').reversed.join();
   }
 }

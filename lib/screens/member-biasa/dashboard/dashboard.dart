@@ -41,6 +41,40 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // ✅ Method untuk navigasi dengan smooth transition
+  void _navigateWithTransition(int index) {
+    if (!mounted) return;
+
+    // Cegah navigasi ke page yang sama
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+
+    switch (index) {
+      case 0:
+        if (currentRoute == '/member-biasa') return;
+        // Fade transition untuk dashboard (smooth tanpa arah)
+        Navigator.pushReplacementNamed(context, '/member-biasa');
+        break;
+
+      case 1:
+        if (currentRoute == '/my-project') return;
+        // Slide dari kanan untuk my-project
+        Navigator.pushReplacementNamed(context, '/my-project');
+        break;
+
+      case 2:
+        if (currentRoute == '/wallet') return;
+        // Slide dari kanan untuk wallet
+        Navigator.pushReplacementNamed(context, '/wallet');
+        break;
+
+      case 3:
+        if (currentRoute == '/profile') return;
+        // Slide dari kanan untuk profile
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
@@ -58,27 +92,9 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       bottomNavigationBar: AppBottomNav(
         currentIndex: 0,
-        onItemSelected: (i) {
-          if (!mounted) return;
-          switch (i) {
-            case 0:
-              if (ModalRoute.of(context)?.settings.name != '/member-biasa') {
-                Navigator.pushReplacementNamed(context, '/member-biasa');
-              }
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/my-project');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/wallet');
-              break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/profile');
-              break;
-          }
-        },
+        onItemSelected: _navigateWithTransition, // ✅ Gunakan method baru
       ),
-      backgroundColor: Colors.white, 
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

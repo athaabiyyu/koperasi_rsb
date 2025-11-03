@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/utils/currency_helper.dart';
 
 Future<int?> showBuyTokenDialog(
   BuildContext context, {
@@ -90,21 +91,6 @@ class _BuyTokenDialogState extends State<_BuyTokenDialog> {
     } else {
       setState(() => _warning = null);
     }
-  }
-
-  String _formatRupiah(int number) {
-    final s = number.toString();
-    final buffer = StringBuffer();
-    int count = 0;
-    for (int i = s.length - 1; i >= 0; i--) {
-      buffer.write(s[i]);
-      count++;
-      if (count == 3 && i != 0) {
-        buffer.write('.');
-        count = 0;
-      }
-    }
-    return 'Rp ${buffer.toString().split('').reversed.join()}';
   }
 
   @override
@@ -244,7 +230,7 @@ class _BuyTokenDialogState extends State<_BuyTokenDialog> {
               style: TextStyle(color: Colors.grey),
             ),
             Text(
-              _formatRupiah(total),
+              CurrencyUtils.formatRupiah(total),
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 color: darkGreen,
