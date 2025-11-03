@@ -21,6 +21,10 @@ class ProjectProvider extends ChangeNotifier {
   List<ProjectListItem> _userProjects = [];
   bool _isLoadingProjects = false;
   String? _projectsError;
+  // All projects state (public list)
+  List<ProjectListItem> _allProjects = [];
+  bool _isLoadingAllProjects = false;
+  String? _allProjectsError;
 
   // Add update mode state
   String? _editingProjectId;
@@ -58,6 +62,10 @@ class ProjectProvider extends ChangeNotifier {
   List<ProjectListItem> get userProjects => _userProjects;
   bool get isLoadingProjects => _isLoadingProjects;
   String? get projectsError => _projectsError;
+  // All projects getters
+  List<ProjectListItem> get allProjects => _allProjects;
+  bool get isLoadingAllProjects => _isLoadingAllProjects;
+  String? get allProjectsError => _allProjectsError;
   List<ProjectCategory> get categories => _categories;
   bool get isCategoriesLoading => _isCategoriesLoading;
   Map<String, dynamic> get formData => _formData;
@@ -181,8 +189,9 @@ class ProjectProvider extends ChangeNotifier {
       _agreementError = null;
       notifyListeners();
 
-      final agreement =
-          await _projectService.getAgreementByProjectId(projectId);
+      final agreement = await _projectService.getAgreementByProjectId(
+        projectId,
+      );
 
       _agreementLetter = agreement;
       _isLoadingAgreement = false;
@@ -215,8 +224,9 @@ class ProjectProvider extends ChangeNotifier {
       _historyError = null;
       notifyListeners();
 
-      final histories =
-          await _historyProjectService.getProjectHistory(projectId);
+      final histories = await _historyProjectService.getProjectHistory(
+        projectId,
+      );
 
       _projectHistories = histories;
       _isLoadingHistory = false;
@@ -256,28 +266,44 @@ class ProjectProvider extends ChangeNotifier {
       final idKategori = _formData['id_kategori'] ?? '';
       final judul = _formData['judul'] ?? '';
       final deskripsi = _formData['deskripsi'] ?? '';
-      final nominal = int.tryParse(_formData['nominal']
-                  ?.toString()
-                  .replaceAll(RegExp(r'[^0-9]'), '') ??
-              '0') ??
+      final nominal =
+          int.tryParse(
+            _formData['nominal']?.toString().replaceAll(
+                  RegExp(r'[^0-9]'),
+                  '',
+                ) ??
+                '0',
+          ) ??
           0;
       final assetJaminan = _formData['asset_jaminan'] ?? '';
-      final nilaiJaminan = int.tryParse(_formData['nilai_jaminan']
-                  ?.toString()
-                  .replaceAll(RegExp(r'[^0-9]'), '') ??
-              '0') ??
+      final nilaiJaminan =
+          int.tryParse(
+            _formData['nilai_jaminan']?.toString().replaceAll(
+                  RegExp(r'[^0-9]'),
+                  '',
+                ) ??
+                '0',
+          ) ??
           0;
       final lokasiUsaha = _formData['lokasi_usaha'] ?? '';
       final detailLokasi = _formData['detail_lokasi'] ?? '';
-      final pendapatanPerbulan = int.tryParse(_formData['pendapatan_perbulan']
-                  ?.toString()
-                  .replaceAll(RegExp(r'[^0-9]'), '') ??
-              '0') ??
+      final pendapatanPerbulan =
+          int.tryParse(
+            _formData['pendapatan_perbulan']?.toString().replaceAll(
+                  RegExp(r'[^0-9]'),
+                  '',
+                ) ??
+                '0',
+          ) ??
           0;
-      final pengeluaranPerbulan = int.tryParse(_formData['pengeluaran_perbulan']
-                  ?.toString()
-                  .replaceAll(RegExp(r'[^0-9]'), '') ??
-              '0') ??
+      final pengeluaranPerbulan =
+          int.tryParse(
+            _formData['pengeluaran_perbulan']?.toString().replaceAll(
+                  RegExp(r'[^0-9]'),
+                  '',
+                ) ??
+                '0',
+          ) ??
           0;
       final limitSiklus =
           int.tryParse(_formData['limit_siklus']?.toString() ?? '0') ?? 0;
@@ -610,6 +636,28 @@ class ProjectProvider extends ChangeNotifier {
     }
   }
 
+  // Load all projects (public list)
+  Future<void> loadAllProjects({String? status, String? search}) async {
+    try {
+      _isLoadingAllProjects = true;
+      _allProjectsError = null;
+      notifyListeners();
+
+      _allProjects = await _projectService.getAllProjects(
+        status: status,
+        search: search,
+      );
+
+      _isLoadingAllProjects = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoadingAllProjects = false;
+      _allProjectsError = e.toString().replaceAll('Exception: ', '');
+      _allProjects = [];
+      notifyListeners();
+    }
+  }
+
   // Get projects count by status
   int getProjectCountByStatus(String status) {
     return _userProjects.where((p) => p.status == status).length;
@@ -621,8 +669,10 @@ class ProjectProvider extends ChangeNotifier {
   }
 
   // Get projects by status with sorting
-  List<ProjectListItem> getProjectsByStatus(String status,
-      {bool newest = true}) {
+  List<ProjectListItem> getProjectsByStatus(
+    String status, {
+    bool newest = true,
+  }) {
     var filtered = _userProjects.where((p) => p.status == status).toList();
 
     if (newest) {
@@ -635,10 +685,13 @@ class ProjectProvider extends ChangeNotifier {
   }
 
   // Get projects by multiple statuses with sorting
-  List<ProjectListItem> getProjectsByStatuses(List<String> statuses,
-      {bool newest = true}) {
-    var filtered =
-        _userProjects.where((p) => statuses.contains(p.status)).toList();
+  List<ProjectListItem> getProjectsByStatuses(
+    List<String> statuses, {
+    bool newest = true,
+  }) {
+    var filtered = _userProjects
+        .where((p) => statuses.contains(p.status))
+        .toList();
 
     if (newest) {
       filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -654,6 +707,9 @@ class ProjectProvider extends ChangeNotifier {
     _userProjects.clear();
     _isLoadingProjects = false;
     _projectsError = null;
+    _allProjects.clear();
+    _isLoadingAllProjects = false;
+    _allProjectsError = null;
     notifyListeners();
   }
 

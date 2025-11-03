@@ -1,10 +1,49 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:koperasi_rsb/widgets-global/card/project_list_card.dart';
-import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/widgets-global/colors.dart';
+import 'package:koperasi_rsb/widgets-global/card/project_list_card.dart';
+import 'package:koperasi_rsb/providers/project_provider.dart';
+import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
 
-class ProjectListPage extends StatelessWidget {
+class ProjectListPage extends StatefulWidget {
   const ProjectListPage({super.key});
+
+  @override
+  State<ProjectListPage> createState() => _ProjectListPageState();
+}
+
+class _ProjectListPageState extends State<ProjectListPage> {
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load initial projects from API via Provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Load ALL projects (public), not only user's projects
+      context.read<ProjectProvider>().loadAllProjects();
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 450), () {
+      final query = value.trim();
+      context.read<ProjectProvider>().loadAllProjects(
+        search: query.isEmpty ? null : query,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +52,26 @@ class ProjectListPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 1,
+        onItemSelected: (i) {
+          if (!mounted) return;
+          switch (i) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/member-platinum');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/project-list');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/wallet');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: lightGreen,
@@ -39,11 +98,29 @@ class ProjectListPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Search bar
-                  // Search bar
                   TextField(
+                    controller: _searchController,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (value) {
+                      context.read<ProjectProvider>().loadAllProjects(
+                        search: value.trim(),
+                      );
+                    },
                     decoration: InputDecoration(
                       hintText: "Search...",
                       prefixIcon: const Icon(Icons.search),
+                      suffixIcon: (_searchController.text.isNotEmpty)
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                context
+                                    .read<ProjectProvider>()
+                                    .loadAllProjects();
+                                setState(() {});
+                              },
+                            )
+                          : null,
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -55,10 +132,14 @@ class ProjectListPage extends StatelessWidget {
                         horizontal: 20,
                       ),
                     ),
+                    onChanged: (val) {
+                      setState(() {}); // update clear icon visibility
+                      _onSearchChanged(val);
+                    },
                   ),
                   SizedBox(height: _deviceHeight * 0.01),
 
-                  // Filter button
+                  // Filter button (placeholder)
                   Align(
                     alignment: Alignment.centerRight,
                     child: OutlinedButton.icon(
@@ -88,61 +169,61 @@ class ProjectListPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Grid Project
-            // Expanded(
-            //   child: GridView.count(
-            //     padding: EdgeInsets.symmetric(
-            //       horizontal: _deviceWidth * 0.02,
-            //       vertical: _deviceHeight * 0.01,
-            //     ),
-            //     crossAxisCount: 2,
-            //     crossAxisSpacing: _deviceWidth * 0.02,
-            //     mainAxisSpacing: _deviceHeight * 0.015,
-            //     childAspectRatio: 0.72, // (Card Size)
-            //     children: const [
-            //       ProjectListCard(
-            //         imageUrl:
-            //             "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
-            //         status: "Pendanaan Dibuka",
-            //         title: "Pendanaan Kolam Ikan Lele Bioflok",
-            //         owner: "Marlina Siahaan",
-            //         collectedToken: 75,
-            //         remainingDays: 10,
-            //         maxToken: 100,
-            //       ),
-            //       ProjectListCard(
-            //         imageUrl:
-            //             "https://dkpp.bulelengkab.go.id/uploads/konten/cara-budidaya-lele-dengan-sistem-bioflok-97.jpg",
-            //         status: "Pendanaan Dibuka",
-            //         title: "Greenhouse",
-            //         owner: "Sigura Liche",
-            //         collectedToken: 25,
-            //         remainingDays: 7,
-            //         maxToken: 50,
-            //       ),
-            //       ProjectListCard(
-            //         imageUrl:
-            //             "https://img-global.cpcdn.com/recipes/7da1ed7a3f0596f0/1200x630cq80/photo.jpg",
-            //         status: "Pendanaan Dibuka",
-            //         title: "Stand Pisang Nugget Pak Bahlil Komedian ",
-            //         owner: "Marlina Siahaan",
-            //         collectedToken: 10,
-            //         remainingDays: 10,
-            //         maxToken: 100,
-            //       ),
-            //       ProjectListCard(
-            //         imageUrl:
-            //             "https://alat-ukur-indonesia.com/wp-content/uploads/Teknologi-Greenhouse-Untuk-Pertanian.png",
-            //         status: "Pendanaan Dibuka",
-            //         title: "Greenhouse",
-            //         owner: "Sigura Liche",
-            //         collectedToken: 40,
-            //         remainingDays: 3,
-            //         maxToken: 50,
-            //       ),
-            //     ],
-            //   ),
-            // ),
+
+            // Grid Project - consume provider data (ALL projects)
+            Expanded(
+              child: Consumer<ProjectProvider>(
+                builder: (context, provider, _) {
+                  if (provider.isLoadingAllProjects) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (provider.allProjectsError != null) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          provider.allProjectsError!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    );
+                  }
+                  final projects = provider.allProjects;
+                  if (projects.isEmpty) {
+                    return const Center(child: Text('Belum ada proyek'));
+                  }
+
+                  return GridView.builder(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _deviceWidth * 0.02,
+                      vertical: _deviceHeight * 0.01,
+                    ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: _deviceWidth * 0.02,
+                      mainAxisSpacing: _deviceHeight * 0.015,
+                      childAspectRatio: 0.72,
+                    ),
+                    itemCount: projects.length,
+                    itemBuilder: (context, index) {
+                      final p = projects[index];
+                      return ProjectListCard(
+                        projectId: p.id,
+                        imageUrl: p.mainImageUrl,
+                        status: p.statusDisplay,
+                        title: p.judul,
+                        owner: p.user.name,
+                        collectedToken:
+                            0, // TODO: map from funding data if available
+                        remainingDays: p.sisaHari,
+                        maxToken: p.tokenDitawarkan,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

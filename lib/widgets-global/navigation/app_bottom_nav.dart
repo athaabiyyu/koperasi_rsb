@@ -17,11 +17,46 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final double _deviceHeight = MediaQuery.of(context).size.height;
     final double _deviceWidth = MediaQuery.of(context).size.width;
-    
+
     // Responsive sizes
     final double boxSize = (_deviceWidth * 0.11).clamp(34.0, 48.0);
     final double iconSize = (_deviceWidth * 0.068).clamp(22.0, 28.0);
-    
+
+    void _handleTap(int index) {
+      // If parent provides a handler, use it to keep pages in control
+      if (onItemSelected != null) {
+        onItemSelected!(index);
+        return;
+      }
+
+      // Default routing fallback (role-aware for Home & Proyek tabs)
+      final String role = (userRole ?? 'BASIC').toUpperCase();
+      final bool isPlatinum = role == 'PLATINUM';
+
+      switch (index) {
+        case 0:
+          // Beranda: arahkan ke dashboard sesuai role
+          Navigator.pushReplacementNamed(
+            context,
+            isPlatinum ? '/member-platinum' : '/member-reguler',
+          );
+          break;
+        case 1:
+          // Proyek: Platinum ke daftar semua proyek, Basic ke proyek milik user
+          Navigator.pushReplacementNamed(
+            context,
+            isPlatinum ? '/project-list' : '/my-project',
+          );
+          break;
+        case 2:
+          Navigator.pushReplacementNamed(context, '/wallet');
+          break;
+        case 3:
+          Navigator.pushReplacementNamed(context, '/profile');
+          break;
+      }
+    }
+
     return SafeArea(
       top: false,
       child: Container(
@@ -32,7 +67,7 @@ class AppBottomNav extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 8,
               offset: const Offset(0, -2),
-            )
+            ),
           ],
         ),
         padding: EdgeInsets.only(
@@ -46,7 +81,7 @@ class AppBottomNav extends StatelessWidget {
               imagePath: 'assets/icons/home-icon.png',
               label: 'Beranda',
               selected: currentIndex == 0,
-              onTap: () => onItemSelected?.call(0),
+              onTap: () => _handleTap(0),
               boxSize: boxSize,
               iconSize: iconSize,
             ),
@@ -54,7 +89,7 @@ class AppBottomNav extends StatelessWidget {
               imagePath: 'assets/icons/add-project-icon.png',
               label: 'Proyek',
               selected: currentIndex == 1,
-              onTap: () => onItemSelected?.call(1),
+              onTap: () => _handleTap(1),
               boxSize: boxSize,
               iconSize: iconSize,
             ),
@@ -62,7 +97,7 @@ class AppBottomNav extends StatelessWidget {
               imagePath: 'assets/icons/dompet-icon.png',
               label: 'Dompet',
               selected: currentIndex == 2,
-              onTap: () => onItemSelected?.call(2),
+              onTap: () => _handleTap(2),
               boxSize: boxSize,
               iconSize: iconSize,
             ),
@@ -70,7 +105,7 @@ class AppBottomNav extends StatelessWidget {
               imagePath: 'assets/icons/profile-icon.png',
               label: 'Profil',
               selected: currentIndex == 3,
-              onTap: () => onItemSelected?.call(3),
+              onTap: () => _handleTap(3),
               boxSize: boxSize,
               iconSize: iconSize,
             ),

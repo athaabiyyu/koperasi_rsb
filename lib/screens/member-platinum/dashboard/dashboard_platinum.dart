@@ -98,7 +98,7 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
               }
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/my-project');
+              Navigator.pushReplacementNamed(context, '/project-list');
               break;
             case 2:
               Navigator.pushReplacementNamed(context, '/wallet');

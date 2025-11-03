@@ -62,9 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             child: Text(
               'Keluar',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-              ),
+              style: GoogleFonts.poppins(color: Colors.white),
             ),
           ),
         ],
@@ -108,9 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     }
@@ -130,13 +126,13 @@ class _ProfilePageState extends State<ProfilePage> {
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushReplacementNamed(context, homeRoute);
-      return false;
-    },
+        return false;
+      },
       child: Scaffold(
         backgroundColor: lightGreen,
         bottomNavigationBar: AppBottomNav(
           currentIndex: 3,
-          userRole : userRole,
+          userRole: userRole,
           onItemSelected: (i) {
             if (i == 3) return;
             if (!mounted) return;
@@ -145,7 +141,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pushReplacementNamed(context, homeRoute);
                 break;
               case 1:
-                Navigator.pushReplacementNamed(context, '/my-project');
+                Navigator.pushReplacementNamed(
+                  context,
+                  isPlatinum ? '/project-list' : '/my-project',
+                );
                 break;
               case 2:
                 Navigator.pushReplacementNamed(context, '/wallet');
@@ -174,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 /// ====== PROFILE HEADER ======
                 ProfileHeader(name: userName, isplatinum: isPlatinum),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
 
                 /// ====== MENU ======
                 Padding(
@@ -187,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     route: '/profile/data-diri',
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: _menuCard(
@@ -198,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     route: '/profile/alamat',
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: _menuCard(
@@ -209,7 +208,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     route: '/profile/dokumen',
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: _menuCard(
@@ -221,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 12),
 
                 /// ====== LOGOUT BUTTON ======
                 Padding(

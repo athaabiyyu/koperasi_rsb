@@ -94,19 +94,23 @@ class _DompetPageState extends State<DompetPage>
       filtered = topups.where((t) => t.isSuccess).toList();
     } else if (status == "Gagal") {
       filtered = topups
-          .where((t) =>
-              t.status.toLowerCase() == 'failed' ||
-              t.status.toLowerCase() == 'gagal')
+          .where(
+            (t) =>
+                t.status.toLowerCase() == 'failed' ||
+                t.status.toLowerCase() == 'gagal',
+          )
           .toList();
     }
 
     final result = filtered
-        .map((topup) => {
-              "tanggal": topup.displayDate,
-              "metode": topup.namaBank ?? "N/A",
-              "jenis": topup.displayTransactionType,
-              "nominal": topup.displayAmount,
-            })
+        .map(
+          (topup) => {
+            "tanggal": topup.displayDate,
+            "metode": topup.namaBank ?? "N/A",
+            "jenis": topup.displayTransactionType,
+            "nominal": topup.displayAmount,
+          },
+        )
         .toList();
     return result;
   }
@@ -118,11 +122,13 @@ class _DompetPageState extends State<DompetPage>
     if (query.isEmpty) return data;
 
     return data
-        .where((item) =>
-            item['tanggal']!.contains(query) ||
-            item['metode']!.contains(query) ||
-            item['jenis']!.contains(query) ||
-            item['nominal']!.contains(query))
+        .where(
+          (item) =>
+              item['tanggal']!.contains(query) ||
+              item['metode']!.contains(query) ||
+              item['jenis']!.contains(query) ||
+              item['nominal']!.contains(query),
+        )
         .toList();
   }
 
@@ -148,10 +154,7 @@ class _DompetPageState extends State<DompetPage>
 
     return Column(
       children: [
-        TransactionTable(
-          status: status,
-          data: visibleData,
-        ),
+        TransactionTable(status: status, data: visibleData),
         const SizedBox(height: 8),
         PaginationWidget(
           currentPage: currentPage,
@@ -204,6 +207,7 @@ class _DompetPageState extends State<DompetPage>
         backgroundColor: lightGreen,
         bottomNavigationBar: AppBottomNav(
           currentIndex: 2,
+          userRole: userRole,
           onItemSelected: (i) {
             if (i == 2) return;
             if (!mounted) return;
@@ -212,7 +216,10 @@ class _DompetPageState extends State<DompetPage>
                 Navigator.pushReplacementNamed(context, homeRoute);
                 break;
               case 1:
-                Navigator.pushReplacementNamed(context, '/my-project');
+                Navigator.pushReplacementNamed(
+                  context,
+                  isPlatinum ? '/project-list' : '/my-project',
+                );
                 break;
               case 3:
                 Navigator.pushReplacementNamed(context, '/profile');
@@ -260,8 +267,9 @@ class _DompetPageState extends State<DompetPage>
                                   onPressed: isPlatinum
                                       ? () {
                                           showDialogPilihNominalPembayaran(
-                                              context,
-                                              isTopUpOnly: true);
+                                            context,
+                                            isTopUpOnly: true,
+                                          );
                                         }
                                       : null,
                                 ),
@@ -360,27 +368,34 @@ class _DompetPageState extends State<DompetPage>
                                     color: darkGreen,
                                   ),
                                   prefixIcon: const Padding(
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 6),
+                                    padding: EdgeInsets.only(
+                                      left: 10,
+                                      right: 6,
+                                    ),
                                     child: Icon(
                                       Icons.search,
                                       size: 18,
                                       color: darkGreen,
                                     ),
                                   ),
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 10),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                   filled: true,
                                   fillColor: lightGreen,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide: const BorderSide(
-                                        color: darkGreen, width: 1.5),
+                                      color: darkGreen,
+                                      width: 1.5,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide: const BorderSide(
-                                        color: darkGreen, width: 1.8),
+                                      color: darkGreen,
+                                      width: 1.8,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -408,7 +423,8 @@ class _DompetPageState extends State<DompetPage>
                           builder: (context, provider, child) {
                             if (provider.isLoading) {
                               return const Center(
-                                  child: CircularProgressIndicator());
+                                child: CircularProgressIndicator(),
+                              );
                             }
                             if (provider.errorMessage != null) {
                               return Center(
@@ -420,11 +436,17 @@ class _DompetPageState extends State<DompetPage>
                             }
 
                             final menungguData = _filterDataByStatus(
-                                provider.topups, "Menunggu Konfirmasi");
+                              provider.topups,
+                              "Menunggu Konfirmasi",
+                            );
                             final berhasilData = _filterDataByStatus(
-                                provider.topups, "Berhasil");
-                            final gagalData =
-                                _filterDataByStatus(provider.topups, "Gagal");
+                              provider.topups,
+                              "Berhasil",
+                            );
+                            final gagalData = _filterDataByStatus(
+                              provider.topups,
+                              "Gagal",
+                            );
 
                             final searchQuery = _searchController.text;
 
