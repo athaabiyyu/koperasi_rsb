@@ -23,8 +23,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
     super.initState();
     // Load initial projects from API via Provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Load ALL projects (public), not only user's projects
-      context.read<ProjectProvider>().loadAllProjects();
+      // Load projects dengan status PENDANAAN DIBUKA
+      context.read<ProjectProvider>().loadAllProjects(
+            status: 'PENDANAAN DIBUKA',
+          );
     });
   }
 
@@ -40,8 +42,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
     _debounce = Timer(const Duration(milliseconds: 450), () {
       final query = value.trim();
       context.read<ProjectProvider>().loadAllProjects(
-        search: query.isEmpty ? null : query,
-      );
+            search: query.isEmpty ? null : query,
+            status: 'PENDANAAN DIBUKA', // Tambahkan filter status
+          );
     });
   }
 
@@ -103,8 +106,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     textInputAction: TextInputAction.search,
                     onSubmitted: (value) {
                       context.read<ProjectProvider>().loadAllProjects(
-                        search: value.trim(),
-                      );
+                            search: value.trim(),
+                            status: 'PENDANAAN DIBUKA',
+                          );
                     },
                     decoration: InputDecoration(
                       hintText: "Search...",
@@ -114,9 +118,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
                               icon: const Icon(Icons.clear),
                               onPressed: () {
                                 _searchController.clear();
-                                context
-                                    .read<ProjectProvider>()
-                                    .loadAllProjects();
+                                context.read<ProjectProvider>().loadAllProjects(
+                                      status:
+                                          'PENDANAAN DIBUKA', // Tambahkan filter status
+                                    );
                                 setState(() {});
                               },
                             )

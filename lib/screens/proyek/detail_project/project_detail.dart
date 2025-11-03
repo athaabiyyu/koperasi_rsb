@@ -4,6 +4,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/models/project_list_model.dart';
 import 'package:koperasi_rsb/providers/project_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/screens/proyek/detail_project/project_information_section.dart';
 import 'package:koperasi_rsb/screens/proyek/detail_project/status_project_section.dart';
 import 'package:koperasi_rsb/screens/proyek/detail_project/investors_section.dart';
@@ -18,6 +19,7 @@ class ProjectDetailPage extends StatefulWidget {
   final int? collectedToken;
   final int? remainingDays;
   final int? maxToken;
+  final String? projectOwnerId;
 
   const ProjectDetailPage({
     super.key,
@@ -29,6 +31,7 @@ class ProjectDetailPage extends StatefulWidget {
     this.collectedToken,
     this.remainingDays,
     this.maxToken,
+    this.projectOwnerId,
   });
 
   @override
@@ -53,9 +56,10 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     });
 
     try {
-      final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+      final projectProvider =
+          Provider.of<ProjectProvider>(context, listen: false);
       final detail = await projectProvider.getProjectDetail(widget.projectId);
-      
+
       if (mounted) {
         setState(() {
           _projectDetail = detail;
@@ -70,6 +74,31 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
         });
       }
     }
+  }
+
+  void _handleBuyToken() {
+    // TODO: Implement buy token logic
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fitur beli token akan segera hadir'),
+        backgroundColor: Colors.green,
+      ),
+    );
+    // Navigate to buy token page
+    // Navigator.pushNamed(context, '/buy-token', arguments: widget.projectId);
+  }
+
+  void _handleDownloadProspectus() {
+    // TODO: Implement download prospectus logic
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Mengunduh prospektus...'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+    // Call API to download prospectus
+    // final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+    // await projectProvider.downloadProspectus(widget.projectId);
   }
 
   @override
@@ -128,14 +157,43 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     }
 
     final project = _projectDetail!;
-    
-    // ✅ All tabs always visible regardless of status
-    final tabs = <Tab>[
-      const Tab(text: 'Informasi Proyek'),
-      const Tab(text: 'Status Pengajuan'),
-      const Tab(text: 'Penanam Modal'),
-      const Tab(text: 'Riwayat Pendanaan Dari Koperasi'),
-    ];
+
+    // Get user info from AuthProvider
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.userId;
+    final userRole = authProvider.userRole;
+
+    // Check if current user is the project owner
+    final isProjectOwner = project.user.id == currentUserId;
+
+    // Check if user is PLATINUM
+    final isPlatinum = userRole == 'PLATINUM';
+
+    // Determine which tabs to show
+    List<Tab> tabs = [];
+    List<Widget> tabViews = [];
+
+    // Tab 1: Informasi Proyek (Always visible)
+    tabs.add(const Tab(text: 'Informasi Proyek'));
+    tabViews.add(ProjectInformationTab(project: project));
+
+    // Tab 2: Status Pengajuan
+    // Show if: BASIC user OR (PLATINUM user AND is project owner)
+    if (userRole == 'BASIC' || (userRole == 'PLATINUM' && isProjectOwner)) {
+      tabs.add(const Tab(text: 'Status Pengajuan'));
+      tabViews.add(SubmissionStatusTab(project: project));
+    }
+
+    // Tab 3: Penanam Modal (Always visible)
+    tabs.add(const Tab(text: 'Penanam Modal'));
+    tabViews.add(InvestorsTab(project: project));
+
+    // Tab 4: Riwayat Pendanaan Dari Koperasi
+    // Show if: BASIC user OR (PLATINUM user AND is project owner)
+    if (userRole == 'BASIC' || (userRole == 'PLATINUM' && isProjectOwner)) {
+      tabs.add(const Tab(text: 'Riwayat Pendanaan Dari Koperasi'));
+      tabViews.add(FundingHistoryTab(project: project));
+    }
 
     return DefaultTabController(
       length: tabs.length,
@@ -157,20 +215,76 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
           ),
         ),
         body: TabBarView(
-          children: [
-            // Tab 1: Informasi Proyek
-            ProjectInformationTab(project: project),
-            
-            // Tab 2: Status Pengajuan
-            SubmissionStatusTab(project: project),
-            
-            // Tab 3: Penanam Modal
-            InvestorsTab(project: project),
-            
-            // Tab 4: Riwayat Pendanaan
-            FundingHistoryTab(project: project),
-          ],
+          children: tabViews,
         ),
+        // Bottom action buttons - only show for PLATINUM users
+        bottomNavigationBar: isPlatinum
+            ? Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: _handleBuyToken,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: darkGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.shopping_cart, size: 20),
+                          label: Text(
+                            'Beli Token',
+                            style: GoogleFonts.roboto(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: OutlinedButton.icon(
+                          onPressed: _handleDownloadProspectus,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: darkGreen,
+                            side: BorderSide(color: darkGreen, width: 1.5),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: const Icon(Icons.download, size: 20),
+                          label: Text(
+                            'Prospektus',
+                            style: GoogleFonts.roboto(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
