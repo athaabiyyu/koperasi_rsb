@@ -1,32 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // ✅ ADD THIS
+import '../../providers/project_provider.dart';
 
-class MyProjectCard extends StatelessWidget {
+class MyProjectCard extends StatefulWidget {
+  final String projectId; // ✅ ADD THIS
   final String imageUrl;
   final String status;
   final String title;
   final int tokenDitawarkan;
   final int minBeli;
-  final int terkumpul;
+  // ❌ REMOVE: final int terkumpul;
   final int sisaHari;
   final bool isDraft;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   const MyProjectCard({
     super.key,
+    required this.projectId, // ✅ ADD THIS
     required this.imageUrl,
     required this.status,
     required this.title,
     required this.tokenDitawarkan,
     required this.minBeli,
-    required this.terkumpul,
+    // ❌ REMOVE: required this.terkumpul,
     required this.sisaHari,
-    this.isDraft = false,
-    this.onTap,
+    required this.isDraft,
+    required this.onTap,
   });
+
+  @override
+  State<MyProjectCard> createState() => _MyProjectCardState();
+}
+
+class _MyProjectCardState extends State<MyProjectCard> {
+  int _terkumpul = 0;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isDraft) { // ✅ Only load for non-draft projects
+      _loadTokenData();
+    }
+  }
+
+  Future<void> _loadTokenData() async {
+    if (!mounted) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      await context.read<ProjectProvider>().loadProjectInvestors(widget.projectId);
+      
+      if (mounted) {
+        final collected = context.read<ProjectProvider>().collectedToken;
+        setState(() {
+          _terkumpul = collected;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _terkumpul = 0;
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   // Fungsi untuk ambil warna sesuai status
   Map<String, dynamic> _getStatusStyle() {
-    switch (status) {
+    switch (widget.status) {
       case "Pendanaan Dibuka":
         return {"bg": const Color(0xFFE7FFF4), "fg": const Color(0xFF0D804A)};
       case "Proyek Berjalan":
@@ -47,20 +92,20 @@ class MyProjectCard extends StatelessWidget {
     final _deviceWidth = MediaQuery.of(context).size.width;
     final _deviceHeight = MediaQuery.of(context).size.height;
 
-    final progress = (isDraft || tokenDitawarkan == 0)
+    final progress = (widget.isDraft || widget.tokenDitawarkan == 0)
         ? 0.0
-        : (terkumpul / tokenDitawarkan).clamp(0.0, 1.0);
+        : (_terkumpul / widget.tokenDitawarkan).clamp(0.0, 1.0); // ✅ Changed to _terkumpul
 
     // Ambil style status
     final style = _getStatusStyle();
 
     // Fungsi untuk tampilkan angka atau "-"
     String displayValue(dynamic value) {
-      return isDraft ? "-" : "$value";
+      return widget.isDraft ? "-" : "$value";
     }
 
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       borderRadius: BorderRadius.circular(_deviceWidth * 0.03),
       child: Card(
         elevation: 1,
@@ -86,7 +131,7 @@ class MyProjectCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: _deviceWidth * 0.07,
-                    backgroundImage: NetworkImage(imageUrl),
+                    backgroundImage: NetworkImage(widget.imageUrl),
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(
@@ -98,7 +143,7 @@ class MyProjectCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(_deviceWidth * 0.05),
                     ),
                     child: Text(
-                      status,
+                      widget.status,
                       style: TextStyle(
                         fontSize: _deviceWidth * 0.03,
                         color: style["fg"],
@@ -113,7 +158,7 @@ class MyProjectCard extends StatelessWidget {
 
               // Title
               Text(
-                title,
+                widget.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -132,7 +177,7 @@ class MyProjectCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        displayValue(tokenDitawarkan),
+                        displayValue(widget.tokenDitawarkan),
                         style: TextStyle(
                           fontSize: _deviceWidth * 0.04,
                           fontWeight: FontWeight.w600,
@@ -151,7 +196,7 @@ class MyProjectCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        displayValue(minBeli),
+                        displayValue(widget.minBeli),
                         style: TextStyle(
                           fontSize: _deviceWidth * 0.04,
                           fontWeight: FontWeight.w600,
@@ -172,14 +217,23 @@ class MyProjectCard extends StatelessWidget {
 
               SizedBox(height: _deviceHeight * 0.015),
 
-              // Progress Bar
-              LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey.shade200,
-                color: Colors.orange,
-                minHeight: 10,
-                borderRadius: BorderRadius.circular(4),
-              ),
+              // Progress Bar dengan loading indicator
+              _isLoading 
+                  ? SizedBox(
+                      height: 10,
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.grey.shade200,
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    )
+                  : LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey.shade200,
+                      color: Colors.orange,
+                      minHeight: 10,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
 
               SizedBox(height: _deviceHeight * 0.01),
 
@@ -198,13 +252,22 @@ class MyProjectCard extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: _deviceHeight * 0.002),
-                      Text(
-                        displayValue(terkumpul),
-                        style: TextStyle(
-                          fontSize: _deviceWidth * 0.035,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      _isLoading
+                          ? Text(
+                              "Loading...",
+                              style: TextStyle(
+                                fontSize: _deviceWidth * 0.03,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                            )
+                          : Text(
+                              displayValue(_terkumpul), // ✅ Changed to _terkumpul
+                              style: TextStyle(
+                                fontSize: _deviceWidth * 0.035,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                     ],
                   ),
                   Column(
@@ -218,7 +281,7 @@ class MyProjectCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        displayValue(sisaHari),
+                        displayValue(widget.sisaHari),
                         style: TextStyle(
                           fontSize: _deviceWidth * 0.035,
                           fontWeight: FontWeight.w500,

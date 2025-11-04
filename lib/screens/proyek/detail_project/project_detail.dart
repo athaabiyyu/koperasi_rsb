@@ -9,6 +9,10 @@ import 'package:koperasi_rsb/screens/proyek/detail_project/project_information_s
 import 'package:koperasi_rsb/screens/proyek/detail_project/status_project_section.dart';
 import 'package:koperasi_rsb/screens/proyek/detail_project/investors_section.dart';
 import 'package:koperasi_rsb/screens/proyek/detail_project/funding_history_section.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/buy_token_dialog.dart';
+import 'package:koperasi_rsb/widgets-global/dialog/confirm_purchase_dialog.dart';
+import 'package:koperasi_rsb/services/token_service.dart';
+import 'package:koperasi_rsb/providers/wallet_provider.dart'; // Asumsi ada provider wallet
 
 class ProjectDetailPage extends StatefulWidget {
   final String projectId;
@@ -42,11 +46,29 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
   ProjectListItem? _projectDetail;
   bool _isLoading = true;
   String? _error;
+  final TokenService _tokenService = TokenService();
 
   @override
   void initState() {
     super.initState();
     _loadProjectDetail();
+    _loadWalletBalance();
+  }
+
+  Future<void> _loadWalletBalance() async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final walletProvider = Provider.of<WalletProvider>(context, listen: false);
+      
+      final token = authProvider.token;
+      final userId = authProvider.userId;
+      
+      if (token != null && userId != null) {
+        await walletProvider.fetchWalletSaldo(token, userId);
+      }
+    } catch (e) {
+      print('Error loading wallet balance: $e');
+    }
   }
 
   Future<void> _loadProjectDetail() async {
@@ -76,16 +98,344 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     }
   }
 
-  void _handleBuyToken() {
-    // TODO: Implement buy token logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fitur beli token akan segera hadir'),
-        backgroundColor: Colors.green,
+  Future<void> _handleBuyToken() async {
+    if (_projectDetail == null) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token;
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sesi Anda telah berakhir. Silakan login kembali.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validasi status project
+    if (_projectDetail!.status != 'PENDANAAN DIBUKA') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pendanaan untuk proyek ini belum dibuka atau sudah ditutup'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Validasi minimal dan maksimal pembelian
+    final minBeli = _projectDetail!.minimalPembelian ?? 0;
+    final maxBeli = _projectDetail!.maksimalPembelian ?? 0;
+    final pricePerToken = _projectDetail!.hargaPerUnit ?? 0;
+
+    if (minBeli <= 0 || maxBeli <= 0 || pricePerToken <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Informasi pembelian token tidak tersedia'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Hitung token tersisa
+    // Jika backend belum kirim data tokenTerjual, fetch dari API
+    final totalToken = _projectDetail!.jumlahKoin ?? 0;
+    int remainingTokens = totalToken;
+    
+    // Coba ambil data token tersisa dari API
+    // try {
+    //   final tokenInfo = await _tokenService.getAvailableTokens(
+    //     token: token,
+    //     projectId: widget.projectId,
+    //   );
+      
+    //   if (tokenInfo['success'] == true) {
+    //     remainingTokens = tokenInfo['availableTokens'] ?? totalToken;
+    //   }
+    // } catch (e) {
+    //   // Jika gagal, gunakan total token sebagai fallback
+    //   print('Error fetching available tokens: $e');
+    // }
+
+    if (remainingTokens <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Token sudah habis terjual'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // DIALOG 1: Pilih jumlah token
+    final selectedTokens = await showBuyTokenDialog(
+      context,
+      remaining: remainingTokens,
+      pricePerToken: pricePerToken,
+    );
+
+    // User cancel atau tidak memilih
+    if (selectedTokens == null || selectedTokens <= 0) return;
+
+    // Validasi jumlah token sebelum lanjut ke konfirmasi
+    if (selectedTokens < minBeli) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Minimal pembelian adalah $minBeli token'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (selectedTokens > maxBeli) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Maksimal pembelian adalah $maxBeli token'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (selectedTokens > remainingTokens) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Token tersisa hanya $remainingTokens'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Get wallet balance dari WalletProvider (tidak pakai Consumer di sini karena di dalam method)
+    final walletProvider = Provider.of<WalletProvider>(context, listen: false);
+    final walletBalance = walletProvider.saldoTopup.toInt();
+
+    // Validasi saldo mencukupi
+    final totalPrice = selectedTokens * pricePerToken;
+    if (walletBalance < totalPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Saldo tidak mencukupi. Saldo Anda: ${walletProvider.formattedSaldoTopup}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // DIALOG 2: Konfirmasi pembelian
+    final confirmed = await showConfirmPurchaseDialog(
+      context,
+      projectTitle: _projectDetail!.judul,
+      tokens: selectedTokens,
+      pricePerToken: pricePerToken,
+      walletBalance: walletBalance,
+      paymentMethodName: 'Saldo Dompet',
+    );
+
+    // User tidak confirm
+    if (confirmed != true) return;
+
+    // Proses pembelian
+    await _processBuyToken(token, selectedTokens);
+  }
+
+  Future<void> _processBuyToken(String token, int jumlahToken) async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Memproses pembelian token...'),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
-    // Navigate to buy token page
-    // Navigator.pushNamed(context, '/buy-token', arguments: widget.projectId);
+
+    try {
+      final response = await _tokenService.buyToken(
+        token: token,
+        projectId: widget.projectId,
+        jumlahToken: jumlahToken,
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      if (response['success'] == true) {
+        if (mounted) {
+          // Show success dialog
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F5EE),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: darkGreen,
+                      size: 48,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Pembelian Berhasil!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    response['message'] ?? 'Token berhasil dibeli',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: darkGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ),
+              ],
+            ),
+          );
+          
+          // Reload project detail
+          await _loadProjectDetail();
+          
+          // Reload wallet balance
+          try {
+            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+            final walletProvider = Provider.of<WalletProvider>(context, listen: false);
+            await walletProvider.fetchWalletSaldo(authProvider.token ?? '', authProvider.userId ?? '');
+          } catch (e) {
+            print('Error reloading wallet: $e');
+          }
+        }
+      } else {
+        if (mounted) {
+          // Show error dialog
+          await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 48,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Pembelian Gagal',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    response['message'] ?? 'Gagal membeli token',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text('Error'),
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   void _handleDownloadProspectus() {

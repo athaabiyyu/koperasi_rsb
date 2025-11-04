@@ -6,6 +6,7 @@ import '../services/history_project_service.dart';
 import '../models/project_list_model.dart';
 import '../models/agreement_model.dart';
 import '../models/history_project_model.dart';
+import '../models/project_investor_model.dart';
 
 enum ProjectStatus { idle, loading, success, error }
 
@@ -43,6 +44,15 @@ class ProjectProvider extends ChangeNotifier {
   // Sign agreement state
   bool _isSigningAgreement = false;
   String? _signAgreementError;
+
+  // Project investors state
+  List<InvestorSummary> _projectInvestors = [];
+  bool _isLoadingInvestors = false;
+  String? _investorsError;
+
+  //Calculated token stats
+  int _collectedToken = 0;
+  int _remainingToken = 0;
 
   // History project state
   List<HistoryProject> _projectHistories = [];
@@ -96,6 +106,12 @@ class ProjectProvider extends ChangeNotifier {
   bool get isLoadingHistory => _isLoadingHistory;
   String? get historyError => _historyError;
 
+  List<InvestorSummary> get projectInvestors => _projectInvestors;
+  bool get isLoadingInvestors => _isLoadingInvestors;
+  String? get investorsError => _investorsError;
+  int get collectedToken => _collectedToken;
+  int get remainingToken => _remainingToken;
+
   // Load categories from API
   Future<void> loadCategories() async {
     if (_categories.isNotEmpty) {
@@ -114,6 +130,48 @@ class ProjectProvider extends ChangeNotifier {
       _isCategoriesLoading = false;
       _errorMessage = 'Gagal memuat kategori: ${e.toString()}';
       notifyListeners();
+    }
+  }
+
+  Future<void> loadProjectInvestors(String projectId) async {
+    try {
+      _isLoadingInvestors = true;
+      _investorsError = null;
+      notifyListeners();
+
+      print('\n📊 === LOADING PROJECT INVESTORS ===');
+      print('Project ID: $projectId');
+
+      final investors = await _projectService.getProjectInvestors(projectId);
+
+      _projectInvestors = investors;
+
+      // Calculate total collected tokens
+      _collectedToken = investors.fold<int>(
+        0,
+        (sum, investor) => sum + investor.jumlahToken,
+      );
+
+      // Calculate remaining tokens (if project detail is loaded)
+      if (_projectDetail != null && _projectDetail!.jumlahKoin != null) {
+        _remainingToken = _projectDetail!.jumlahKoin! - _collectedToken;
+      }
+
+      _isLoadingInvestors = false;
+      notifyListeners();
+
+      print('✅ Loaded ${investors.length} investors');
+      print('📈 Total collected tokens: $_collectedToken');
+      print('📉 Remaining tokens: $_remainingToken');
+    } catch (e) {
+      _isLoadingInvestors = false;
+      _investorsError = e.toString().replaceAll('Exception: ', '');
+      _projectInvestors = [];
+      _collectedToken = 0;
+      _remainingToken = _projectDetail?.jumlahKoin ?? 0;
+      notifyListeners();
+
+      print('❌ Failed to load investors: $_investorsError');
     }
   }
 
@@ -164,6 +222,9 @@ class ProjectProvider extends ChangeNotifier {
       _isLoadingDetail = false;
       notifyListeners();
 
+      // ✅ Automatically load investors after getting detail
+      await loadProjectInvestors(projectId);
+
       return detail;
     } catch (e) {
       _isLoadingDetail = false;
@@ -174,12 +235,36 @@ class ProjectProvider extends ChangeNotifier {
     }
   }
 
+  void clearProjectInvestors() {
+    _projectInvestors.clear();
+    _isLoadingInvestors = false;
+    _investorsError = null;
+    _collectedToken = 0;
+    _remainingToken = 0;
+    notifyListeners();
+  }
+
   // Clear project detail cache
   void clearProjectDetail() {
     _projectDetail = null;
     _isLoadingDetail = false;
     _detailError = null;
+    clearProjectInvestors();
     notifyListeners();
+  }
+
+  double getFundingProgress() {
+    if (_projectDetail == null || _projectDetail!.jumlahKoin == null) {
+      return 0.0;
+    }
+    final maxToken = _projectDetail!.jumlahKoin!;
+    if (maxToken == 0) return 0.0;
+    return (_collectedToken / maxToken).clamp(0.0, 1.0);
+  }
+
+  String getFundingProgressText() {
+    final progress = getFundingProgress() * 100;
+    return '${progress.toStringAsFixed(1)}%';
   }
 
   /// Load agreement letter for a project
@@ -266,42 +351,38 @@ class ProjectProvider extends ChangeNotifier {
       final idKategori = _formData['id_kategori'] ?? '';
       final judul = _formData['judul'] ?? '';
       final deskripsi = _formData['deskripsi'] ?? '';
-      final nominal =
-          int.tryParse(
+      final nominal = int.tryParse(
             _formData['nominal']?.toString().replaceAll(
-                  RegExp(r'[^0-9]'),
-                  '',
-                ) ??
+                      RegExp(r'[^0-9]'),
+                      '',
+                    ) ??
                 '0',
           ) ??
           0;
       final assetJaminan = _formData['asset_jaminan'] ?? '';
-      final nilaiJaminan =
-          int.tryParse(
+      final nilaiJaminan = int.tryParse(
             _formData['nilai_jaminan']?.toString().replaceAll(
-                  RegExp(r'[^0-9]'),
-                  '',
-                ) ??
+                      RegExp(r'[^0-9]'),
+                      '',
+                    ) ??
                 '0',
           ) ??
           0;
       final lokasiUsaha = _formData['lokasi_usaha'] ?? '';
       final detailLokasi = _formData['detail_lokasi'] ?? '';
-      final pendapatanPerbulan =
-          int.tryParse(
+      final pendapatanPerbulan = int.tryParse(
             _formData['pendapatan_perbulan']?.toString().replaceAll(
-                  RegExp(r'[^0-9]'),
-                  '',
-                ) ??
+                      RegExp(r'[^0-9]'),
+                      '',
+                    ) ??
                 '0',
           ) ??
           0;
-      final pengeluaranPerbulan =
-          int.tryParse(
+      final pengeluaranPerbulan = int.tryParse(
             _formData['pengeluaran_perbulan']?.toString().replaceAll(
-                  RegExp(r'[^0-9]'),
-                  '',
-                ) ??
+                      RegExp(r'[^0-9]'),
+                      '',
+                    ) ??
                 '0',
           ) ??
           0;
@@ -689,9 +770,8 @@ class ProjectProvider extends ChangeNotifier {
     List<String> statuses, {
     bool newest = true,
   }) {
-    var filtered = _userProjects
-        .where((p) => statuses.contains(p.status))
-        .toList();
+    var filtered =
+        _userProjects.where((p) => statuses.contains(p.status)).toList();
 
     if (newest) {
       filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));

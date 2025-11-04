@@ -496,12 +496,12 @@ class _MyProjectPageState extends State<MyProjectPage>
           final project = projects[index];
 
           return MyProjectCard(
+            projectId: project.id,
             imageUrl: project.mainImageUrl,
             status: project.statusDisplay,
             title: project.judul,
             tokenDitawarkan: project.tokenDitawarkan,
             minBeli: project.minBeli,
-            terkumpul: 0, // TODO: Calculate from funding transactions
             sisaHari: project.sisaHari,
             isDraft: project.isDraft,
             onTap: () {
@@ -527,7 +527,6 @@ class _MyProjectPageState extends State<MyProjectPage>
                       status: project.statusDisplay,
                       title: project.judul,
                       owner: project.user.name,
-                      collectedToken: 0,
                       remainingDays: project.sisaHari,
                       maxToken: project.tokenDitawarkan,
                     ),

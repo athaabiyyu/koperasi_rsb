@@ -44,7 +44,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
       final query = value.trim();
       context.read<ProjectProvider>().loadAllProjects(
         search: query.isEmpty ? null : query,
-        status: 'PENDANAAN DIBUKA', // Tambahkan filter status
+        status: 'PENDANAAN DIBUKA',
       );
     });
   }
@@ -140,8 +140,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                               onPressed: () {
                                 _searchController.clear();
                                 context.read<ProjectProvider>().loadAllProjects(
-                                  status:
-                                      'PENDANAAN DIBUKA', // Tambahkan filter status
+                                  status: 'PENDANAAN DIBUKA',
                                 );
                                 setState(() {});
                               },
@@ -159,7 +158,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       ),
                     ),
                     onChanged: (val) {
-                      setState(() {}); // update clear icon visibility
+                      setState(() {});
                       _onSearchChanged(val);
                     },
                   ),
@@ -240,8 +239,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                         status: p.statusDisplay,
                         title: p.judul,
                         owner: p.user.name,
-                        collectedToken:
-                            0, // TODO: map from funding data if available
+                        // ✅ collectedToken dihapus - diambil dari Provider di dalam card
                         remainingDays: p.sisaHari,
                         maxToken: p.tokenDitawarkan,
                       );
