@@ -6,6 +6,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/card/project_list_card.dart';
 import 'package:koperasi_rsb/providers/project_provider.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/app_bottom_nav.dart';
+import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 
 class ProjectListPage extends StatefulWidget {
   const ProjectListPage({super.key});
@@ -25,8 +26,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Load projects dengan status PENDANAAN DIBUKA
       context.read<ProjectProvider>().loadAllProjects(
-            status: 'PENDANAAN DIBUKA',
-          );
+        status: 'PENDANAAN DIBUKA',
+      );
     });
   }
 
@@ -42,9 +43,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
     _debounce = Timer(const Duration(milliseconds: 450), () {
       final query = value.trim();
       context.read<ProjectProvider>().loadAllProjects(
-            search: query.isEmpty ? null : query,
-            status: 'PENDANAAN DIBUKA', // Tambahkan filter status
-          );
+        search: query.isEmpty ? null : query,
+        status: 'PENDANAAN DIBUKA', // Tambahkan filter status
+      );
     });
   }
 
@@ -55,6 +56,26 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyProjectPage(fromProjectList: true),
+            ),
+          );
+        },
+        backgroundColor: Colors.green,
+        icon: const Icon(Icons.folder, color: Colors.white),
+        label: Text(
+          'Proyek Saya',
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: AppBottomNav(
         currentIndex: 1,
         onItemSelected: (i) {
@@ -106,9 +127,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     textInputAction: TextInputAction.search,
                     onSubmitted: (value) {
                       context.read<ProjectProvider>().loadAllProjects(
-                            search: value.trim(),
-                            status: 'PENDANAAN DIBUKA',
-                          );
+                        search: value.trim(),
+                        status: 'PENDANAAN DIBUKA',
+                      );
                     },
                     decoration: InputDecoration(
                       hintText: "Search...",
@@ -119,9 +140,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                               onPressed: () {
                                 _searchController.clear();
                                 context.read<ProjectProvider>().loadAllProjects(
-                                      status:
-                                          'PENDANAAN DIBUKA', // Tambahkan filter status
-                                    );
+                                  status:
+                                      'PENDANAAN DIBUKA', // Tambahkan filter status
+                                );
                                 setState(() {});
                               },
                             )

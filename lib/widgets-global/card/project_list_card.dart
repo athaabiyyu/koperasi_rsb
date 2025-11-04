@@ -26,10 +26,12 @@ class ProjectListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _deviceWidth = MediaQuery.of(context).size.width;
-    final _deviceHeight = MediaQuery.of(context).size.height;
+    final textScale = MediaQuery.of(context).textScaleFactor;
 
     // Hitung progress (pastikan tidak lebih dari 1.0)
-    final progress = maxToken > 0 ? (collectedToken / maxToken).clamp(0.0, 1.0) : 0.0;
+    final progress = maxToken > 0
+        ? (collectedToken / maxToken).clamp(0.0, 1.0)
+        : 0.0;
 
     return GestureDetector(
       onTap: () {
@@ -72,23 +74,25 @@ class ProjectListCard extends StatelessWidget {
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),
-              child: Image.network(
-                imageUrl,
-                height: _deviceHeight * 0.12,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: _deviceHeight * 0.12,
-                    width: double.infinity,
-                    color: Colors.grey.shade200,
-                    child: const Icon(
-                      Icons.broken_image,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  imageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey.shade200,
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
 
@@ -101,8 +105,8 @@ class ProjectListCard extends StatelessWidget {
                   // Status
                   Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: _deviceWidth * 0.01,
-                      vertical: _deviceHeight * 0.004,
+                      horizontal: _deviceWidth * 0.02,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.green.withOpacity(0.1),
@@ -110,14 +114,14 @@ class ProjectListCard extends StatelessWidget {
                     ),
                     child: Text(
                       status,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.green,
-                        fontSize: 12,
+                        fontSize: 12 * textScale.clamp(1.0, 1.2),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  SizedBox(height: _deviceHeight * 0.002),
+                  const SizedBox(height: 4),
 
                   // Judul
                   Text(
@@ -137,17 +141,17 @@ class ProjectListCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: _deviceHeight * 0.01),
+                  const SizedBox(height: 8),
 
                   // Progress
                   LinearProgressIndicator(
                     value: progress,
                     backgroundColor: Colors.grey.shade200,
                     color: Colors.orange,
-                    minHeight: 10,
+                    minHeight: 8,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  SizedBox(height: _deviceHeight * 0.01),
+                  const SizedBox(height: 8),
 
                   // Token dan sisa hari
                   Row(
@@ -164,7 +168,7 @@ class ProjectListCard extends StatelessWidget {
                               color: Colors.grey,
                             ),
                           ),
-                          SizedBox(height: _deviceHeight * 0.0005),
+                          const SizedBox(height: 2),
                           Text(
                             "$collectedToken Token",
                             style: const TextStyle(
@@ -186,7 +190,7 @@ class ProjectListCard extends StatelessWidget {
                               color: Colors.grey,
                             ),
                           ),
-                          SizedBox(height: _deviceHeight * 0.0005),
+                          const SizedBox(height: 2),
                           Text(
                             "$remainingDays",
                             style: const TextStyle(

@@ -9,9 +9,10 @@ import 'package:koperasi_rsb/providers/project_provider.dart';
 import 'package:koperasi_rsb/models/project_list_model.dart';
 import 'package:provider/provider.dart';
 
-
 class MyProjectPage extends StatefulWidget {
-  const MyProjectPage({super.key});
+  final bool fromProjectList;
+
+  const MyProjectPage({super.key, this.fromProjectList = false});
 
   @override
   State<MyProjectPage> createState() => _MyProjectPageState();
@@ -32,8 +33,10 @@ class _MyProjectPageState extends State<MyProjectPage>
   }
 
   Future<void> _loadProjects() async {
-    final projectProvider =
-        Provider.of<ProjectProvider>(context, listen: false);
+    final projectProvider = Provider.of<ProjectProvider>(
+      context,
+      listen: false,
+    );
     await projectProvider.loadUserProjects();
   }
 
@@ -52,15 +55,20 @@ class _MyProjectPageState extends State<MyProjectPage>
     final homeRoute = isPlatinum ? '/member-platinum' : '/member-reguler';
 
     // Count projects by status
-    final pendanaanDibukaCount =
-        projectProvider.getProjectCountByStatus('PENDANAAN DIBUKA');
+    final pendanaanDibukaCount = projectProvider.getProjectCountByStatus(
+      'PENDANAAN DIBUKA',
+    );
     // Count BERJALAN including all cycles
     final berjalanCount = projectProvider.userProjects
-        .where((p) => p.status == 'BERJALAN' || p.status.startsWith('BERJALAN SIKLUS'))
+        .where(
+          (p) =>
+              p.status == 'BERJALAN' || p.status.startsWith('BERJALAN SIKLUS'),
+        )
         .length;
     final selesaiCount = projectProvider.getProjectCountByStatus('SELESAI');
-    final dibatalkanCount =
-        projectProvider.getProjectCountByStatus('DIBATALKAN');
+    final dibatalkanCount = projectProvider.getProjectCountByStatus(
+      'DIBATALKAN',
+    );
     final draftCount = projectProvider.getProjectCountByStatus('DRAFT');
     final prosesVerifikasiCount = projectProvider.getProjectCountByStatuses([
       'PROSES VERIFIKASI',
@@ -72,6 +80,12 @@ class _MyProjectPageState extends State<MyProjectPage>
 
     return WillPopScope(
       onWillPop: () async {
+        if (widget.fromProjectList) {
+          // Kembali ke halaman sebelumnya (Daftar Proyek) jika datang dari Project List
+          Navigator.pop(context);
+          return false;
+        }
+        // Default: arahkan ke home sesuai role
         Navigator.pushReplacementNamed(context, homeRoute);
         return false;
       },
@@ -79,150 +93,181 @@ class _MyProjectPageState extends State<MyProjectPage>
         length: 6, // ✅ Tambah jadi 6 tab
         child: Scaffold(
           backgroundColor: const Color(0xFFF3FFFA),
-          bottomNavigationBar: AppBottomNav(
-            currentIndex: 1,
-            onItemSelected: (i) {
-              if (i == 1) return;
-              if (!mounted) return;
-              switch (i) {
-                case 0:
-                  Navigator.pushReplacementNamed(context, homeRoute);
-                  break;
-                case 2:
-                  Navigator.pushReplacementNamed(context, '/wallet');
-                  break;
-                case 3:
-                  Navigator.pushReplacementNamed(context, '/profile');
-                  break;
-              }
-            },
-          ),
+          bottomNavigationBar: (isPlatinum && widget.fromProjectList)
+              ? null
+              : AppBottomNav(
+                  currentIndex: 1,
+                  onItemSelected: (i) {
+                    if (i == 1) return;
+                    if (!mounted) return;
+                    switch (i) {
+                      case 0:
+                        Navigator.pushReplacementNamed(context, homeRoute);
+                        break;
+                      case 2:
+                        Navigator.pushReplacementNamed(context, '/wallet');
+                        break;
+                      case 3:
+                        Navigator.pushReplacementNamed(context, '/profile');
+                        break;
+                    }
+                  },
+                ),
           body: SafeArea(
             child: Column(
               children: [
-                // Header
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _deviceWidth * 0.04,
-                    vertical: _deviceHeight * 0.02,
-                  ),
-                  color: Colors.white,
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      "Proyek Saya",
-                      style: GoogleFonts.poppins(
-                        fontSize: _deviceWidth * 0.07,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Tab
+                // Header + Tabs unified in one white background
                 Container(
                   color: Colors.white,
-                  child: TabBar(
-                    labelColor: Colors.green,
-                    unselectedLabelColor: Colors.black,
-                    indicatorColor: Colors.green,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
-                    labelStyle: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    tabs: [
-                      Tab(
-                        child: Column(
-                          children: [
-                            const Text("Proses Verifikasi"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "($prosesVerifikasiCount)",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        alignment: Alignment.topLeft,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              widget.fromProjectList ? 56 : 24,
+                              15,
+                              10,
+                              2,
+                            ),
+                            child: Text(
+                              "Proyek Saya",
+                              style: GoogleFonts.poppins(
+                                fontSize: _deviceWidth * 0.07,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          if (widget.fromProjectList)
+                            Positioned(
+                              left: 0,
+                              top: 12,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 40,
+                                  minHeight: 40,
+                                ),
+                                iconSize: 20,
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                        ],
                       ),
-                      Tab(
-                        child: Column(
-                          children: [
-                            const Text("Pendanaan Dibuka"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "($pendanaanDibukaCount)",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: 16),
+                      TabBar(
+                        labelColor: Colors.green,
+                        unselectedLabelColor: Colors.black,
+                        indicatorColor: Colors.green,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        labelStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ),
-                      Tab(
-                        child: Column(
-                          children: [
-                            const Text("Proyek Berjalan"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "($berjalanCount)",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
+                        labelPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
                         ),
-                      ),
-                      Tab(
-                        child: Column(
-                          children: [
-                            const Text("Proyek Selesai"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "($selesaiCount)",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
+                        tabs: [
+                          Tab(
+                            child: Column(
+                              children: [
+                                const Text("Proses Verifikasi"),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "($prosesVerifikasiCount)",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Column(
-                          children: [
-                            const Text("Proyek Dibatalkan"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "($dibatalkanCount)",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
+                          ),
+                          Tab(
+                            child: Column(
+                              children: [
+                                const Text("Pendanaan Dibuka"),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "($pendanaanDibukaCount)",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Column(
-                          children: [
-                            const Text("Draft Proyek"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "($draftCount)",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
+                          ),
+                          Tab(
+                            child: Column(
+                              children: [
+                                const Text("Proyek Berjalan"),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "($berjalanCount)",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          Tab(
+                            child: Column(
+                              children: [
+                                const Text("Proyek Selesai"),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "($selesaiCount)",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Tab(
+                            child: Column(
+                              children: [
+                                const Text("Proyek Dibatalkan"),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "($dibatalkanCount)",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Tab(
+                            child: Column(
+                              children: [
+                                const Text("Draft Proyek"),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "($draftCount)",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -307,43 +352,44 @@ class _MyProjectPageState extends State<MyProjectPage>
                   child: projectProvider.isLoadingProjects
                       ? const Center(child: CircularProgressIndicator())
                       : projectProvider.projectsError != null
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.error_outline,
-                                    size: 48,
-                                    color: Colors.red,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 32),
-                                    child: Text(
-                                      projectProvider.projectsError!,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton(
-                                    onPressed: _refreshProjects,
-                                    child: const Text('Coba Lagi'),
-                                  ),
-                                ],
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                size: 48,
+                                color: Colors.red,
                               ),
-                            )
-                          : TabBarView(
-                              children: [
-                                _buildProjectList("PROSES_VERIFIKASI"),
-                                _buildProjectList("PENDANAAN DIBUKA"),
-                                _buildProjectList("BERJALAN"),
-                                _buildProjectList("SELESAI"),
-                                _buildProjectList("DIBATALKAN"),
-                                _buildProjectList("DRAFT"),
-                              ],
-                            ),
+                              const SizedBox(height: 16),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                ),
+                                child: Text(
+                                  projectProvider.projectsError!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _refreshProjects,
+                                child: const Text('Coba Lagi'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : TabBarView(
+                          children: [
+                            _buildProjectList("PROSES_VERIFIKASI"),
+                            _buildProjectList("PENDANAAN DIBUKA"),
+                            _buildProjectList("BERJALAN"),
+                            _buildProjectList("SELESAI"),
+                            _buildProjectList("DIBATALKAN"),
+                            _buildProjectList("DRAFT"),
+                          ],
+                        ),
                 ),
 
                 // Button Buat Proyek Baru
@@ -366,7 +412,7 @@ class _MyProjectPageState extends State<MyProjectPage>
                       final provider = context.read<ProjectProvider>();
                       provider.clearEditMode();
                       provider.clearFormData(); // Clear form data juga
-                      
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -393,30 +439,36 @@ class _MyProjectPageState extends State<MyProjectPage>
 
     // Get projects with sorting
     List<ProjectListItem> projects;
-    
+
     // Handle special filter for verification process
     if (statusFilter == "PROSES_VERIFIKASI") {
-      projects = projectProvider.getProjectsByStatuses(
-        ['PROSES VERIFIKASI', 'REVISI', 'APPROVAL', 'TTD KONTRAK', 'DITOLAK'],
-        newest: _sortIndex == 0,
-      );
-    } 
+      projects = projectProvider.getProjectsByStatuses([
+        'PROSES VERIFIKASI',
+        'REVISI',
+        'APPROVAL',
+        'TTD KONTRAK',
+        'DITOLAK',
+      ], newest: _sortIndex == 0);
+    }
     // Handle BERJALAN status (include all cycles)
     else if (statusFilter == "BERJALAN") {
       // Get all projects with BERJALAN or BERJALAN SIKLUS X
       final allProjects = projectProvider.userProjects;
       projects = allProjects
-          .where((p) => p.status == 'BERJALAN' || p.status.startsWith('BERJALAN SIKLUS'))
+          .where(
+            (p) =>
+                p.status == 'BERJALAN' ||
+                p.status.startsWith('BERJALAN SIKLUS'),
+          )
           .toList();
-      
+
       // Sort
       if (_sortIndex == 0) {
         projects.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       } else {
         projects.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       }
-    }
-    else {
+    } else {
       projects = projectProvider.getProjectsByStatus(
         statusFilter,
         newest: _sortIndex == 0,
