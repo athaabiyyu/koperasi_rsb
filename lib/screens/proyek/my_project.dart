@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/card/my_project_card.dart';
@@ -45,6 +46,11 @@ class _MyProjectPageState extends State<MyProjectPage>
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final projectProvider = Provider.of<ProjectProvider>(context);
@@ -77,6 +83,8 @@ class _MyProjectPageState extends State<MyProjectPage>
       'TTD KONTRAK',
       'DITOLAK',
     ]);
+
+    // Auto refresh disabled per request; rely on manual refresh and provider updates
 
     return WillPopScope(
       onWillPop: () async {
@@ -346,6 +354,59 @@ class _MyProjectPageState extends State<MyProjectPage>
                     ],
                   ),
                 ),
+
+                // Info banner shown while processing (white background as requested)
+                if (projectProvider.status == ProjectStatus.loading)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.orangeAccent.withOpacity(0.25),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_rounded, color: Colors.orange),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Pembuatan proyek sedang diproses',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Anda bisa melanjutkan aktivitas, status akan diperbarui otomatis.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
                 // Content area with loading/error handling
                 Expanded(

@@ -27,7 +27,10 @@ class _AddProjectPageState extends State<AddProjectPage> {
   final PageController _pageController = PageController();
   int _step = 0;
 
-  final List<GlobalKey<FormState>> _formKeys = List.generate(4, (_) => GlobalKey<FormState>());
+  final List<GlobalKey<FormState>> _formKeys = List.generate(
+    4,
+    (_) => GlobalKey<FormState>(),
+  );
 
   @override
   void initState() {
@@ -35,7 +38,9 @@ class _AddProjectPageState extends State<AddProjectPage> {
     // Load categories when page initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isEditingDraft && widget.draftData != null) {
-        context.read<ProjectProvider>().updateMultipleFormData(widget.draftData!);
+        context.read<ProjectProvider>().updateMultipleFormData(
+          widget.draftData!,
+        );
       }
     });
   }
@@ -60,95 +65,66 @@ class _AddProjectPageState extends State<AddProjectPage> {
     });
   }
 
- void _selanjutnya() async {
-  final currentKey = _formKeys[_step];
-  if (currentKey.currentState?.validate() != true) return;
+  void _selanjutnya() async {
+    final currentKey = _formKeys[_step];
+    if (currentKey.currentState?.validate() != true) return;
 
-  // Validate percentages on last step
-  if (_step == 3) {
-    final provider = context.read<ProjectProvider>();
-    
-    print('\n🎯 === FINAL STEP VALIDATION ===');
-    print('Step: 3 (Pembagian Hasil)');
-    print('Mode: ${provider.isUpdateMode ? "UPDATE" : "CREATE"}');
-    
-    if (!provider.validatePercentages()) {
-      print('❌ Percentage validation failed: ${provider.getPercentageTotal()}%');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Total persentase harus 100%. Saat ini: ${provider.getPercentageTotal()}%'
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+    // Validate percentages on last step
+    if (_step == 3) {
+      final provider = context.read<ProjectProvider>();
 
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+      print('\n🎯 === FINAL STEP VALIDATION ===');
+      print('Step: 3 (Pembagian Hasil)');
+      print('Mode: ${provider.isUpdateMode ? "UPDATE" : "CREATE"}');
 
-    // Check mode and call appropriate method
-    bool success;
-    if (provider.isUpdateMode) {
-      print('🔄 Calling UPDATE method...\n');
-      success = await provider.updateProject();
-    } else {
-      print('➕ Calling CREATE method...\n');
-      success = await provider.createProject();
-    }
+      if (!provider.validatePercentages()) {
+        print(
+          '❌ Percentage validation failed: ${provider.getPercentageTotal()}%',
+        );
 
-    if (mounted) {
-      Navigator.pop(context); // Close loading dialog
-
-      if (success) {
-        print('✅ ${provider.isUpdateMode ? "UPDATE" : "CREATE"} SUCCESS!\n');
-        
-        // ✅ Clear edit mode setelah sukses submit
-        provider.clearEditMode();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              provider.isUpdateMode 
-                ? 'Proyek berhasil diupdate!' 
-                : 'Proyek berhasil dibuat!'
+              'Total persentase harus 100%. Saat ini: ${provider.getPercentageTotal()}%',
             ),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pushReplacementNamed(context, '/my-project');
-      } else {
-        print('❌ ${provider.isUpdateMode ? "UPDATE" : "CREATE"} FAILED!');
-        print('Error: ${provider.errorMessage}\n');
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(provider.errorMessage ?? 'Gagal membuat proyek'),
             backgroundColor: Colors.red,
           ),
         );
+        return;
       }
-    }
-    return;
-  }
 
-  // Move to next step
-  print('➡️ Moving to step ${_step + 1}');
-  setState(() => _step++);
-  _pageController.animateToPage(
-    _step,
-    duration: const Duration(milliseconds: 300),
-    curve: Curves.easeInOut,
-  );
-}
+      // Non-blocking submit: jalankan proses di background tanpa dialog
+      if (provider.isUpdateMode) {
+        print('🔄 Calling UPDATE (non-blocking)...\n');
+        // Fire-and-forget
+        // ignore: unawaited_futures
+        provider.updateProject();
+      } else {
+        print('➕ Calling CREATE (non-blocking)...\n');
+        // Fire-and-forget
+        // ignore: unawaited_futures
+        provider.createProject();
+      }
+
+      // Arahkan langsung ke daftar proyek tanpa menampilkan snackbar bawah
+      if (mounted) {
+        // Clear edit mode segera agar form state bersih
+        provider.clearEditMode();
+
+        Navigator.pushReplacementNamed(context, '/my-project');
+      }
+      return;
+    }
+
+    // Move to next step
+    print('➡️ Moving to step ${_step + 1}');
+    setState(() => _step++);
+    _pageController.animateToPage(
+      _step,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +138,11 @@ class _AddProjectPageState extends State<AddProjectPage> {
         backgroundColor: lightGreen,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left_rounded, color: darkGreen, size: 40),
+          icon: const Icon(
+            Icons.chevron_left_rounded,
+            color: darkGreen,
+            size: 40,
+          ),
           onPressed: () {
             if (_step > 0) {
               setState(() => _step--);
@@ -217,7 +197,8 @@ class _AddProjectPageState extends State<AddProjectPage> {
             _sectionWrapper(
               index: 3,
               title: 'Pembagian Hasil',
-              subtitle: 'Berisi informasi mengenai pembagian hasil antar pengelola dan investor',
+              subtitle:
+                  'Berisi informasi mengenai pembagian hasil antar pengelola dan investor',
               children: const [PembagianHasilSection()],
             ),
           ],
@@ -240,14 +221,16 @@ class _AddProjectPageState extends State<AddProjectPage> {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: deviceHeight * 0.015),
+                        padding: EdgeInsets.symmetric(
+                          vertical: deviceHeight * 0.015,
+                        ),
                         side: const BorderSide(color: darkGreen, width: 1.3),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: provider.status == ProjectStatus.loading 
-                          ? () {} 
+                      onPressed: provider.status == ProjectStatus.loading
+                          ? () {}
                           : _simpanDraft,
                       child: Text(
                         'Draft',
@@ -264,14 +247,16 @@ class _AddProjectPageState extends State<AddProjectPage> {
                 Expanded(
                   child: CustomButton(
                     // ✅ DYNAMIC BUTTON TEXT
-                    text: _step < 3 
-                      ? 'Selanjutnya' 
-                      : (provider.isUpdateMode ? 'Update Proyek' : 'Buat Proyek'),
+                    text: _step < 3
+                        ? 'Selanjutnya'
+                        : (provider.isUpdateMode
+                              ? 'Update Proyek'
+                              : 'Buat Proyek'),
                     color: darkGreen,
                     textColor: Colors.white,
                     radius: 10,
-                    onPressed: provider.status == ProjectStatus.loading 
-                        ? () {} 
+                    onPressed: provider.status == ProjectStatus.loading
+                        ? () {}
                         : _selanjutnya,
                   ),
                 ),
@@ -297,7 +282,12 @@ class _AddProjectPageState extends State<AddProjectPage> {
         builder: (context, constraints) {
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 120,
+            ),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
