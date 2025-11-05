@@ -16,6 +16,7 @@ import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/providers/wallet_provider.dart';
 import 'package:koperasi_rsb/providers/project_provider.dart';
+import 'package:koperasi_rsb/providers/token_provider.dart';
 import 'package:koperasi_rsb/screens/auth/login/login.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page1.dart';
 import 'package:koperasi_rsb/screens/auth/regis/register-page2.dart';
@@ -26,6 +27,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:koperasi_rsb/widgets-global/form/muncul-rekening-member-biasa.dart';
+
 
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
@@ -47,6 +49,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TopupProvider()),
         ChangeNotifierProvider(create: (_) => WalletProvider()),
         ChangeNotifierProvider(create: (_) => ProjectProvider()),
+        ChangeNotifierProvider(create: (_) => TokenProvider()),
       ],
       child: MaterialApp(
         title: 'Koperasi RSB',

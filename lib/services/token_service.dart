@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:koperasi_rsb/config/api_endpoint/token_endpoints.dart';
 import '../config/api_config.dart';
-import '../config/api_endpoint/api_endpoints.dart';
+import '../models/token_usage_model.dart';
 
 class TokenService {
   // Beli token untuk project
@@ -50,6 +50,49 @@ class TokenService {
         'success': false,
         'message': 'Terjadi kesalahan: ${e.toString()}',
       };
+    }
+  }
+
+  // Get token usage details by user
+  Future<List<TokenUsageDetail>> getTokenUsageDetails(String token) async {
+    try {
+      final url = Uri.parse(TokenEndpoints.tokenUsageDetails());
+
+      print('\n📊 === FETCHING TOKEN USAGE DETAILS ===');
+      print('URL: $url');
+
+      final response = await http.get(
+        url,
+        headers: ApiConfig.getAuthHeaders(token),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        
+        if (responseData['data'] != null) {
+          final List<dynamic> dataList = responseData['data'];
+          final usageList = dataList
+              .map((json) => TokenUsageDetail.fromJson(json))
+              .toList();
+
+          print('✅ Loaded ${usageList.length} token usage details');
+          return usageList;
+        } else {
+          print('⚠️ No data in response');
+          return [];
+        }
+      } else {
+        final errorData = jsonDecode(response.body);
+        final errorMessage = errorData['message'] ?? 'Gagal memuat data token usage';
+        print('❌ Error: $errorMessage');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      print('❌ Exception in getTokenUsageDetails: $e');
+      throw Exception('Gagal memuat token usage details: ${e.toString()}');
     }
   }
 }

@@ -5,5 +5,9 @@ class TokenEndpoints {
 
   static String buyToken() {
     return '$base/buy-token';
+    
+  }
+  static String tokenUsageDetails() {
+    return '$base/usage-details';
   }
 }

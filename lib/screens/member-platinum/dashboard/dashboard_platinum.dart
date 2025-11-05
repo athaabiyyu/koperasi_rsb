@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
 import 'package:koperasi_rsb/providers/topup_provider.dart';
+import 'package:koperasi_rsb/providers/token_provider.dart';
 import 'package:koperasi_rsb/screens/member-platinum/dashboard/section/platinum_header.dart';
 import 'package:koperasi_rsb/widgets-global/card/transaction_history_section.dart';
 
@@ -22,47 +23,17 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
   late double _deviceHeight;
   late double _deviceWidth;
 
-  final List<Map<String, dynamic>> _tokenUsage = const [
-    {
-      'title': 'Stand Telur Gulung',
-      'owner': 'Budi Wijaya',
-      'status': 'Proyek Berjalan',
-      'modal': 10,
-      'hasil': 2,
-      'modalLabel': 'Jumlah Modal (Lot)',
-      'hasilLabel': 'Perkiraan Hasil',
-      'imageUrl': 'https://picsum.photos/seed/telur/600/400',
-    },
-    {
-      'title': 'Stand Pisang Nugget',
-      'owner': 'Marlina Siahaan',
-      'status': 'Proyek Selesai',
-      'modal': 20,
-      'hasil': 20,
-      'modalLabel': 'Jumlah Modal (Lot)',
-      'hasilLabel': 'Perkiraan Hasil',
-      'imageUrl': 'https://picsum.photos/seed/pisang/600/400',
-    },
-    {
-      'title': 'Stand Crepes Azzura',
-      'owner': 'Marlina Siahaan',
-      'status': 'Proyek Berjalan',
-      'modal': 20,
-      'hasil': 7,
-      'modalLabel': 'Jumlah Modal (Lot)',
-      'hasilLabel': 'Perkiraan Hasil',
-      'imageUrl': 'https://picsum.photos/seed/crepes/600/400',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final token = _getTokenFromContext();
       if (token != null && token.isNotEmpty) {
+        // Load topup history
         context.read<TopupProvider>().fetchTopupHistory(token);
-        // ignore: avoid_print
+        
+        // Load token usage details
+        context.read<TokenProvider>().loadTokenUsageDetails(token);
       }
     });
   }
@@ -130,98 +101,201 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
   }
 
   Widget _buildTokenUsageSection() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Consumer<TokenProvider>(
+      builder: (context, tokenProvider, child) {
+        // Show loading state
+        if (tokenProvider.isLoadingUsage) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(),
+                SizedBox(height: _deviceHeight * 0.008),
+                SizedBox(
+                  height: 200,
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Show error state
+        if (tokenProvider.usageError != null) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(),
+                SizedBox(height: _deviceHeight * 0.008),
+                Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.red[300],
+                        size: 48,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        tokenProvider.usageError!,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Get top 3 token usage
+        final tokenUsageList = tokenProvider.getTopTokenUsage(limit: 3);
+
+        // Show empty state
+        if (tokenUsageList.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(),
+                SizedBox(height: _deviceHeight * 0.008),
+                Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inbox_outlined,
+                        color: Colors.grey[300],
+                        size: 64,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Belum ada penggunaan token',
+                        style: GoogleFonts.poppins(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Show data
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: AutoSizeText(
-                  'Detail Penggunaan Token',
-                  style: GoogleFonts.poppins(
-                    fontSize: _deviceWidth * 0.045,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  maxLines: 1,
-                  minFontSize: 12,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(width: _deviceWidth * 0.02),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/member-premium/token-usage');
-                  },
-                  child: AutoSizeText(
-                    'Lihat lainnya',
-                    style: GoogleFonts.poppins(
-                      color: darkGreen,
-                      fontWeight: FontWeight.w600,
+              _buildSectionHeader(),
+              SizedBox(height: _deviceHeight * 0.008),
+              Builder(
+                builder: (context) {
+                  final double listHeight = (_deviceHeight * 0.24)
+                      .clamp(180, 230)
+                      .toDouble();
+                  return SizedBox(
+                    height: listHeight,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: tokenUsageList.length,
+                      separatorBuilder: (_, __) =>
+                          SizedBox(width: _deviceWidth * 0.035),
+                      itemBuilder: (context, index) {
+                        final item = tokenUsageList[index];
+                        return _TokenUsageCard(
+                          title: item.judul,
+                          owner: item.user.nama,
+                          status: item.statusLabel,
+                          modal: item.tokenCountInt,
+                          hasil: item.persentaseDouble.toInt(),
+                          modalLabel: 'Jumlah Penggunaan Token',
+                          hasilLabel: 'Return',
+                          nominalReturn: item.formattedNominal,
+                          cardHeight: listHeight,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProjectDetailPage(
+                                  projectId: item.id,
+                                  imageUrl: item.imageUrl,
+                                  status: item.status,
+                                  title: item.judul,
+                                  owner: item.user.nama,
+                                  collectedToken: item.tokenCountInt,
+                                  remainingDays: item.isCompleted ? 0 : 12,
+                                  maxToken: item.jumlahKoin ?? 0,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
-                    maxLines: 1,
-                    minFontSize: 10,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),
-          SizedBox(height: _deviceHeight * 0.008),
-          Builder(
-            builder: (context) {
-              final double listHeight = (_deviceHeight * 0.24)
-                  .clamp(180, 230)
-                  .toDouble();
-              return SizedBox(
-                height: listHeight,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _tokenUsage.length,
-                  separatorBuilder: (_, __) =>
-                      SizedBox(width: _deviceWidth * 0.035),
-                  itemBuilder: (context, index) {
-                    final item = _tokenUsage[index];
-                    final isSelesai = (item['status'] as String).contains(
-                      'Selesai',
-                    );
-                    return _TokenUsageCard(
-                      title: item['title'],
-                      owner: item['owner'],
-                      status: item['status'],
-                      modal: item['modal'],
-                      hasil: item['hasil'],
-                      modalLabel: item['modalLabel'],
-                      hasilLabel: item['hasilLabel'],
-                      cardHeight: listHeight,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProjectDetailPage(
-                              projectId: item['id'] ?? '',
-                              imageUrl: item['imageUrl'],
-                              status: item['status'],
-                              title: item['title'],
-                              owner: item['owner'],
-                              collectedToken: item['hasil'],
-                              remainingDays: isSelesai ? 0 : 12,
-                              maxToken: item['modal'],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              );
-            },
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: AutoSizeText(
+            'Detail Penggunaan Token',
+            style: GoogleFonts.poppins(
+              fontSize: _deviceWidth * 0.045,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
+        ),
+        SizedBox(width: _deviceWidth * 0.02),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/member-premium/token-usage');
+            },
+            child: AutoSizeText(
+              'Lihat lainnya',
+              style: GoogleFonts.poppins(
+                color: darkGreen,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              minFontSize: 10,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -234,6 +308,7 @@ class _TokenUsageCard extends StatelessWidget {
   final int hasil;
   final String modalLabel;
   final String hasilLabel;
+  final String nominalReturn;
   final double cardHeight;
   final VoidCallback onTap;
 
@@ -246,6 +321,7 @@ class _TokenUsageCard extends StatelessWidget {
     required this.hasil,
     required this.modalLabel,
     required this.hasilLabel,
+    required this.nominalReturn,
     required this.cardHeight,
     required this.onTap,
   }) : super(key: key);
@@ -380,7 +456,7 @@ class _TokenUsageCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Jumlah Penggunaan Token',
+                            modalLabel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
@@ -412,7 +488,7 @@ class _TokenUsageCard extends StatelessWidget {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerRight,
                             child: Text(
-                              'Rp 0',
+                              nominalReturn,
                               textAlign: TextAlign.right,
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
@@ -423,7 +499,7 @@ class _TokenUsageCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 0),
                           Text(
-                            'Return: ($hasil)',
+                            '$hasilLabel: ($hasil)',
                             textAlign: TextAlign.right,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
