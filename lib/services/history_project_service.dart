@@ -1,11 +1,9 @@
 import '../models/history_project_model.dart';
-import '../models/timeline_status_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../utils/shared_preferences_helper.dart';
-import '../config/api_config.dart';
+import '../config/api_endpoint/api_endpoints.dart';
 
 class HistoryProjectService {
     Future<String?> _getToken() async {
@@ -19,9 +17,7 @@ class HistoryProjectService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      final url = '${ApiConfig.baseUrl}/history-project/project/$projectId';
-      print('📡 Fetching project history from: $url');
-
+      final url = HistoryEndpoints.getProjectHistory(projectId);
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -30,13 +26,9 @@ class HistoryProjectService {
         },
       );
 
-      print('📥 History Response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        print('📦 History Response: $jsonResponse');
 
-        // Handle response structure
         List<dynamic> historyData;
         if (jsonResponse is List) {
           historyData = jsonResponse;
@@ -52,11 +44,9 @@ class HistoryProjectService {
             .map((json) => HistoryProject.fromJson(json))
             .toList();
 
-        print('✅ Loaded ${histories.length} history items');
         return histories;
         
       } else if (response.statusCode == 404) {
-        print('ℹ️ No history found for project $projectId');
         return [];
       } else {
         final errorBody = json.decode(response.body);
@@ -64,8 +54,7 @@ class HistoryProjectService {
       }
     } on SocketException {
       throw Exception('Tidak ada koneksi internet');
-    } catch (e) {
-      print('❌ Error loading project history: $e');
+    } catch (e) { 
       if (e.toString().contains('404') || e.toString().contains('not found')) {
         return [];
       }

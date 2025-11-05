@@ -2,8 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
-import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 
 class PremiumHeader extends StatelessWidget {
   final String userName;
@@ -112,7 +110,7 @@ class PremiumHeader extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              // Container Sisa Hasil Usaha (sama seperti reguler)
+              // Container Sisa Hasil Usaha
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(deviceWidth * 0.05),
@@ -175,7 +173,6 @@ class PremiumHeader extends StatelessWidget {
 
                     SizedBox(height: deviceHeight * 0.03),
 
-                    // Hanya tombol Bayar Simpanan (tanpa Join)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -190,31 +187,8 @@ class PremiumHeader extends StatelessWidget {
                           elevation: 0,
                         ),
                         onPressed: () {
-                          DetailPembayaranAwalMember.show(
-                            context,
-                            alertTitle: 'Detail Pembayaran',
-                            alertMessage:
-                                'Pastikan data pembayaran sudah benar.',
-                            paymentTitle: 'Pembayaran Simpanan Wajib',
-                            paymentHeader: 'Informasi Pembayaran',
-                            paymentItems: [
-                              PaymentItem(
-                                title: 'Simpanan Wajib',
-                                price: 'Rp 120.000',
-                              ),
-                            ],
-                            totalPrice: 'Rp 120.000',
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Pembayaran Simpanan Wajib dikonfirmasi',
-                                  ),
-                                ),
-                              );
-                            },
-                          );
+   
+                          Navigator.pushNamed(context, '/wallet');
                         },
                         child: AutoSizeText(
                           'Bayar Simpanan',
@@ -238,8 +212,6 @@ class PremiumHeader extends StatelessWidget {
       ),
     );
   }
-
-  // Hapus card join penyertaan dan banner; pertahankan dialog ringkasan pembayaran seperti reguler
 
   /// Dialog informasi pembayaran wajib & pokok (mengikuti header reguler)
   void _showSummaryDialog(BuildContext context) {

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:koperasi_rsb/config/api_config.dart';
-import 'package:koperasi_rsb/config/api_endpoint/payment_endpoints.dart';
+import 'package:koperasi_rsb/config/api_endpoint/topup_endpoints.dart';
 import 'package:koperasi_rsb/models/topup_model.dart';
 
 class TopupService {

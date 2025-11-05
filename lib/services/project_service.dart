@@ -1,11 +1,9 @@
-// lib/services/project_service.dart
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../config/api_config.dart';
+import '../config/api_endpoint/api_endpoints.dart';
 import '../models/project_model.dart';
 import '../utils/shared_preferences_helper.dart';
 import '../models/project_list_model.dart';
@@ -25,10 +23,8 @@ class ProjectService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      final url = '${ApiConfig.baseUrl}/project/$projectId';
-
       final response = await http.get(
-        Uri.parse(url),
+        Uri.parse(ProjectEndpoints.getProjectDetail(projectId)),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -69,7 +65,7 @@ class ProjectService {
       }
 
       // Build URL with optional search parameter
-      var url = '${ApiConfig.baseUrl}/project-category';
+      var url = ProjectEndpoints.getProjectCategories();
       if (search != null && search.isNotEmpty) {
         url += '?search=$search';
       }
@@ -125,8 +121,10 @@ class ProjectService {
       if (token == null || token.isEmpty) {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
-      final uri = Uri.parse('${ApiConfig.baseUrl}/project');
+      
+      final uri = Uri.parse(ProjectEndpoints.createProject());
       final request = http.MultipartRequest('POST', uri);
+      
       // Add authorization header
       request.headers['Authorization'] = 'Bearer $token';
 
@@ -175,8 +173,7 @@ class ProjectService {
         return ProjectResponse.fromJson(jsonResponse);
       } else {
         final errorBody = json.decode(response.body);
-        final errorMessage =
-            errorBody['error'] ??
+        final errorMessage = errorBody['error'] ??
             errorBody['message'] ??
             'Gagal membuat proyek';
         throw Exception(errorMessage);
@@ -188,7 +185,6 @@ class ProjectService {
     }
   }
 
-  // Tambahkan method update project
   Future<ProjectResponse> updateProject({
     required String projectId,
     required CreateProjectRequest project,
@@ -202,7 +198,7 @@ class ProjectService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse('${ApiConfig.baseUrl}/project/update'),
+        Uri.parse(ProjectEndpoints.updateProject()),
       );
 
       request.headers['Authorization'] = 'Bearer $token';
@@ -219,10 +215,10 @@ class ProjectService {
       request.fields['nilai_jaminan'] = project.nilaiJaminan.toString();
       request.fields['lokasi_usaha'] = project.lokasiUsaha;
       request.fields['detail_lokasi'] = project.detailLokasi;
-      request.fields['pendapatan_perbulan'] = project.pendapatanPerbulan
-          .toString();
-      request.fields['pengeluaran_perbulan'] = project.pengeluaranPerbulan
-          .toString();
+      request.fields['pendapatan_perbulan'] =
+          project.pendapatanPerbulan.toString();
+      request.fields['pengeluaran_perbulan'] =
+          project.pengeluaranPerbulan.toString();
       request.fields['limit_siklus'] = project.limitSiklus.toString();
       request.fields['bagian_pelaksana'] = project.bagianPelaksana.toString();
       request.fields['bagian_koperasi'] = project.bagianKoperasi.toString();
@@ -295,7 +291,7 @@ class ProjectService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      var url = '${ApiConfig.baseUrl}/project/user';
+      var url = ProjectEndpoints.getUserProjects();
       List<String> queryParams = [];
 
       if (status != null && status.isNotEmpty) {
@@ -357,7 +353,7 @@ class ProjectService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      var url = '${ApiConfig.baseUrl}/project';
+      var url = ProjectEndpoints.getAllProjects();
       List<String> queryParams = [];
 
       if (status != null && status.isNotEmpty) {
@@ -419,7 +415,7 @@ class ProjectService {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('${ApiConfig.baseUrl}/project/agreement-letter'),
+        Uri.parse(ProjectEndpoints.signAgreementLetter()),
       );
 
       // Add authorization header
@@ -441,7 +437,6 @@ class ProjectService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
-        print('✅ Agreement signed successfully');
         return data;
       } else {
         final errorData = json.decode(response.body);
@@ -461,10 +456,8 @@ class ProjectService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      final url = '${ApiConfig.baseUrl}/project/$projectId/agreement-letter';
-
       final response = await http.get(
-        Uri.parse(url),
+        Uri.parse(ProjectEndpoints.getAgreementByProjectId(projectId)),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -555,19 +548,11 @@ class ProjectService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      final url = Uri.parse('${ApiConfig.baseUrl}/project/$projectId/user');
-
-      print('\n🔍 === GET PROJECT INVESTORS ===');
-      print('URL: $url');
-      print('Project ID: $projectId');
-
+      final url = Uri.parse(ProjectEndpoints.getProjectInvestors(projectId));
       final response = await http.get(
         url,
         headers: ApiConfig.getAuthHeaders(token),
       );
-
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
@@ -587,8 +572,6 @@ class ProjectService {
           investors.sort(
             (a, b) => b.totalNilaiToken.compareTo(a.totalNilaiToken),
           );
-
-          print('✅ Successfully loaded ${investors.length} investors');
           return investors;
         } else {
           throw Exception(
@@ -597,7 +580,6 @@ class ProjectService {
         }
       } else if (response.statusCode == 404) {
         // No investors found - return empty list
-        print('ℹ️ No investors found for this project');
         return [];
       } else if (response.statusCode == 401) {
         throw Exception('Sesi Anda telah berakhir. Silakan login kembali.');
@@ -608,7 +590,6 @@ class ProjectService {
         );
       }
     } catch (e) {
-      print('❌ Error in getProjectInvestors: $e');
       rethrow;
     }
   }

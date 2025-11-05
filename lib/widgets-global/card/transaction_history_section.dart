@@ -57,7 +57,8 @@ class TransactionHistorySection extends StatelessWidget {
           );
         }
 
-        if (provider.errorMessage != null) {
+        // ✅ Hanya tampilkan error jika memang ada error sungguhan
+        if (provider.errorMessage != null && provider.errorMessage!.isNotEmpty) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: deviceWidth * 0.05),
             child: Container(
@@ -92,18 +93,16 @@ class TransactionHistorySection extends StatelessWidget {
           );
         }).toList();
 
-        if (allTransactions.isEmpty) {
+        // ✅ Tampilkan empty state jika data kosong DAN bukan error
+        if (allTransactions.isEmpty || provider.hasNoTransactions) {
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
-            // Explicitly hide pay button when list is empty (both variants)
             isPremium: false,
             title: 'Riwayat Transaksi',
-            child: Center(
-              child: Text(
-                'Belum ada transaksi',
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
-              ),
+            child: _EmptyTransactionState(
+              deviceWidth: deviceWidth,
+              deviceHeight: deviceHeight,
             ),
           );
         }
@@ -114,7 +113,6 @@ class TransactionHistorySection extends StatelessWidget {
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
-            // Hide the pay button for premium dashboard as requested
             isPremium: false,
             title: 'Riwayat Transaksi',
             child: Column(
@@ -191,6 +189,72 @@ class TransactionHistorySection extends StatelessWidget {
           );
         }
       },
+    );
+  }
+}
+
+// Widget untuk empty state
+class _EmptyTransactionState extends StatelessWidget {
+  const _EmptyTransactionState({
+    required this.deviceWidth,
+    required this.deviceHeight,
+  });
+
+  final double deviceWidth;
+  final double deviceHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: deviceHeight * 0.04,
+        horizontal: deviceWidth * 0.05,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Icon transaksi dengan circle background
+          Container(
+            width: deviceWidth * 0.25,
+            height: deviceWidth * 0.25,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              size: deviceWidth * 0.12,
+              color: Colors.grey.shade400,
+            ),
+          ),
+          SizedBox(height: deviceHeight * 0.025),
+          
+          // Judul
+          Text(
+            'Belum Ada Transaksi',
+            style: GoogleFonts.poppins(
+              fontSize: deviceWidth * 0.045,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: deviceHeight * 0.01),
+          
+          // Deskripsi
+          Text(
+            'Riwayat transaksi Anda akan muncul di sini\nsetelah melakukan top up atau transaksi lainnya',
+            style: GoogleFonts.poppins(
+              fontSize: deviceWidth * 0.035,
+              color: Colors.grey.shade600,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: deviceHeight * 0.025),
+          
+        ],
+      ),
     );
   }
 }

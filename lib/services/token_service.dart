@@ -1,18 +1,19 @@
-// lib/services/token_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:koperasi_rsb/config/api_endpoint/token_endpoints.dart';
 import '../config/api_config.dart';
+import '../config/api_endpoint/api_endpoints.dart';
 
 class TokenService {
-  // Buy token untuk project
+  // Beli token untuk project
   Future<Map<String, dynamic>> buyToken({
     required String token,
     required String projectId,
     required int jumlahToken,
   }) async {
     try {
-      final url = Uri.parse('${ApiConfig.baseUrl}/token/buy-token');
-      
+      final url = Uri.parse(TokenEndpoints.buyToken());
+
       final response = await http.post(
         url,
         headers: ApiConfig.getAuthHeaders(token),
@@ -31,9 +32,8 @@ class TokenService {
           'data': responseData['data'],
         };
       } else {
-        // Handle error responses
         String errorMessage = 'Gagal membeli token';
-        
+
         if (responseData['message'] != null) {
           errorMessage = responseData['message'];
         } else if (responseData['error'] != null) {

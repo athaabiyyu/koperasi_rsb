@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
-import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 
 class RegularHeader extends StatelessWidget {
   final String userName;
@@ -190,31 +188,8 @@ class RegularHeader extends StatelessWidget {
                               elevation: 0,
                             ),
                             onPressed: () {
-                              DetailPembayaranAwalMember.show(
-                                context,
-                                alertTitle: 'Detail Pembayaran',
-                                alertMessage:
-                                    'Pastikan data pembayaran sudah benar.',
-                                paymentTitle: 'Pembayaran Simpanan Wajib',
-                                paymentHeader: 'Informasi Pembayaran',
-                                paymentItems: [
-                                  PaymentItem(
-                                    title: 'Simpanan Wajib',
-                                    price: 'Rp 120.000',
-                                  ),
-                                ],
-                                totalPrice: 'Rp 120.000',
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Pembayaran Simpanan Wajib dikonfirmasi',
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
+                              // ✅ Navigasi langsung ke halaman Wallet/Dompet
+                              Navigator.pushNamed(context, '/wallet');
                             },
                             child: AutoSizeText(
                               'Bayar Simpanan',

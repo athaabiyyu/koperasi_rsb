@@ -40,6 +40,11 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     super.dispose();
   }
 
+  // Method untuk check apakah semua OTP sudah terisi
+  bool _isOtpComplete() {
+    return otpControllers.every((controller) => controller.text.isNotEmpty);
+  }
+
   Future<void> _handleVerifyOtp() async {
     final otpCode = otpControllers.map((c) => c.text).join();
     if (otpCode.length != otpLength) {
@@ -189,7 +194,19 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       ),
                       onChanged: (value) {
                         if (value.isNotEmpty && index < otpLength - 1) {
+                          // Pindah ke field berikutnya
                           FocusScope.of(context).nextFocus();
+                        } else if (value.isNotEmpty && index == otpLength - 1) {
+                          // Jika ini field terakhir, hilangkan keyboard
+                          FocusScope.of(context).unfocus();
+                          
+                          // Auto verify ketika semua OTP terisi
+                          if (_isOtpComplete() && !_isLoading) {
+                            _handleVerifyOtp();
+                          }
+                        } else if (value.isEmpty && index > 0) {
+                          // Jika dihapus, pindah ke field sebelumnya
+                          FocusScope.of(context).previousFocus();
                         }
                       },
                     ),
@@ -198,7 +215,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               ),
               const SizedBox(height: 28),
 
-              // Tombol Verifikasi
+              // Tombol Verifikasi (opsional, bisa dihilangkan atau dijadikan disabled)
               SizedBox(
                 width: double.infinity,
                 height: 48,
