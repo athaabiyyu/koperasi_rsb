@@ -44,7 +44,7 @@ class _SignatureInputDialogState extends State<SignatureInputDialog> {
             // Header
             Row(
               children: [
-                Icon(Icons.edit, color: Colors.blue, size: 28),
+                Icon(Icons.edit, color: const ui.Color(0xFF12B76A), size: 28),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -114,7 +114,7 @@ class _SignatureInputDialogState extends State<SignatureInputDialog> {
                 ElevatedButton(
                   onPressed: _isProcessing ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: const ui.Color(0xFF12B76A),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -161,7 +161,7 @@ class _SignatureInputDialogState extends State<SignatureInputDialog> {
           color: isSelected ? Colors.blue.shade50 : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
+            color: isSelected ? const ui.Color(0xFF12B76A) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -169,7 +169,7 @@ class _SignatureInputDialogState extends State<SignatureInputDialog> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.blue : Colors.grey,
+              color: isSelected ? const ui.Color(0xFF12B76A) : Colors.grey,
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -178,7 +178,7 @@ class _SignatureInputDialogState extends State<SignatureInputDialog> {
               style: GoogleFonts.roboto(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? Colors.blue : Colors.grey,
+                color: isSelected ? const ui.Color(0xFF12B76A) : Colors.grey,
               ),
             ),
           ],

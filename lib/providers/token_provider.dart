@@ -40,12 +40,47 @@ class TokenProvider extends ChangeNotifier {
       print('✅ Loaded ${_tokenUsageList.length} token usage details');
     } catch (e) {
       _isLoadingUsage = false;
-      _usageError = e.toString().replaceAll('Exception: ', '');
-      _tokenUsageList = [];
+      
+      // Parse error message
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+      
+      // Check if this is "no data" error (404 with specific message)
+      if (errorMessage.contains('No token usage details found') ||
+          errorMessage.contains('no token usage details found') ||
+          errorMessage.contains('tidak ditemukan') ||
+          errorMessage.toLowerCase().contains('not found')) {
+        // This is NOT an error - user just doesn't have any tokens yet
+        // Set empty list and no error
+        _tokenUsageList = [];
+        _usageError = null;
+        print('ℹ️ User has no token usage yet (empty state)');
+      } else {
+        // This is a real error (network, server, etc)
+        _usageError = _formatErrorMessage(errorMessage);
+        _tokenUsageList = [];
+        print('❌ Failed to load token usage: $_usageError');
+      }
+      
       notifyListeners();
-
-      print('❌ Failed to load token usage: $_usageError');
     }
+  }
+
+  /// Format error message to be more user-friendly
+  String _formatErrorMessage(String error) {
+    if (error.contains('SocketException') || error.contains('Failed host lookup')) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+    } else if (error.contains('TimeoutException')) {
+      return 'Koneksi timeout. Silakan coba lagi.';
+    } else if (error.contains('401') || error.contains('Unauthorized')) {
+      return 'Sesi Anda telah berakhir. Silakan login kembali.';
+    } else if (error.contains('500') || error.contains('Internal Server Error')) {
+      return 'Terjadi kesalahan pada server. Silakan coba lagi nanti.';
+    } else if (error.contains('Gagal memuat')) {
+      // Remove redundant prefix
+      return error.replaceAll('Gagal memuat token usage details: ', '');
+    }
+    
+    return error;
   }
 
   /// Clear token usage cache

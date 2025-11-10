@@ -1,4 +1,4 @@
-// kode 1
+// Updated register-page3.dart
 import 'dart:io';
 import 'package:koperasi_rsb/widgets-global/dialog/dialog-pilih-nominal-pembayaran.dart';
 import 'package:path/path.dart' as path;
@@ -12,8 +12,6 @@ import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/form/uploadFile-Form.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/dialogJoinPenyertaan.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
-import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -61,82 +59,68 @@ class _RegistrationPage3State extends State<RegistrationPage3> {
     }
   }
 
-  // Validasi form dan tampilkan dialog
-  // Ganti method _onDaftarButtonPressed di RegistrationPage3
- void _onDaftarButtonPressed() {
-  if (!_formKey.currentState!.validate()) return;
+  // ✅ Validasi form dan tampilkan dialog
+  void _onDaftarButtonPressed() {
+    if (!_formKey.currentState!.validate()) return;
 
-  if (_fotoDiri == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Harap upload foto diri'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  if (_fotoKtp == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Harap upload foto KTP'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-  authProvider.saveRegistrationStep({
-    'nik': _nikController.text.trim(),
-    'foto_diri_file': _fotoDiri,
-    'foto_ktp_file': _fotoKtp,
-  });
-
-  showDialogJoinPenyertaan(
-    context: context,
-    onJoin: () {
-      Navigator.of(context).pop();
-      // Tampilkan dialog pilih nominal untuk penyertaan
-      showDialogPilihNominalPembayaran(context);
-    },
-    onCancel: () {
-      Navigator.of(context).pop();
-      // Skip penyertaan, langsung ke pembayaran awal
-      _proceedWithPaymentOnly();
-    },
-  );
-}
-
-// Helper method untuk skip penyertaan
-void _proceedWithPaymentOnly() {
-  DetailPembayaranAwalMember.show(
-    context,
-    alertTitle: "Detail Pembayaran",
-    alertMessage: "Pastikan data pembayaran sudah benar.",
-    paymentTitle: "Detail Pembayaran",
-    paymentHeader: "Informasi Pembayaran",
-    paymentItems: [
-      PaymentItem(title: "Setoran Awal", price: "Rp 50.000"),
-      PaymentItem(
-        title: "Simpanan Wajib 1 Tahun Member UMKM",
-        price: "Rp 120.000",
-      ),
-    ],
-    totalPrice: "Rp 170.000",
-    onPressed: () {
-      Navigator.of(context).pop();
-      Navigator.pushNamed(context, '/payment-form',
-       arguments: {
-          'nominalPenyertaan': 0,  
-          'totalPembayaran': 170000,
-          'formattedNominal': 'Rp 0',
-       }
+    if (_fotoDiri == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap upload foto diri'),
+          backgroundColor: Colors.red,
+        ),
       );
+      return;
+    }
 
-    },
-  );
-}
+    if (_fotoKtp == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap upload foto KTP'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.saveRegistrationStep({
+      'nik': _nikController.text.trim(),
+      'foto_diri_file': _fotoDiri,
+      'foto_ktp_file': _fotoKtp,
+    });
+
+    showDialogJoinPenyertaan(
+      context: context,
+      onJoin: () {
+        Navigator.of(context).pop();
+        // Tampilkan dialog pilih nominal untuk penyertaan
+        showDialogPilihNominalPembayaran(context);
+      },
+      onCancel: () {
+        Navigator.of(context).pop();
+        // ✅ Skip penyertaan, langsung ke MunculRekeningMemberBiasa
+        _proceedWithPaymentOnly();
+      },
+    );
+  }
+
+  // ✅ Helper method untuk skip penyertaan - langsung ke rekening bank
+  void _proceedWithPaymentOnly() {
+    Navigator.pushNamed(
+      context,
+      '/payment-form',
+      arguments: {
+        'nominalPenyertaan': 0, // Tidak ada penyertaan
+        'totalPembayaran': 170000, // Setoran Awal 50k + Simpanan Wajib 120k
+        'formattedNominal': 'Rp 0',
+        'isTopUpOnly': false,
+        'isSimpananWajib': false,
+        'isPenyertaan': false,
+        'isSkipPenyertaan': true, // ✅ Flag untuk registrasi skip penyertaan
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

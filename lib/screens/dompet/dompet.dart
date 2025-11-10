@@ -271,6 +271,7 @@ class _DompetPageState extends State<DompetPage>
                                           );
                                         }
                                       : null,
+                                    isPlatinum: isPlatinum,
                                 ),
                                 TopUpCard(
                                   title: "Simpanan Wajib",

@@ -90,6 +90,7 @@ class MyApp extends StatelessWidget {
               isTopUpOnly: args?['isTopUpOnly'] as bool? ?? false,
               isSimpananWajib: args?['isSimpananWajib'] as bool? ?? false,
               isPenyertaan: args?['isPenyertaan'] as bool? ?? false,
+              isSkipPenyertaan: args?['isSkipPenyertaan'] as bool? ?? false,
             );
           },
         },

@@ -322,18 +322,18 @@ class _SignContractConfirmDialogState extends State<_SignContractConfirmDialog> 
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
+                border: Border.all(color: const Color(0xFF12B76A)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700),
+                  Icon(Icons.info_outline, color: const Color(0xFF12B76A)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Dengan menandatangani kontrak ini, Anda menyetujui semua syarat dan ketentuan yang berlaku.',
                       style: GoogleFonts.roboto(
                         fontSize: 14,
-                        color: Colors.blue.shade900,
+                        color: const Color(0xFF0D47A1),
                       ),
                     ),
                   ),
@@ -361,7 +361,7 @@ class _SignContractConfirmDialogState extends State<_SignContractConfirmDialog> 
                   child: ElevatedButton(
                     onPressed: _isProcessing ? null : _handleSignContract,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: const Color(0xFF12B76A),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),

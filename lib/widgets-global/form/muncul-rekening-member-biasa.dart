@@ -14,6 +14,7 @@ class MunculRekeningMemberBiasa extends StatefulWidget {
   final bool isTopUpOnly;
   final bool isSimpananWajib;
   final bool isPenyertaan;
+  final bool isSkipPenyertaan; // ✅ Flag baru untuk skip penyertaan
 
   const MunculRekeningMemberBiasa({
     Key? key,
@@ -23,6 +24,7 @@ class MunculRekeningMemberBiasa extends StatefulWidget {
     this.isSimpananWajib = false,
     this.isTopUpOnly = false,
     this.isPenyertaan = false,
+    this.isSkipPenyertaan = false, // ✅ Default false
   }) : super(key: key);
 
   @override
@@ -54,6 +56,9 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
       return 'Rincian Penyertaan Modal:';
     } else if (widget.isTopUpOnly) {
       return 'Rincian Top-Up:';
+    } else if (widget.isSkipPenyertaan) {
+      // ✅ Rincian untuk skip penyertaan
+      return 'Rincian Pembayaran Registrasi:';
     } else {
       return 'Rincian Pembayaran:';
     }
@@ -78,8 +83,12 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
         label: 'Nominal Top-Up',
         value: widget.formattedNominal ?? 'Rp 0',
       ));
+    } else if (widget.isSkipPenyertaan) {
+      // ✅ Skip penyertaan: Setoran Awal + Simpanan Wajib (tanpa penyertaan)
+      items.add(RincianItem(label: 'Setoran Awal', value: 'Rp 50.000'));
+      items.add(RincianItem(label: 'Simpanan Wajib', value: 'Rp 120.000'));
     } else {
-      // Registrasi: Setoran Awal + Simpanan Wajib + Penyertaan
+      // Registrasi dengan penyertaan: Setoran Awal + Simpanan Wajib + Penyertaan
       items.add(RincianItem(label: 'Setoran Awal', value: 'Rp 50.000'));
       items.add(RincianItem(label: 'Simpanan Wajib', value: 'Rp 120.000'));
       items.add(RincianItem(
@@ -131,15 +140,9 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                                 ? widget.nominalPenyertaan ?? 0
                                 : 170000),
                   ),
-                  // ✅ Kirim rincian jika nominal ada
-                  rincianTitle: (widget.nominalPenyertaan != null &&
-                          widget.nominalPenyertaan! > 0)
-                      ? _getRincianTitle()
-                      : null,
-                  rincianItems: (widget.nominalPenyertaan != null &&
-                          widget.nominalPenyertaan! > 0)
-                      ? _getRincianItems()
-                      : null,
+                  // ✅ Kirim rincian - tampilkan untuk semua kecuali tanpa nominal
+                  rincianTitle: _getRincianTitle(),
+                  rincianItems: _getRincianItems(),
                   onCopy: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -153,6 +156,7 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                     print('Nominal: ${widget.nominalPenyertaan}');
                     print('Is Top Up Only: ${widget.isTopUpOnly}');
                     print('Is Penyertaan: ${widget.isPenyertaan}');
+                    print('Is Skip Penyertaan: ${widget.isSkipPenyertaan}');
 
                     Navigator.push(
                       context,
@@ -163,6 +167,7 @@ class _MunculRekeningMemberBiasaState extends State<MunculRekeningMemberBiasa> {
                           isTopUpOnly: widget.isTopUpOnly,
                           isSimpananWajib: widget.isSimpananWajib,
                           isPenyertaan: widget.isPenyertaan,
+                          isSkipPenyertaan: widget.isSkipPenyertaan, // ✅ Pass flag
                         ),
                       ),
                     );

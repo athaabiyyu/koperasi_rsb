@@ -17,14 +17,16 @@ class KonfirmasiPembayaran extends StatefulWidget {
   final int? nominalPenyertaan;
   final bool isTopUpOnly;
   final bool isSimpananWajib;
-  final bool isPenyertaan; // ✅ Flag baru untuk penyertaan
+  final bool isPenyertaan;
+  final bool isSkipPenyertaan; // ✅ Flag baru untuk skip penyertaan
 
   const KonfirmasiPembayaran({
     Key? key,
     this.nominalPenyertaan,
     this.isTopUpOnly = false,
     this.isSimpananWajib = false,
-    this.isPenyertaan = false, // ✅ Default false
+    this.isPenyertaan = false,
+    this.isSkipPenyertaan = false, // ✅ Default false
   }) : super(key: key);
 
   @override
@@ -95,7 +97,7 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
 
       Map<String, dynamic> result;
 
-      // ✅ Cek prioritas: simpanan wajib > penyertaan > top-up > registrasi
+      // ✅ Cek prioritas: simpanan wajib > penyertaan > top-up > skip penyertaan > registrasi
       if (widget.isSimpananWajib) {
         print('💰 CALLING SIMPANAN WAJIB ENDPOINT');
 
@@ -196,8 +198,20 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
           nominal: nominal,
           buktiPembayaran: _buktiPembayaran!,
         );
+      } else if (widget.isSkipPenyertaan) {
+        // ✅ SKIP PENYERTAAN: Registrasi tanpa upgrade platinum
+        print('📝 CALLING REGISTER + PAY ENDPOINT (Skip Penyertaan)');
+
+        final paymentModel = PaymentModel(
+          namaBank: _selectedBank!,
+          noRekening: _rekeningController.text.trim(),
+          namaPemilikRekening: _namaController.text.trim(),
+          buktiPembayaran: _buktiPembayaran!,
+        );
+
+        result = await authProvider.registerAndPay(paymentModel);
       } else {
-        // Registrasi dengan/tanpa upgrade platinum
+        // Registrasi dengan upgrade platinum
         final paymentModel = PaymentModel(
           namaBank: _selectedBank!,
           noRekening: _rekeningController.text.trim(),
@@ -233,7 +247,6 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
               "Tunggu hingga 2x24 jam.\n\n"
               "Saldo simpanan wajib akan bertambah setelah admin mengkonfirmasi pembayaran Anda.";
         } else if (widget.isPenyertaan) {
-          // ✅ Success message untuk penyertaan
           title = "Upgrade Platinum Sedang Diproses";
           description =
               "Penyertaan modal Anda sedang diverifikasi oleh Admin. "
@@ -245,6 +258,12 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
           description = "Top-up Anda sedang diverifikasi oleh Admin. "
               "Tunggu hingga 2x24 jam.\n\n"
               "Saldo akan bertambah setelah admin mengkonfirmasi pembayaran Anda.";
+        } else if (widget.isSkipPenyertaan) {
+          // ✅ Success message untuk skip penyertaan
+          title = "Akun Dalam Proses Verifikasi";
+          description = "Registrasi Anda sedang diverifikasi oleh Admin. "
+              "Tunggu hingga 2x24 jam.\n\n"
+              "Setelah admin menerima, Anda akan menerima kode OTP via WhatsApp untuk aktivasi akun.";
         } else if (widget.nominalPenyertaan != null &&
             widget.nominalPenyertaan! > 0) {
           title = "Akun Dalam Proses Upgrade";
@@ -277,7 +296,7 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
                 (Route<dynamic> route) => false,
               );
             } else {
-              // Kembali ke login untuk registrasi baru
+              // Kembali ke login untuk registrasi baru (termasuk skip penyertaan)
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/login',
@@ -371,8 +390,11 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
                       const SizedBox(height: 10),
 
                       // ✅ Info box dengan pesan sesuai tipe transaksi
-                      if (widget.nominalPenyertaan != null &&
-                          widget.nominalPenyertaan! > 0)
+                      if (widget.isSimpananWajib ||
+                          widget.isPenyertaan ||
+                          widget.isTopUpOnly ||
+                          widget.isSkipPenyertaan ||
+                          (widget.nominalPenyertaan != null && widget.nominalPenyertaan! > 0))
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -390,15 +412,20 @@ class _KonfirmasiPembayaranState extends State<KonfirmasiPembayaran> {
                                     ? 'Nominal penyertaan modal: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}'
                                     : widget.isTopUpOnly
                                         ? 'Nominal top-up: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}'
-                                        : 'Anda akan di-upgrade ke Platinum dengan nominal penyertaan: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}',
+                                        : widget.isSkipPenyertaan
+                                            ? 'Total pembayaran registrasi: Rp 170.000'
+                                            : 'Anda akan di-upgrade ke Platinum dengan nominal penyertaan: ${CurrencyUtils.formatRupiah(widget.nominalPenyertaan!)}',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: darkGreen,
                             ),
                           ),
                         ),
-                      if (widget.nominalPenyertaan != null &&
-                          widget.nominalPenyertaan! > 0)
+                      if (widget.isSimpananWajib ||
+                          widget.isPenyertaan ||
+                          widget.isTopUpOnly ||
+                          widget.isSkipPenyertaan ||
+                          (widget.nominalPenyertaan != null && widget.nominalPenyertaan! > 0))
                         const SizedBox(height: 20),
 
                       // Form fields

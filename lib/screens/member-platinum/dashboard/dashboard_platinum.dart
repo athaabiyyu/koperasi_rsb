@@ -144,12 +144,15 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
                         size: 48,
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        tokenProvider.usageError!,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
-                          fontSize: 14,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          tokenProvider.usageError!,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],
@@ -163,7 +166,7 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
         // Get top 3 token usage
         final tokenUsageList = tokenProvider.getTopTokenUsage(limit: 3);
 
-        // Show empty state
+        // Show empty state - Tidak ada token sama sekali
         if (tokenUsageList.isEmpty) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.05),
@@ -173,25 +176,61 @@ class _PremiumDashboardPageState extends State<PremiumDashboardPage> {
                 _buildSectionHeader(),
                 SizedBox(height: _deviceHeight * 0.008),
                 Container(
-                  height: 200,
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.inbox_outlined,
-                        color: Colors.grey[300],
-                        size: 64,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.grey.shade200,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.account_balance_wallet_outlined,
+                              color: Colors.grey[400],
+                              size: 40,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Anda Belum Memiliki Token',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              color: Colors.grey[800],
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Mulai investasi dengan membeli token\nuntuk mengikuti proyek',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Belum ada penggunaan token',
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],
