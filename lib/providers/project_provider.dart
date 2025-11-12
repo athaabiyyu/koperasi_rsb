@@ -199,6 +199,7 @@ class ProjectProvider extends ChangeNotifier {
         'bagian_pendana': project.bagianPendana.toString(),
         'brosur_produk': project.brosurProduk,
         'dokumen_proyeksi': project.dokumenProyeksi,
+        'dokumen': project.dokumenTambahan ?? [],
       };
 
       _editingProjectId = projectId;
@@ -326,144 +327,160 @@ class ProjectProvider extends ChangeNotifier {
 
   // Update existing project
   Future<bool> updateProject() async {
-    if (_editingProjectId == null) {
-      _errorMessage = 'ID project tidak ditemukan';
-      return false;
-    }
-
-    try {
-      _status = ProjectStatus.loading;
-      _errorMessage = null;
-      notifyListeners();
-
-      print('\n🔄 === UPDATE PROJECT PROVIDER ===');
-      print('Project ID: $_editingProjectId');
-      print('Form Data: $_formData');
-
-      // Validation - dokumen proyeksi bisa dari file baru atau existing
-      if (_dokumenProyeksiFile == null &&
-          (_formData['dokumen_proyeksi'] == null ||
-              _formData['dokumen_proyeksi'].isEmpty)) {
-        throw Exception('Dokumen proyeksi wajib ada');
-      }
-
-      // Parse values
-      final idKategori = _formData['id_kategori'] ?? '';
-      final judul = _formData['judul'] ?? '';
-      final deskripsi = _formData['deskripsi'] ?? '';
-      final nominal = int.tryParse(
-            _formData['nominal']?.toString().replaceAll(
-                      RegExp(r'[^0-9]'),
-                      '',
-                    ) ??
-                '0',
-          ) ??
-          0;
-      final assetJaminan = _formData['asset_jaminan'] ?? '';
-      final nilaiJaminan = int.tryParse(
-            _formData['nilai_jaminan']?.toString().replaceAll(
-                      RegExp(r'[^0-9]'),
-                      '',
-                    ) ??
-                '0',
-          ) ??
-          0;
-      final lokasiUsaha = _formData['lokasi_usaha'] ?? '';
-      final detailLokasi = _formData['detail_lokasi'] ?? '';
-      final pendapatanPerbulan = int.tryParse(
-            _formData['pendapatan_perbulan']?.toString().replaceAll(
-                      RegExp(r'[^0-9]'),
-                      '',
-                    ) ??
-                '0',
-          ) ??
-          0;
-      final pengeluaranPerbulan = int.tryParse(
-            _formData['pengeluaran_perbulan']?.toString().replaceAll(
-                      RegExp(r'[^0-9]'),
-                      '',
-                    ) ??
-                '0',
-          ) ??
-          0;
-      final limitSiklus =
-          int.tryParse(_formData['limit_siklus']?.toString() ?? '0') ?? 0;
-      final bagianPelaksana =
-          int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
-      final bagianKoperasi =
-          int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
-      final bagianPemilik =
-          int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
-      final bagianPendana =
-          int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
-
-      // Validation
-      final validationErrors = <String>[];
-      if (idKategori.isEmpty) validationErrors.add('ID Kategori kosong');
-      if (judul.isEmpty) validationErrors.add('Judul kosong');
-      if (deskripsi.isEmpty) validationErrors.add('Deskripsi kosong');
-      if (nominal <= 0) validationErrors.add('Nominal tidak valid: $nominal');
-      if (assetJaminan.isEmpty) validationErrors.add('Asset Jaminan kosong');
-      if (nilaiJaminan <= 0)
-        validationErrors.add('Nilai Jaminan tidak valid: $nilaiJaminan');
-      if (lokasiUsaha.isEmpty) validationErrors.add('Lokasi Usaha kosong');
-      if (detailLokasi.isEmpty) validationErrors.add('Detail Lokasi kosong');
-      if (pendapatanPerbulan <= 0)
-        validationErrors.add('Pendapatan tidak valid: $pendapatanPerbulan');
-      if (pengeluaranPerbulan <= 0)
-        validationErrors.add('Pengeluaran tidak valid: $pengeluaranPerbulan');
-      if (limitSiklus <= 0)
-        validationErrors.add('Limit Siklus tidak valid: $limitSiklus');
-
-      if (validationErrors.isNotEmpty) {
-        throw Exception('Validation failed: ${validationErrors.join(", ")}');
-      }
-
-      final request = CreateProjectRequest(
-        idKategori: idKategori,
-        judul: judul,
-        deskripsi: deskripsi,
-        nominal: nominal,
-        assetJaminan: assetJaminan,
-        nilaiJaminan: nilaiJaminan,
-        lokasiUsaha: lokasiUsaha,
-        detailLokasi: detailLokasi,
-        pendapatanPerbulan: pendapatanPerbulan,
-        pengeluaranPerbulan: pengeluaranPerbulan,
-        limitSiklus: limitSiklus,
-        bagianPelaksana: bagianPelaksana,
-        bagianKoperasi: bagianKoperasi,
-        bagianPemilik: bagianPemilik,
-        bagianPendana: bagianPendana,
-        // ✅ Kirim path file baru atau existing path
-        dokumenProyeksi:
-            _dokumenProyeksiFile?.path ?? _formData['dokumen_proyeksi'],
-      );
-
-      print('🚀 Calling updateProject service...');
-      _response = await _projectService.updateProject(
-        projectId: _editingProjectId!,
-        project: request,
-        dokumenFiles: _dokumenFiles.isNotEmpty ? _dokumenFiles : null,
-        brosurProdukFile: _brosurProdukFile,
-        dokumenProyeksiFile:
-            _dokumenProyeksiFile, // Could be null if using existing
-      );
-
-      _status = ProjectStatus.success;
-      notifyListeners();
-
-      print('✅ Update successful in provider');
-      return true;
-    } catch (e) {
-      _status = ProjectStatus.error;
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
-
-      print('❌ Update failed in provider: $_errorMessage');
-      return false;
-    }
+  if (_editingProjectId == null) {
+    _errorMessage = 'ID project tidak ditemukan';
+    return false;
   }
+
+  try {
+    _status = ProjectStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    print('\n🔄 === UPDATE PROJECT PROVIDER ===');
+    print('Project ID: $_editingProjectId');
+    print('Form Data: $_formData');
+
+    // ✅ PERBAIKAN: Validasi - dokumen proyeksi bisa dari file baru ATAU existing
+    final hasNewDokumenProyeksi = _dokumenProyeksiFile != null;
+    final hasExistingDokumenProyeksi = _formData['dokumen_proyeksi'] != null && 
+                                        _formData['dokumen_proyeksi'].toString().isNotEmpty;
+    
+    if (!hasNewDokumenProyeksi && !hasExistingDokumenProyeksi) {
+      throw Exception('Dokumen proyeksi wajib ada');
+    }
+
+    print('📄 Dokumen Proyeksi Status:');
+    print('  - New file: ${hasNewDokumenProyeksi ? _dokumenProyeksiFile!.path : "None"}');
+    print('  - Existing: ${hasExistingDokumenProyeksi ? _formData['dokumen_proyeksi'] : "None"}');
+
+    // Parse values
+    final idKategori = _formData['id_kategori'] ?? '';
+    final judul = _formData['judul'] ?? '';
+    final deskripsi = _formData['deskripsi'] ?? '';
+    final nominal = int.tryParse(
+          _formData['nominal']?.toString().replaceAll(
+                    RegExp(r'[^0-9]'),
+                    '',
+                  ) ??
+              '0',
+        ) ??
+        0;
+    final assetJaminan = _formData['asset_jaminan'] ?? '';
+    final nilaiJaminan = int.tryParse(
+          _formData['nilai_jaminan']?.toString().replaceAll(
+                    RegExp(r'[^0-9]'),
+                    '',
+                  ) ??
+              '0',
+        ) ??
+        0;
+    final lokasiUsaha = _formData['lokasi_usaha'] ?? '';
+    final detailLokasi = _formData['detail_lokasi'] ?? '';
+    final pendapatanPerbulan = int.tryParse(
+          _formData['pendapatan_perbulan']?.toString().replaceAll(
+                    RegExp(r'[^0-9]'),
+                    '',
+                  ) ??
+              '0',
+        ) ??
+        0;
+    final pengeluaranPerbulan = int.tryParse(
+          _formData['pengeluaran_perbulan']?.toString().replaceAll(
+                    RegExp(r'[^0-9]'),
+                    '',
+                  ) ??
+              '0',
+        ) ??
+        0;
+    final limitSiklus =
+        int.tryParse(_formData['limit_siklus']?.toString() ?? '0') ?? 0;
+    final bagianPelaksana =
+        int.tryParse(_formData['bagian_pelaksana']?.toString() ?? '0') ?? 0;
+    final bagianKoperasi =
+        int.tryParse(_formData['bagian_koperasi']?.toString() ?? '0') ?? 0;
+    final bagianPemilik =
+        int.tryParse(_formData['bagian_pemilik']?.toString() ?? '0') ?? 0;
+    final bagianPendana =
+        int.tryParse(_formData['bagian_pendana']?.toString() ?? '0') ?? 0;
+
+    // Validation
+    final validationErrors = <String>[];
+    if (idKategori.isEmpty) validationErrors.add('ID Kategori kosong');
+    if (judul.isEmpty) validationErrors.add('Judul kosong');
+    if (deskripsi.isEmpty) validationErrors.add('Deskripsi kosong');
+    if (nominal <= 0) validationErrors.add('Nominal tidak valid: $nominal');
+    if (assetJaminan.isEmpty) validationErrors.add('Asset Jaminan kosong');
+    if (nilaiJaminan <= 0)
+      validationErrors.add('Nilai Jaminan tidak valid: $nilaiJaminan');
+    if (lokasiUsaha.isEmpty) validationErrors.add('Lokasi Usaha kosong');
+    if (detailLokasi.isEmpty) validationErrors.add('Detail Lokasi kosong');
+    if (pendapatanPerbulan <= 0)
+      validationErrors.add('Pendapatan tidak valid: $pendapatanPerbulan');
+    if (pengeluaranPerbulan <= 0)
+      validationErrors.add('Pengeluaran tidak valid: $pengeluaranPerbulan');
+    if (limitSiklus <= 0)
+      validationErrors.add('Limit Siklus tidak valid: $limitSiklus');
+
+    if (validationErrors.isNotEmpty) {
+      throw Exception('Validation failed: ${validationErrors.join(", ")}');
+    }
+
+    final request = CreateProjectRequest(
+      idKategori: idKategori,
+      judul: judul,
+      deskripsi: deskripsi,
+      nominal: nominal,
+      assetJaminan: assetJaminan,
+      nilaiJaminan: nilaiJaminan,
+      lokasiUsaha: lokasiUsaha,
+      detailLokasi: detailLokasi,
+      pendapatanPerbulan: pendapatanPerbulan,
+      pengeluaranPerbulan: pengeluaranPerbulan,
+      limitSiklus: limitSiklus,
+      bagianPelaksana: bagianPelaksana,
+      bagianKoperasi: bagianKoperasi,
+      bagianPemilik: bagianPemilik,
+      bagianPendana: bagianPendana,
+      // ✅ PERBAIKAN: Kirim path file baru atau existing path
+      dokumenProyeksi:
+          _dokumenProyeksiFile?.path ?? _formData['dokumen_proyeksi'],
+    );
+
+    // ✅ PERBAIKAN: Ambil existing dokumen yang masih di-keep
+    final existingDokumen = _formData['dokumen'] as List<dynamic>?;
+    final existingDokumenPaths = existingDokumen
+        ?.map((e) => e.toString())
+        .where((path) => path.isNotEmpty)
+        .toList();
+
+    print('📋 Existing dokumen to keep: $existingDokumenPaths');
+    print('📎 New dokumen files: ${_dokumenFiles.length}');
+
+    print('🚀 Calling updateProject service...');
+    _response = await _projectService.updateProject(
+      projectId: _editingProjectId!,
+      project: request,
+      dokumenFiles: _dokumenFiles.isNotEmpty ? _dokumenFiles : null,
+      brosurProdukFile: _brosurProdukFile,
+      dokumenProyeksiFile: _dokumenProyeksiFile,
+      existingDokumen: existingDokumenPaths, // ✅ TAMBAHAN
+    );
+
+    _status = ProjectStatus.success;
+    notifyListeners();
+
+    print('✅ Update successful in provider');
+    return true;
+  } catch (e) {
+    _status = ProjectStatus.error;
+    _errorMessage = e.toString().replaceAll('Exception: ', '');
+    notifyListeners();
+
+    print('❌ Update failed in provider: $_errorMessage');
+    return false;
+  }
+}
 
   /// Get timeline steps with grouped histories
   List<TimelineStepData> getTimelineSteps() {

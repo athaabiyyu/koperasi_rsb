@@ -12,7 +12,8 @@ import 'package:koperasi_rsb/screens/proyek/detail_project/funding_history_secti
 import 'package:koperasi_rsb/widgets-global/dialog/buy_token_dialog.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/confirm_purchase_dialog.dart';
 import 'package:koperasi_rsb/services/token_service.dart';
-import 'package:koperasi_rsb/providers/wallet_provider.dart'; // Asumsi ada provider wallet
+import 'package:koperasi_rsb/services/prospectus_service.dart';
+import 'package:koperasi_rsb/providers/wallet_provider.dart';
 
 class ProjectDetailPage extends StatefulWidget {
   final String projectId;
@@ -47,6 +48,8 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
   bool _isLoading = true;
   String? _error;
   final TokenService _tokenService = TokenService();
+  final ProspectusService _prospectusService = ProspectusService();
+  bool _isDownloadingProspectus = false;
 
   @override
   void initState() {
@@ -438,17 +441,112 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     }
   }
 
-  void _handleDownloadProspectus() {
-    // TODO: Implement download prospectus logic
+  Future<void> _handleDownloadProspectus() async {
+    if (_isDownloadingProspectus) return; // Prevent double tap
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token;
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sesi Anda telah berakhir. Silakan login kembali.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isDownloadingProspectus = true;
+    });
+
+    // Show loading snackbar
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Mengunduh prospektus...'),
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            SizedBox(width: 16),
+            Text('Mengunduh prospektus...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
         backgroundColor: Colors.blue,
       ),
     );
-    // Call API to download prospectus
-    // final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
-    // await projectProvider.downloadProspectus(widget.projectId);
+
+    try {
+      final result = await _prospectusService.downloadAndOpenProspectus(
+        token: token,
+        projectId: widget.projectId,
+      );
+
+      // Close loading snackbar
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (mounted) {
+        if (result['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(result['message'] ?? 'Prospektus berhasil dibuka'),
+                  ),
+                ],
+              ),
+              backgroundColor: darkGreen,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(result['message'] ?? 'Gagal membuka prospektus'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading snackbar
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloadingProspectus = false;
+        });
+      }
+    }
   }
 
   @override
@@ -611,16 +709,25 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                       Expanded(
                         flex: 2,
                         child: OutlinedButton.icon(
-                          onPressed: _handleDownloadProspectus,
+                          onPressed: _isDownloadingProspectus ? null : _handleDownloadProspectus,
                           style: OutlinedButton.styleFrom(
                             foregroundColor: darkGreen,
-                            side: BorderSide(color: darkGreen, width: 1.5),
+                            side: BorderSide(
+                              color: _isDownloadingProspectus ? Colors.grey : darkGreen,
+                              width: 1.5,
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: const Icon(Icons.download, size: 20),
+                          icon: _isDownloadingProspectus
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.download, size: 20),
                           label: Text(
                             'Prospektus',
                             style: GoogleFonts.roboto(
