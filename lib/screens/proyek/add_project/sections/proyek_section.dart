@@ -117,11 +117,16 @@ class _ProyekSectionState extends State<ProyekSection> {
     );
   }
 
-  // ✅ Widget untuk upload multiple files
+  // ✅ Widget untuk upload multiple files dengan existing files
   Widget _buildMultipleFileUpload(ProjectProvider provider) {
-    // Get uploaded files from provider
     final uploadedFiles = provider.dokumenFiles ?? [];
-    final canAddMore = uploadedFiles.length < 4;
+    
+    // ✅ Ambil existing dokumen dari formData (array URL)
+    final existingDokumen = provider.formData['dokumen'] as List<dynamic>?;
+    
+    // Total file = new files + existing files
+    final totalFiles = uploadedFiles.length + (existingDokumen?.length ?? 0);
+    final canAddMore = totalFiles < 4;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +144,7 @@ class _ProyekSectionState extends State<ProyekSection> {
             ),
             const SizedBox(width: 4),
             Text(
-              '(${uploadedFiles.length}/4)',
+              '($totalFiles/4)',
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey[600],
@@ -168,7 +173,87 @@ class _ProyekSectionState extends State<ProyekSection> {
         ),
         const SizedBox(height: 12),
 
-        // List uploaded files
+        // ✅ Tampilkan existing files (dari server)
+        if (existingDokumen != null && existingDokumen.isNotEmpty) ...[
+          ...existingDokumen.asMap().entries.map((entry) {
+            final index = entry.key;
+            final fileUrl = entry.value.toString();
+            final fileName = fileUrl.split('/').last;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF), // Blue tint untuk existing
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF3B82F6)),
+              ),
+              child: Row(
+                children: [
+                  // File icon
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.cloud_done,
+                      color: Color(0xFF3B82F6),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  
+                  // File info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fileName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF101828),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'File tersimpan',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Delete button
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () {
+                      // Hapus dari existing dokumen
+                      final updatedDokumen = List<dynamic>.from(existingDokumen);
+                      updatedDokumen.removeAt(index);
+                      provider.updateFormData('dokumen', updatedDokumen);
+                      print('🗑️ Existing file removed at index: $index');
+                    },
+                    color: Colors.red[400],
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 8),
+        ],
+
+        // ✅ Tampilkan new uploaded files
         if (uploadedFiles.isNotEmpty) ...[
           ...uploadedFiles.asMap().entries.map((entry) {
             final index = entry.key;
@@ -233,7 +318,7 @@ class _ProyekSectionState extends State<ProyekSection> {
                     icon: const Icon(Icons.close, size: 20),
                     onPressed: () {
                       provider.removeDokumenFile(index);
-                      print('🗑️ File removed at index: $index');
+                      print('🗑️ New file removed at index: $index');
                     },
                     color: Colors.red[400],
                     padding: EdgeInsets.zero,
@@ -249,12 +334,12 @@ class _ProyekSectionState extends State<ProyekSection> {
         // Upload button
         if (canAddMore)
           FileUploadForm(
-            label: '', // Label sudah ada di atas
+            label: '',
             maxFileSizeMB: 10,
-            descriptions: const [], // Descriptions sudah ada di atas
+            descriptions: const [],
             onFilePicked: (file) {
               if (file != null) {
-                if (uploadedFiles.length >= 4) {
+                if (totalFiles >= 4) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Maksimum 4 file'),
@@ -265,7 +350,7 @@ class _ProyekSectionState extends State<ProyekSection> {
                 }
                 provider.addDokumenFile(file);
                 print('📎 File added: ${file.path}');
-                print('📦 Total files: ${provider.dokumenFiles?.length ?? 0}');
+                print('📦 Total files: $totalFiles');
               }
             },
           )
@@ -295,7 +380,6 @@ class _ProyekSectionState extends State<ProyekSection> {
     );
   }
 
-  // ✅ Helper untuk format ukuran file
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';

@@ -406,11 +406,6 @@ class _SignContractConfirmDialogState extends State<_SignContractConfirmDialog> 
 
     try {
       final provider = context.read<ProjectProvider>();
-
-      print('\n📝 === SUBMITTING SIGNATURE ===');
-      print('Project ID: ${widget.projectId}');
-      print('Signature file: ${signatureFile.path}');
-
       final success = await provider.signAgreementLetter(
         widget.projectId,
         signatureFile,

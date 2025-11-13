@@ -186,100 +186,126 @@ class ProjectService {
   }
 
   Future<ProjectResponse> updateProject({
-    required String projectId,
-    required CreateProjectRequest project,
-    List<File>? dokumenFiles,
-    File? brosurProdukFile,
-    File? dokumenProyeksiFile,
-  }) async {
-    try {
-      final token = await _getToken();
-      if (token == null) throw Exception('Token tidak ditemukan');
+  required String projectId,
+  required CreateProjectRequest project,
+  List<File>? dokumenFiles,
+  File? brosurProdukFile,
+  File? dokumenProyeksiFile,
+  List<String>? existingDokumen, // ✅ TAMBAHAN: existing dokumen yang di-keep
+}) async {
+  try {
+    final token = await _getToken();
+    if (token == null) throw Exception('Token tidak ditemukan');
 
-      var request = http.MultipartRequest(
-        'PUT',
-        Uri.parse(ProjectEndpoints.updateProject()),
-      );
+    var request = http.MultipartRequest(
+      'PUT',
+      Uri.parse(ProjectEndpoints.updateProject()),
+    );
 
-      request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Authorization'] = 'Bearer $token';
 
-      // Add project ID to body
-      request.fields['id'] = projectId;
+    print('\n🔄 === UPDATE PROJECT SERVICE ===');
+    print('Project ID: $projectId');
 
-      // Add all project fields
-      request.fields['id_kategori'] = project.idKategori;
-      request.fields['judul'] = project.judul;
-      request.fields['deskripsi'] = project.deskripsi;
-      request.fields['nominal'] = project.nominal.toString();
-      request.fields['asset_jaminan'] = project.assetJaminan;
-      request.fields['nilai_jaminan'] = project.nilaiJaminan.toString();
-      request.fields['lokasi_usaha'] = project.lokasiUsaha;
-      request.fields['detail_lokasi'] = project.detailLokasi;
-      request.fields['pendapatan_perbulan'] =
-          project.pendapatanPerbulan.toString();
-      request.fields['pengeluaran_perbulan'] =
-          project.pengeluaranPerbulan.toString();
-      request.fields['limit_siklus'] = project.limitSiklus.toString();
-      request.fields['bagian_pelaksana'] = project.bagianPelaksana.toString();
-      request.fields['bagian_koperasi'] = project.bagianKoperasi.toString();
-      request.fields['bagian_pemilik'] = project.bagianPemilik.toString();
-      request.fields['bagian_pendana'] = project.bagianPendana.toString();
+    // Add project ID to body
+    request.fields['id'] = projectId;
 
-      // Add files
-      if (dokumenFiles != null && dokumenFiles.isNotEmpty) {
-        for (var file in dokumenFiles) {
-          request.files.add(
-            await http.MultipartFile.fromPath('dokumen', file.path),
-          );
-        }
-      }
+    // Add all project fields
+    request.fields['id_kategori'] = project.idKategori;
+    request.fields['judul'] = project.judul;
+    request.fields['deskripsi'] = project.deskripsi;
+    request.fields['nominal'] = project.nominal.toString();
+    request.fields['asset_jaminan'] = project.assetJaminan;
+    request.fields['nilai_jaminan'] = project.nilaiJaminan.toString();
+    request.fields['lokasi_usaha'] = project.lokasiUsaha;
+    request.fields['detail_lokasi'] = project.detailLokasi;
+    request.fields['pendapatan_perbulan'] =
+        project.pendapatanPerbulan.toString();
+    request.fields['pengeluaran_perbulan'] =
+        project.pengeluaranPerbulan.toString();
+    request.fields['limit_siklus'] = project.limitSiklus.toString();
+    request.fields['bagian_pelaksana'] = project.bagianPelaksana.toString();
+    request.fields['bagian_koperasi'] = project.bagianKoperasi.toString();
+    request.fields['bagian_pemilik'] = project.bagianPemilik.toString();
+    request.fields['bagian_pendana'] = project.bagianPendana.toString();
 
-      if (brosurProdukFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'brosur_produk',
-            brosurProdukFile.path,
-          ),
-        );
-      }
-
-      if (dokumenProyeksiFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'dokumen_proyeksi',
-            dokumenProyeksiFile.path,
-          ),
-        );
-      }
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-
-      // Check for 200 OR 201 status code
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = json.decode(response.body);
-
-        // Handle response that only has "message" field
-        if (data is Map && data.containsKey('message')) {
-          // Return a success response object
-          return ProjectResponse(
-            message: data['message'] as String,
-            data: null, // Backend tidak return project data
-          );
-        }
-
-        // If backend returns full project data
-        return ProjectResponse.fromJson(data);
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(
-          'Gagal update project: ${errorData['error'] ?? errorData['message'] ?? response.body}',
-        );
-      }
-    } catch (e) {
-      rethrow;
+    // ✅ TAMBAHAN: Kirim existing dokumen yang masih di-keep
+    if (existingDokumen != null && existingDokumen.isNotEmpty) {
+      request.fields['existing_dokumen'] = json.encode(existingDokumen);
+      print('📋 Existing dokumen to keep: $existingDokumen');
     }
+
+    // ✅ Add NEW dokumen files
+    if (dokumenFiles != null && dokumenFiles.isNotEmpty) {
+      print('📎 Adding ${dokumenFiles.length} new dokumen files');
+      for (var file in dokumenFiles) {
+        request.files.add(
+          await http.MultipartFile.fromPath('dokumen', file.path),
+        );
+        print('  - ${file.path.split('/').last}');
+      }
+    }
+
+    // ✅ Add brosur file ONLY if new file uploaded
+    if (brosurProdukFile != null) {
+      print('📎 Adding new brosur_produk');
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'brosur_produk',
+          brosurProdukFile.path,
+        ),
+      );
+    } else {
+      print('⚠️ No new brosur_produk - keeping existing');
+    }
+
+    // ✅ Add dokumen proyeksi ONLY if new file uploaded
+    if (dokumenProyeksiFile != null) {
+      print('📎 Adding new dokumen_proyeksi');
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'dokumen_proyeksi',
+          dokumenProyeksiFile.path,
+        ),
+      );
+    } else {
+      print('⚠️ No new dokumen_proyeksi - keeping existing');
+    }
+
+    print('🚀 Sending update request...');
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    print('📥 Response status: ${response.statusCode}');
+    print('📥 Response body: ${response.body}');
+
+    // Check for 200 OR 201 status code
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = json.decode(response.body);
+
+      // Handle response that only has "message" field
+      if (data is Map && data.containsKey('message')) {
+        print('✅ Update successful: ${data['message']}');
+        return ProjectResponse(
+          message: data['message'] as String,
+          data: null,
+        );
+      }
+
+      // If backend returns full project data
+      return ProjectResponse.fromJson(data);
+    } else {
+      final errorData = json.decode(response.body);
+      throw Exception(
+        'Gagal update project: ${errorData['error'] ?? errorData['message'] ?? response.body}',
+      );
+    }
+  } catch (e) {
+    print('❌ Update failed: $e');
+    rethrow;
   }
+}
 
   Future<List<ProjectListItem>> getUserProjects({
     String? status,
