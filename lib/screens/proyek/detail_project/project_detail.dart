@@ -61,11 +61,14 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
   Future<void> _loadWalletBalance() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final walletProvider = Provider.of<WalletProvider>(context, listen: false);
-      
+      final walletProvider = Provider.of<WalletProvider>(
+        context,
+        listen: false,
+      );
+
       final token = authProvider.token;
       final userId = authProvider.userId;
-      
+
       if (token != null && userId != null) {
         await walletProvider.fetchWalletSaldo(token, userId);
       }
@@ -81,8 +84,10 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     });
 
     try {
-      final projectProvider =
-          Provider.of<ProjectProvider>(context, listen: false);
+      final projectProvider = Provider.of<ProjectProvider>(
+        context,
+        listen: false,
+      );
       final detail = await projectProvider.getProjectDetail(widget.projectId);
 
       if (mounted) {
@@ -121,7 +126,9 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     if (_projectDetail!.status != 'PENDANAAN DIBUKA') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Pendanaan untuk proyek ini belum dibuka atau sudah ditutup'),
+          content: Text(
+            'Pendanaan untuk proyek ini belum dibuka atau sudah ditutup',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
@@ -147,14 +154,14 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     // Jika backend belum kirim data tokenTerjual, fetch dari API
     final totalToken = _projectDetail!.jumlahKoin ?? 0;
     int remainingTokens = totalToken;
-    
+
     // Coba ambil data token tersisa dari API
     // try {
     //   final tokenInfo = await _tokenService.getAvailableTokens(
     //     token: token,
     //     projectId: widget.projectId,
     //   );
-      
+
     //   if (tokenInfo['success'] == true) {
     //     remainingTokens = tokenInfo['availableTokens'] ?? totalToken;
     //   }
@@ -178,6 +185,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
       context,
       remaining: remainingTokens,
       pricePerToken: pricePerToken,
+      maxPurchase: maxBeli,
     );
 
     // User cancel atau tidak memilih
@@ -223,7 +231,9 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     if (walletBalance < totalPrice) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Saldo tidak mencukupi. Saldo Anda: ${walletProvider.formattedSaldoTopup}'),
+          content: Text(
+            'Saldo tidak mencukupi. Saldo Anda: ${walletProvider.formattedSaldoTopup}',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -310,10 +320,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                   const SizedBox(height: 16),
                   const Text(
                     'Pembelian Berhasil!',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -342,15 +349,24 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
               ],
             ),
           );
-          
+
           // Reload project detail
           await _loadProjectDetail();
-          
+
           // Reload wallet balance
           try {
-            final authProvider = Provider.of<AuthProvider>(context, listen: false);
-            final walletProvider = Provider.of<WalletProvider>(context, listen: false);
-            await walletProvider.fetchWalletSaldo(authProvider.token ?? '', authProvider.userId ?? '');
+            final authProvider = Provider.of<AuthProvider>(
+              context,
+              listen: false,
+            );
+            final walletProvider = Provider.of<WalletProvider>(
+              context,
+              listen: false,
+            );
+            await walletProvider.fetchWalletSaldo(
+              authProvider.token ?? '',
+              authProvider.userId ?? '',
+            );
           } catch (e) {
             print('Error reloading wallet: $e');
           }
@@ -382,10 +398,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                   const SizedBox(height: 16),
                   const Text(
                     'Pembelian Gagal',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -419,7 +432,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
     } catch (e) {
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-      
+
       if (mounted) {
         await showDialog(
           context: context,
@@ -501,7 +514,9 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                   const Icon(Icons.check_circle, color: Colors.white),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Text(result['message'] ?? 'Prospektus berhasil dibuka'),
+                    child: Text(
+                      result['message'] ?? 'Prospektus berhasil dibuka',
+                    ),
                   ),
                 ],
               ),
@@ -517,7 +532,9 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                   const Icon(Icons.error_outline, color: Colors.white),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Text(result['message'] ?? 'Gagal membuka prospektus'),
+                    child: Text(
+                      result['message'] ?? 'Gagal membuka prospektus',
+                    ),
                   ),
                 ],
               ),
@@ -662,9 +679,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
             tabs: tabs,
           ),
         ),
-        body: TabBarView(
-          children: tabViews,
-        ),
+        body: TabBarView(children: tabViews),
         // Bottom action buttons - only show for PLATINUM users
         bottomNavigationBar: isPlatinum
             ? Container(
@@ -709,11 +724,15 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                       Expanded(
                         flex: 2,
                         child: OutlinedButton.icon(
-                          onPressed: _isDownloadingProspectus ? null : _handleDownloadProspectus,
+                          onPressed: _isDownloadingProspectus
+                              ? null
+                              : _handleDownloadProspectus,
                           style: OutlinedButton.styleFrom(
                             foregroundColor: darkGreen,
                             side: BorderSide(
-                              color: _isDownloadingProspectus ? Colors.grey : darkGreen,
+                              color: _isDownloadingProspectus
+                                  ? Colors.grey
+                                  : darkGreen,
                               width: 1.5,
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -725,7 +744,9 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.download, size: 20),
                           label: Text(
