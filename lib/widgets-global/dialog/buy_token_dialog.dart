@@ -7,6 +7,7 @@ Future<int?> showBuyTokenDialog(
   BuildContext context, {
   required int remaining,
   required int pricePerToken,
+  required int maxPurchase,
 }) {
   // Centered dialog instead of bottom sheet, as requested
   return showDialog<int>(
@@ -19,26 +20,32 @@ Future<int?> showBuyTokenDialog(
       return Dialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: AnimatedPadding(
-          duration: const Duration(milliseconds: 150),
-          padding: EdgeInsets.only(bottom: viewInsets),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 480,
-              // Keep dialog within viewport height even with keyboard
-              maxHeight: (screenHeight - viewInsets - 48).clamp(
-                280.0,
-                screenHeight,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: MediaQuery.removeViewInsets(
+          context: ctx,
+          removeBottom: true,
+          child: AnimatedPadding(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.only(bottom: viewInsets),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 480,
+                // Keep dialog within viewport height even with keyboard
+                maxHeight: (screenHeight - viewInsets - 48).clamp(
+                  180.0,
+                  screenHeight,
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: _BuyTokenDialog(
-                  remaining: remaining,
-                  pricePerToken: pricePerToken,
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                  child: _BuyTokenDialog(
+                    remaining: remaining,
+                    pricePerToken: pricePerToken,
+                    maxPurchase: maxPurchase,
+                  ),
                 ),
               ),
             ),
@@ -50,10 +57,15 @@ Future<int?> showBuyTokenDialog(
 }
 
 class _BuyTokenDialog extends StatefulWidget {
-  const _BuyTokenDialog({required this.remaining, required this.pricePerToken});
+  const _BuyTokenDialog({
+    required this.remaining,
+    required this.pricePerToken,
+    required this.maxPurchase,
+  });
 
   final int remaining;
   final int pricePerToken;
+  final int maxPurchase;
 
   @override
   State<_BuyTokenDialog> createState() => _BuyTokenDialogState();
@@ -78,19 +90,36 @@ class _BuyTokenDialogState extends State<_BuyTokenDialog> {
   }
 
   void _clampAndWarnIfNeeded() {
-    if (_count > widget.remaining) {
-      setState(() {
-        _count = widget.remaining;
-        _controller.text = _count.toString();
-        _controller.selection = TextSelection.fromPosition(
-          TextPosition(offset: _controller.text.length),
-        );
-        _warning =
+    final maxAllowed = (widget.remaining < widget.maxPurchase)
+        ? widget.remaining
+        : widget.maxPurchase;
+
+    int newCount = _count;
+    String? warn;
+
+    if (newCount < 0) newCount = 0;
+
+    if (newCount > maxAllowed) {
+      // Prioritize message depending on which limit is hit first
+      if (newCount > widget.remaining &&
+          widget.remaining <= widget.maxPurchase) {
+        warn =
             'Jumlah melebihi sisa token. Diatur menjadi ${widget.remaining}.';
-      });
-    } else {
-      setState(() => _warning = null);
+      } else {
+        warn =
+            'Jumlah melebihi maksimal pembelian (${widget.maxPurchase}). Diatur menjadi $maxAllowed.';
+      }
+      newCount = maxAllowed;
     }
+
+    setState(() {
+      _count = newCount;
+      _controller.text = _count.toString();
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _controller.text.length),
+      );
+      _warning = warn;
+    });
   }
 
   @override
@@ -197,17 +226,20 @@ class _BuyTokenDialogState extends State<_BuyTokenDialog> {
                       vertical: 10,
                     ),
                   ),
-                  onPressed: _count < widget.remaining
-                      ? () {
-                          setState(() {
-                            _count++;
-                            _controller.text = _count.toString();
-                          });
-                          _clampAndWarnIfNeeded();
-                        }
-                      : () {
-                          _clampAndWarnIfNeeded();
-                        },
+                  onPressed: () {
+                    final maxAllowed = (widget.remaining < widget.maxPurchase)
+                        ? widget.remaining
+                        : widget.maxPurchase;
+                    if (_count < maxAllowed) {
+                      setState(() {
+                        _count++;
+                        _controller.text = _count.toString();
+                      });
+                      _clampAndWarnIfNeeded();
+                    } else {
+                      _clampAndWarnIfNeeded();
+                    }
+                  },
                   child: const Icon(Icons.add, color: darkGreen),
                 ),
               ],
