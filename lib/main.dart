@@ -10,6 +10,7 @@ import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:koperasi_rsb/screens/proyek/project_list.dart';
 import 'package:koperasi_rsb/screens/member-platinum/dashboard/dashboard_platinum.dart';
 import 'package:koperasi_rsb/screens/member-platinum/detail-penggunaan-token/detail_penggunaan_token.dart';
+import 'package:koperasi_rsb/widgets-global/charts/performance_bar_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
@@ -69,6 +70,7 @@ class MyApp extends StatelessWidget {
           '/dashboard': (context) => const DashboardPage(),
           '/member-reguler': (context) => const DashboardPage(),
           '/member-platinum': (context) => const PremiumDashboardPage(),
+          '/chart': (context) => const PerformanceChartPage(),
           '/my-project': (context) => const MyProjectPage(),
           '/project-list': (context) => const ProjectListPage(),
           '/wallet': (context) => const DompetPage(),

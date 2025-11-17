@@ -172,36 +172,70 @@ class PremiumHeader extends StatelessWidget {
                     ),
 
                     SizedBox(height: deviceHeight * 0.03),
+                    Row(
+                      children: [
+                        // Tombol Bayar Simpanan
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: darkGreen,
+                              padding: EdgeInsets.symmetric(
+                                vertical: deviceHeight * 0.015,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/wallet');
+                            },
+                            child: AutoSizeText(
+                              'Bayar Simpanan',
+                              style: GoogleFonts.poppins(
+                                fontSize: deviceWidth * 0.032,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 12,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: darkGreen,
-                          padding: EdgeInsets.symmetric(
-                            vertical: deviceHeight * 0.015,
+                        SizedBox(width: deviceWidth * 0.03),
+
+                        // Tombol Chart
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              padding: EdgeInsets.symmetric(
+                                vertical: deviceHeight * 0.015,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/chart');
+                            },
+                            child: AutoSizeText(
+                              'Grafik Penyertaan Modal Usaha',
+                              style: GoogleFonts.poppins(
+                                fontSize: deviceWidth * 0.032,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 12,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
                         ),
-                        onPressed: () {
-   
-                          Navigator.pushNamed(context, '/wallet');
-                        },
-                        child: AutoSizeText(
-                          'Bayar Simpanan',
-                          style: GoogleFonts.poppins(
-                            fontSize: deviceWidth * 0.032,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          minFontSize: 12,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -213,7 +247,7 @@ class PremiumHeader extends StatelessWidget {
     );
   }
 
-  /// Dialog informasi pembayaran wajib & pokok (mengikuti header reguler)
+  /// Dialog informasi pembayaran
   void _showSummaryDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -227,7 +261,7 @@ class PremiumHeader extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header warna hijau lembut + icon info
+              // Header
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -271,7 +305,7 @@ class PremiumHeader extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    // Card detail pembayaran wajib
+                    // Card wajib
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.green.shade50,
@@ -319,7 +353,7 @@ class PremiumHeader extends StatelessWidget {
 
                     const SizedBox(height: 10),
 
-                    // Card detail pembayaran pokok
+                    // Card pokok
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.orange.shade50,
