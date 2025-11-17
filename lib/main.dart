@@ -10,7 +10,6 @@ import 'package:koperasi_rsb/screens/proyek/my_project.dart';
 import 'package:koperasi_rsb/screens/proyek/project_list.dart';
 import 'package:koperasi_rsb/screens/member-platinum/dashboard/dashboard_platinum.dart';
 import 'package:koperasi_rsb/screens/member-platinum/detail-penggunaan-token/detail_penggunaan_token.dart';
-import 'package:koperasi_rsb/widgets-global/charts/performance_bar_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/user_provider.dart';
@@ -79,6 +78,7 @@ class MyApp extends StatelessWidget {
           '/profile/alamat': (context) => const AlamatPage(),
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
           '/profile/hubungi-admin': (context) => const KontakAdminPage(),
+          '/withdraw-saldo': (context) => const  WithdrawPage(),
           '/payment-form': (context) {
             final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
             

@@ -22,7 +22,11 @@ class TopUpCard extends StatefulWidget {
 }
 
 class _TopUpCardState extends State<TopUpCard> {
-  bool _showWithdrawButton = false;
+
+  bool get hasButton {
+    return (widget.title == "Saldo Top Up" && widget.isPlatinum) ||
+           widget.title == "Simpanan Wajib";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +37,12 @@ class _TopUpCardState extends State<TopUpCard> {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: hasButton 
+              ? MainAxisAlignment.start 
+              : MainAxisAlignment.center, 
           children: [
+            // ===== TITLE =====
             Row(
               children: [
                 Text(
@@ -54,15 +60,13 @@ class _TopUpCardState extends State<TopUpCard> {
                 ),
               ],
             ),
+
             const SizedBox(height: 8),
+
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/icons/coin-icon.png',
-                  width: 45,
-                  height: 45,
-                ),
+                Image.asset('assets/icons/coin-icon.png',
+                    width: 45, height: 45),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -72,83 +76,58 @@ class _TopUpCardState extends State<TopUpCard> {
                       fontWeight: FontWeight.w600,
                       color: darkGreen,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                )
               ],
             ),
-            if (widget.onPressed != null) ...[
-              const SizedBox(height: 12),
-              // Jika belum show withdraw button, tampilkan satu button dengan icon dropdown
-              if (!_showWithdrawButton) ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    text: "Top Up",
-                    onPressed: widget.isPlatinum
-                        ? () {
-                            setState(() {
-                              _showWithdrawButton = true;
-                            });
-                          }
-                        : widget.onPressed!,
-                  ),
-                ),
-              ] else ...[
-                // Tampilkan kedua button
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        text: "Top Up",
-                        onPressed: widget.onPressed!,
-                      ),
+
+            const SizedBox(height: 12),
+            
+            if (widget.title == "Saldo Top Up" && widget.isPlatinum) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      text: "Top Up",
+                      onPressed: widget.onPressed!,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Implement tarik saldo logic
-                          Navigator.pushNamed(context, '/withdraw-saldo');
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          side: const BorderSide(color: darkGreen, width: 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/withdraw-saldo');
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        side: const BorderSide(color: darkGreen, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          "Tarik Saldo",
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: darkGreen,
-                          ),
+                      ),
+                      child: Text(
+                        "Tarik Saldo",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: darkGreen,
                         ),
                       ),
                     ),
-                  ],
-                ),
-                // Button untuk collapse kembali
-                const SizedBox(height: 4),
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _showWithdrawButton = false;
-                      });
-                    },
-                    child: Icon(
-                      Icons.keyboard_arrow_up,
-                      color: darkGreen,
-                      size: 24,
-                    ),
                   ),
+                ],
+              ),
+            ]
+
+            else if (widget.title == "Simpanan Wajib") ...[
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  text: "Top Up",
+                  onPressed: widget.onPressed!,
                 ),
-              ],
-            ],
+              ),
+            ]
           ],
         ),
       ),
