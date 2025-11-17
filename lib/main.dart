@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
           '/profile/alamat': (context) => const AlamatPage(),
           '/profile/dokumen': (context) => const DokumenPelengkapPage(),
           '/profile/hubungi-admin': (context) => const KontakAdminPage(),
-          '/withdraw-saldo': (context) => const  WithdrawPage(),
+          '/withdraw-saldo': (context) => const WithdrawPage(),
           '/payment-form': (context) {
             final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
             
