@@ -4,7 +4,7 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/pagination_table.dart';
-import 'package:koperasi_rsb/widgets-global/tabel/tabel-transaksi.dart';
+import 'package:koperasi_rsb/widgets-global/tabel/tabel-penarikan-saldo.dart';
 
 
 class WithdrawPage extends StatefulWidget {
@@ -37,18 +37,54 @@ class _WithdrawPageState extends State<WithdrawPage>
   int _currentPageBerhasil = 1;
   int _currentPageGagal = 1;
 
-  /// DUMMY TRANSAKSI
+  /// DUMMY TRANSAKSI - Sesuaikan dengan struktur tabel
   final List<Map<String, String>> dataMenunggu = [
-    {"tanggal": "14 Nov 2025", "metode": "BRI", "jenis": "Penarikan", "nominal": "Rp 300.000"},
+    {
+      "tanggal": "14 Nov 2025",
+      "nama": "Agung",
+      "nominal": "Rp 300.000",
+      "jenis": "Penarikan",
+      "status": "Menunggu",
+      "bukti pembayaran": "-"
+    },
+    {
+      "tanggal": "13 Nov 2025",
+      "nama": "Rifki",
+      "nominal": "Rp 500.000",
+      "jenis": "Penarikan",
+      "status": "Menunggu",
+      "bukti pembayaran": "-"
+    },
   ];
 
   final List<Map<String, String>> dataBerhasil = [
-    {"tanggal": "12 Nov 2025", "metode": "BCA", "jenis": "Penarikan", "nominal": "Rp 150.000"},
-    {"tanggal": "10 Nov 2025", "metode": "Mandiri", "jenis": "Penarikan", "nominal": "Rp 200.000"},
+    {
+      "tanggal": "12 Nov 2025",
+      "nama": "Rudi",
+      "nominal": "Rp 150.000",
+      "jenis": "Penarikan",
+      "status": "Berhasil",
+      "bukti pembayaran": "Lihat"
+    },
+    {
+      "tanggal": "10 Nov 2025",
+      "nama": "Suci",
+      "nominal": "Rp 200.000",
+      "jenis": "Penarikan",
+      "status": "Berhasil",
+      "bukti pembayaran": "Lihat"
+    },
   ];
 
   final List<Map<String, String>> dataGagal = [
-    {"tanggal": "08 Nov 2025", "metode": "BNI", "jenis": "Penarikan", "nominal": "Rp 100.000"},
+    {
+      "tanggal": "08 Nov 2025",
+      "nama": "Rendi",
+      "nominal": "Rp 100.000",
+      "jenis": "Penarikan",
+      "status": "Gagal",
+      "bukti pembayaran": "-"
+    },
   ];
 
   @override
@@ -265,7 +301,6 @@ class _WithdrawPageState extends State<WithdrawPage>
   }
 
   Widget _buildRiwayat() {
-    // Inisialisasi TabController jika belum ada
     _tabController ??= TabController(length: 3, vsync: this);
 
     return Column(
@@ -352,7 +387,7 @@ class _WithdrawPageState extends State<WithdrawPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TransactionTable(status: status, data: visibleData),
+        PenarikanSaldoTable(status: status, data: visibleData),
         const SizedBox(height: 8),
 
         PaginationWidget(
