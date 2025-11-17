@@ -36,12 +36,9 @@ class PenarikanSaldoTable extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _buildHeader('Tanggal'),
-                _buildHeader('Nama Bank', center: true),
-                _buildHeader('Jenis Transaksi', center: true),
-                _buildHeader('Nominal', center: true),
-                _buildHeader('Status', center: true),
-                _buildHeader('Bukti Pembayaran', alignRight: true),
+                _buildHeader('Tanggal', flex: 2),
+                _buildHeader('Status', flex: 2, center: true),
+                _buildHeader('Aksi', flex: 1, center: true),
               ],
             ),
           ),
@@ -74,12 +71,9 @@ class PenarikanSaldoTable extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          _buildCell(tx['tanggal']),
-                          _buildCell(tx['nama'], center: true),
-                          _buildCell(tx['jenis'], center: true),
-                          _buildCell(tx['nominal'], center: true),
-                          _buildCell(tx['status'], center: true),
-                          _buildCell(tx['bukti pembayaran'], alignRight: true),
+                          _buildCell(tx['tanggal'], flex: 2),
+                          _buildCell(tx['status'], flex: 2, center: true),
+                          _buildActionButton(context, tx),
                         ],
                       ),
                     ),
@@ -98,14 +92,12 @@ class PenarikanSaldoTable extends StatelessWidget {
   }
 
   Widget _buildHeader(String text,
-      {bool center = false, bool alignRight = false}) {
+      {int flex = 1, bool center = false}) {
     return Expanded(
-      flex: 2,
+      flex: flex,
       child: Text(
         text,
-        textAlign: alignRight
-            ? TextAlign.right
-            : (center ? TextAlign.center : TextAlign.left),
+        textAlign: center ? TextAlign.center : TextAlign.left,
         style: GoogleFonts.poppins(
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -116,20 +108,150 @@ class PenarikanSaldoTable extends StatelessWidget {
   }
 
   Widget _buildCell(String? text,
-      {bool center = false, bool alignRight = false}) {
+      {int flex = 1, bool center = false}) {
     return Expanded(
-      flex: 2,
+      flex: flex,
       child: Text(
         text ?? '-',
-        textAlign: alignRight
-            ? TextAlign.right
-            : (center ? TextAlign.center : TextAlign.left),
+        textAlign: center ? TextAlign.center : TextAlign.left,
         style: GoogleFonts.poppins(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: Colors.black,
         ),
       ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context, Map<String, String> data) {
+    return Expanded(
+      flex: 1,
+      child: Center(
+        child: InkWell(
+          onTap: () => _showDetailDialog(context, data),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: darkGreen,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              'Detail',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDetailDialog(BuildContext context, Map<String, String> data) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Detail Transaksi',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: darkGreen,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildDetailRow('Tanggal', data['tanggal'] ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow('Nama', data['nama'] ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow('Jenis Transaksi', data['jenis'] ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow('Nominal', data['nominal'] ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow('Status', data['status'] ?? '-'),
+                const SizedBox(height: 12),
+                _buildDetailRow('Bukti Pembayaran', data['bukti pembayaran'] ?? '-'),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: darkGreen,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Tutup',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 150,
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
