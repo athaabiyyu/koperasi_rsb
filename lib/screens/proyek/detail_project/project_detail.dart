@@ -11,9 +11,10 @@ import 'package:koperasi_rsb/screens/proyek/detail_project/investors_section.dar
 import 'package:koperasi_rsb/screens/proyek/detail_project/funding_history_section.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/buy_token_dialog.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/confirm_purchase_dialog.dart';
-import 'package:koperasi_rsb/services/token_service.dart';
+// import 'package:koperasi_rsb/services/token_service.dart';
 import 'package:koperasi_rsb/services/prospectus_service.dart';
 import 'package:koperasi_rsb/providers/wallet_provider.dart';
+import 'package:koperasi_rsb/providers/token_provider.dart';
 
 class ProjectDetailPage extends StatefulWidget {
   final String projectId;
@@ -47,15 +48,27 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
   ProjectListItem? _projectDetail;
   bool _isLoading = true;
   String? _error;
-  final TokenService _tokenService = TokenService();
+  // final TokenService _tokenService = TokenService(); // no longer used; provider handles purchase
   final ProspectusService _prospectusService = ProspectusService();
   bool _isDownloadingProspectus = false;
+  String? _handledBuySuccessMsg;
+  String? _handledBuyErrorMsg;
 
   @override
   void initState() {
     super.initState();
     _loadProjectDetail();
     _loadWalletBalance();
+  }
+
+  @override
+  void dispose() {
+    // Ensure local banner state is cleared when leaving this page
+    try {
+      final tp = Provider.of<TokenProvider>(context, listen: false);
+      tp.clearBuyTokenMessages();
+    } catch (_) {}
+    super.dispose();
   }
 
   Future<void> _loadWalletBalance() async {
@@ -258,200 +271,15 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
   }
 
   Future<void> _processBuyToken(String token, int jumlahToken) async {
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false,
-        child: const Center(
-          child: Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Memproses pembelian token...'),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    try {
-      final response = await _tokenService.buyToken(
+    // Fire via TokenProvider; UI will reflect status via banner (like create project)
+    final tp = Provider.of<TokenProvider>(context, listen: false);
+    Future<void>(() async {
+      await tp.buyToken(
         token: token,
         projectId: widget.projectId,
         jumlahToken: jumlahToken,
       );
-
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-
-      if (response['success'] == true) {
-        if (mounted) {
-          // Show success dialog
-          await showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE8F5EE),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check_circle,
-                      color: darkGreen,
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Pembelian Berhasil!',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    response['message'] ?? 'Token berhasil dibeli',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-              actions: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: darkGreen,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ),
-              ],
-            ),
-          );
-
-          // Reload project detail
-          await _loadProjectDetail();
-
-          // Reload wallet balance
-          try {
-            final authProvider = Provider.of<AuthProvider>(
-              context,
-              listen: false,
-            );
-            final walletProvider = Provider.of<WalletProvider>(
-              context,
-              listen: false,
-            );
-            await walletProvider.fetchWalletSaldo(
-              authProvider.token ?? '',
-              authProvider.userId ?? '',
-            );
-          } catch (e) {
-            print('Error reloading wallet: $e');
-          }
-        }
-      } else {
-        if (mounted) {
-          // Show error dialog
-          await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Pembelian Gagal',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    response['message'] ?? 'Gagal membeli token',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-              actions: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-
-      if (mounted) {
-        await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text('Error'),
-            content: Text('Terjadi kesalahan: ${e.toString()}'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-    }
+    });
   }
 
   Future<void> _handleDownloadProspectus() async {
@@ -679,7 +507,94 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
             tabs: tabs,
           ),
         ),
-        body: TabBarView(children: tabViews),
+        body: Builder(
+          builder: (context) {
+            final tokenProvider = Provider.of<TokenProvider>(context);
+
+            // React once per new success/error message to avoid loops
+            if (tokenProvider.buyTokenSuccess != null &&
+                tokenProvider.buyTokenSuccess != _handledBuySuccessMsg) {
+              _handledBuySuccessMsg = tokenProvider.buyTokenSuccess;
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                _loadProjectDetail();
+                try {
+                  final auth = Provider.of<AuthProvider>(
+                    context,
+                    listen: false,
+                  );
+                  final wallet = Provider.of<WalletProvider>(
+                    context,
+                    listen: false,
+                  );
+                  await wallet.fetchWalletSaldo(
+                    auth.token ?? '',
+                    auth.userId ?? '',
+                  );
+                } catch (_) {}
+                await Future.delayed(const Duration(seconds: 3));
+                if (mounted) {
+                  Provider.of<TokenProvider>(
+                    context,
+                    listen: false,
+                  ).clearBuyTokenMessages();
+                  _handledBuySuccessMsg = null;
+                }
+              });
+            } else if (tokenProvider.buyTokenError != null &&
+                tokenProvider.buyTokenError != _handledBuyErrorMsg) {
+              _handledBuyErrorMsg = tokenProvider.buyTokenError;
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                await Future.delayed(const Duration(seconds: 3));
+                if (mounted) {
+                  Provider.of<TokenProvider>(
+                    context,
+                    listen: false,
+                  ).clearBuyTokenMessages();
+                  _handledBuyErrorMsg = null;
+                }
+              });
+            }
+
+            Widget? banner;
+            if (tokenProvider.isBuyingToken) {
+              banner = _buildProcessBanner(
+                color: Colors.orange,
+                bgBorderColor: Colors.orangeAccent.withOpacity(0.25),
+                title: 'Pembelian token sedang diproses',
+                message:
+                    'Anda dapat melanjutkan aktivitas. Kami akan memberi tahu ketika selesai.',
+                icon: Icons.info_rounded,
+              );
+            } else if (tokenProvider.buyTokenSuccess != null) {
+              banner = _buildProcessBanner(
+                color: darkGreen,
+                bgBorderColor: darkGreen.withOpacity(0.2),
+                title: 'Pembelian token berhasil',
+                message: tokenProvider.buyTokenSuccess!,
+                icon: Icons.check_circle,
+              );
+            } else if (tokenProvider.buyTokenError != null) {
+              banner = _buildProcessBanner(
+                color: Colors.red,
+                bgBorderColor: Colors.red.withOpacity(0.2),
+                title: 'Pembelian token gagal',
+                message: tokenProvider.buyTokenError!,
+                icon: Icons.error_outline,
+              );
+            }
+
+            return Column(
+              children: [
+                if (banner != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                    child: banner,
+                  ),
+                Expanded(child: TabBarView(children: tabViews)),
+              ],
+            );
+          },
+        ),
         // Bottom action buttons - only show for PLATINUM users
         bottomNavigationBar: isPlatinum
             ? Container(
@@ -763,6 +678,57 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
                 ),
               )
             : null,
+      ),
+    );
+  }
+
+  Widget _buildProcessBanner({
+    required Color color,
+    required Color bgBorderColor,
+    required String title,
+    required String message,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: bgBorderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: const TextStyle(fontSize: 12, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

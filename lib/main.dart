@@ -29,12 +29,17 @@ import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/screens/member-biasa/dashboard/dashboard.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:koperasi_rsb/widgets-global/form/muncul-rekening-member-biasa.dart';
-
+import 'package:koperasi_rsb/utils/app_messenger.dart';
+import 'package:koperasi_rsb/utils/app_navigator.dart';
+import 'package:koperasi_rsb/utils/notification_service.dart';
 
 Future<void> main() async {
   // Pastikan dotenv dimuat sebelum runApp
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+
+  // Inisialisasi notifikasi lokal
+  await NotificationService().init();
 
   runApp(const MyApp());
 }
@@ -54,6 +59,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TokenProvider()),
       ],
       child: MaterialApp(
+        scaffoldMessengerKey: AppMessenger.key,
+        navigatorKey: AppNavigator.key,
         title: 'Koperasi RSB',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: lightGreen),
@@ -82,11 +89,13 @@ class MyApp extends StatelessWidget {
           '/profile/hubungi-admin': (context) => const KontakAdminPage(),
           '/withdraw-saldo': (context) => const WithdrawPage(),
           '/payment-form': (context) {
-            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            
+            final args =
+                ModalRoute.of(context)?.settings.arguments
+                    as Map<String, dynamic>?;
+
             print('=== ROUTE /payment-form ===');
             print('Arguments: $args');
-            
+
             return MunculRekeningMemberBiasa(
               nominalPenyertaan: args?['nominalPenyertaan'] as int?,
               totalPembayaran: args?['totalPembayaran'] as int?,
