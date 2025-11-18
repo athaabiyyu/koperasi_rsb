@@ -380,7 +380,7 @@ class _TokenUsageCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         child: Container(
           width: width * 0.74,
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
           constraints: BoxConstraints(
             minHeight: cardHeight,
             maxHeight: cardHeight,
@@ -400,70 +400,65 @@ class _TokenUsageCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Owner + Status
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 14,
-                    backgroundImage: AssetImage('assets/images/avatar.jpg'),
-                  ),
-                  const SizedBox(width: 10),
-                  const Spacer(),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: status.contains('Selesai')
-                              ? Colors.green.withOpacity(0.12)
-                              : Colors.blue.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          status,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            color: status.contains('Selesai')
-                                ? darkGreen
-                                : Colors.blue,
-                            fontWeight: FontWeight.w600,
-                          ),
+              // Header: Title + Status badge with fixed height
+              SizedBox(
+                height: 44, // Fixed height untuk 2 baris title
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: gapM),
-
-              // Title
-              AutoSizeText(
-                title,
-                maxLines: 2,
-                minFontSize: 11,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: status.contains('Selesai')
+                            ? Colors.green.withOpacity(0.12)
+                            : Colors.blue.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        status,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          color: status.contains('Selesai')
+                              ? darkGreen
+                              : Colors.blue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 2),
-              Text(
-                owner,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
+              const SizedBox(height: 4),
+              
+              // Owner with fixed height
+              SizedBox(
+                height: 18,
+                child: Text(
+                  owner,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[700],
+                  ),
                 ),
               ),
 
@@ -475,8 +470,8 @@ class _TokenUsageCard extends StatelessWidget {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
+                        vertical: 8,
+                        horizontal: 10,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -512,8 +507,8 @@ class _TokenUsageCard extends StatelessWidget {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 12,
+                        vertical: 8,
+                        horizontal: 10,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,

@@ -139,9 +139,6 @@ class ProjectProvider extends ChangeNotifier {
       _investorsError = null;
       notifyListeners();
 
-      print('\n📊 === LOADING PROJECT INVESTORS ===');
-      print('Project ID: $projectId');
-
       final investors = await _projectService.getProjectInvestors(projectId);
 
       _projectInvestors = investors;
@@ -160,9 +157,6 @@ class ProjectProvider extends ChangeNotifier {
       _isLoadingInvestors = false;
       notifyListeners();
 
-      print('✅ Loaded ${investors.length} investors');
-      print('📈 Total collected tokens: $_collectedToken');
-      print('📉 Remaining tokens: $_remainingToken');
     } catch (e) {
       _isLoadingInvestors = false;
       _investorsError = e.toString().replaceAll('Exception: ', '');
@@ -171,7 +165,6 @@ class ProjectProvider extends ChangeNotifier {
       _remainingToken = _projectDetail?.jumlahKoin ?? 0;
       notifyListeners();
 
-      print('❌ Failed to load investors: $_investorsError');
     }
   }
 
@@ -337,10 +330,6 @@ class ProjectProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    print('\n🔄 === UPDATE PROJECT PROVIDER ===');
-    print('Project ID: $_editingProjectId');
-    print('Form Data: $_formData');
-
     // ✅ PERBAIKAN: Validasi - dokumen proyeksi bisa dari file baru ATAU existing
     final hasNewDokumenProyeksi = _dokumenProyeksiFile != null;
     final hasExistingDokumenProyeksi = _formData['dokumen_proyeksi'] != null && 
@@ -349,10 +338,6 @@ class ProjectProvider extends ChangeNotifier {
     if (!hasNewDokumenProyeksi && !hasExistingDokumenProyeksi) {
       throw Exception('Dokumen proyeksi wajib ada');
     }
-
-    print('📄 Dokumen Proyeksi Status:');
-    print('  - New file: ${hasNewDokumenProyeksi ? _dokumenProyeksiFile!.path : "None"}');
-    print('  - Existing: ${hasExistingDokumenProyeksi ? _formData['dokumen_proyeksi'] : "None"}');
 
     // Parse values
     final idKategori = _formData['id_kategori'] ?? '';
@@ -454,10 +439,6 @@ class ProjectProvider extends ChangeNotifier {
         .where((path) => path.isNotEmpty)
         .toList();
 
-    print('📋 Existing dokumen to keep: $existingDokumenPaths');
-    print('📎 New dokumen files: ${_dokumenFiles.length}');
-
-    print('🚀 Calling updateProject service...');
     _response = await _projectService.updateProject(
       projectId: _editingProjectId!,
       project: request,
@@ -469,15 +450,12 @@ class ProjectProvider extends ChangeNotifier {
 
     _status = ProjectStatus.success;
     notifyListeners();
-
-    print('✅ Update successful in provider');
     return true;
   } catch (e) {
     _status = ProjectStatus.error;
     _errorMessage = e.toString().replaceAll('Exception: ', '');
     notifyListeners();
 
-    print('❌ Update failed in provider: $_errorMessage');
     return false;
   }
 }

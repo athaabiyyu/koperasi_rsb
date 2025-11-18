@@ -30,14 +30,11 @@ class TokenProvider extends ChangeNotifier {
       _usageError = null;
       notifyListeners();
 
-      print('\n📊 === LOADING TOKEN USAGE DETAILS ===');
-
       _tokenUsageList = await _tokenService.getTokenUsageDetails(token);
 
       _isLoadingUsage = false;
       notifyListeners();
 
-      print('✅ Loaded ${_tokenUsageList.length} token usage details');
     } catch (e) {
       _isLoadingUsage = false;
       
@@ -53,12 +50,10 @@ class TokenProvider extends ChangeNotifier {
         // Set empty list and no error
         _tokenUsageList = [];
         _usageError = null;
-        print('ℹ️ User has no token usage yet (empty state)');
       } else {
         // This is a real error (network, server, etc)
         _usageError = _formatErrorMessage(errorMessage);
         _tokenUsageList = [];
-        print('❌ Failed to load token usage: $_usageError');
       }
       
       notifyListeners();
@@ -134,10 +129,6 @@ class TokenProvider extends ChangeNotifier {
       _buyTokenSuccess = null;
       notifyListeners();
 
-      print('\n💰 === BUYING TOKEN ===');
-      print('Project ID: $projectId');
-      print('Amount: $jumlahToken');
-
       final result = await _tokenService.buyToken(
         token: token,
         projectId: projectId,
@@ -153,13 +144,11 @@ class TokenProvider extends ChangeNotifier {
         // Refresh token usage list
         await loadTokenUsageDetails(token);
 
-        print('✅ Token purchased successfully');
         return true;
       } else {
         _buyTokenError = result['message'];
         notifyListeners();
 
-        print('❌ Failed to buy token: $_buyTokenError');
         return false;
       }
     } catch (e) {
@@ -167,7 +156,6 @@ class TokenProvider extends ChangeNotifier {
       _buyTokenError = 'Terjadi kesalahan: ${e.toString()}';
       notifyListeners();
 
-      print('❌ Exception in buyToken: $_buyTokenError');
       return false;
     }
   }

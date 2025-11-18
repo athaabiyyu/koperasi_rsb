@@ -77,7 +77,6 @@ class TopupProvider with ChangeNotifier {
         try {
           await fetchTopupHistory(token);
         } catch (e) {
-          print('Error refreshing history: $e');
         }
 
         return {
@@ -140,7 +139,6 @@ class TopupProvider with ChangeNotifier {
         try {
           await fetchTopupHistory(token);
         } catch (e) {
-          print('Error refreshing history: $e');
         }
 
         return {
@@ -163,80 +161,73 @@ class TopupProvider with ChangeNotifier {
       };
     }
   }
+// ✅ IMPROVED: Fetch topup history dengan handling yang lebih baik
+Future<bool> fetchTopupHistory(String token) async {
+  setLoading(true);
+  clearError(); // ✅ Clear error sebelum fetch
 
-  // ✅ IMPROVED: Fetch topup history dengan handling yang lebih baik
-  Future<bool> fetchTopupHistory(String token) async {
-    setLoading(true);
-    clearError(); // ✅ Clear error sebelum fetch
-
-    try {
-      print('🔄 Fetching topup history...');
+  try {
+    // ✅ FIX: Buat instance dari TopupService
+    final topupService = TopupService();
+    final result = await topupService.getTopupByUserId(token);
+    
+    if (result['success'] == true) {
+      // ✅ Handle data bisa berupa List langsung atau nested dalam object
+      final data = result['data'];
       
-      final result = await TopupService.getTopupByUserId(token);
-      
-      print('📡 API Response: ${result['success']}');
-      print('📊 Data type: ${result['data'].runtimeType}');
-      
-      if (result['success'] == true) {
-        // ✅ Handle data bisa berupa List langsung atau nested dalam object
-        final data = result['data'];
-        
-        if (data is List<TopupModel>) {
-          _topups = data;
-        } else if (data is List) {
-          _topups = data.cast<TopupModel>();
-        } else {
-          // Jika data bukan list, set empty
-          _topups = [];
-        }
-        
-        print('✅ Topups loaded: ${_topups.length} items');
-        
-        // ✅ PENTING: Clear error jika berhasil, meskipun data kosong
-        _errorMessage = null;
-        
-        setLoading(false);
-        notifyListeners();
-        return true;
+      if (data is List<TopupModel>) {
+        _topups = data;
+      } else if (data is List) {
+        _topups = data.cast<TopupModel>();
       } else {
-        // ✅ Hanya set error jika memang ada error dari API
-        final errorMsg = result['message'] ?? 'Gagal mengambil riwayat topup';
-        print('❌ Error: $errorMsg');
-        
-        // ✅ Jika error message adalah "no topups found", jangan anggap sebagai error
-        if (errorMsg.toLowerCase().contains('no topups') || 
-            errorMsg.toLowerCase().contains('tidak ada')) {
-          _topups = [];
-          _errorMessage = null; // ✅ Tidak ada error, hanya kosong
-          print('ℹ️ No topups found - showing empty state');
-        } else {
-          _errorMessage = errorMsg; // Error sebenarnya
-        }
-        
-        setLoading(false);
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      print('❌ Exception: $e');
-      
-      // ✅ Cek apakah exception karena data kosong atau error sungguhan
-      final errorString = e.toString().toLowerCase();
-      if (errorString.contains('no topups') || 
-          errorString.contains('not found') ||
-          errorString.contains('empty')) {
+        // Jika data bukan list, set empty
         _topups = [];
-        _errorMessage = null; // Bukan error, hanya kosong
-        print('ℹ️ Exception indicates empty data - showing empty state');
+      }
+      
+      // ✅ PENTING: Clear error jika berhasil, meskipun data kosong
+      _errorMessage = null;
+      
+      setLoading(false);
+      notifyListeners();
+      return true;
+    } else {
+      // ✅ Hanya set error jika memang ada error dari API
+      final errorMsg = result['message'] ?? 'Gagal mengambil riwayat topup';
+      print('❌ Error: $errorMsg');
+      
+      // ✅ Jika error message adalah "no topups found", jangan anggap sebagai error
+      if (errorMsg.toLowerCase().contains('no topups') || 
+          errorMsg.toLowerCase().contains('tidak ada') ||
+          errorMsg.toLowerCase().contains('belum ada')) {
+        _topups = [];
+        _errorMessage = null; // ✅ Tidak ada error, hanya kosong
       } else {
-        _errorMessage = 'Terjadi kesalahan: $e';
+        _errorMessage = errorMsg; // Error sebenarnya
       }
       
       setLoading(false);
       notifyListeners();
       return false;
     }
+  } catch (e) {
+    print('❌ Exception: $e');
+    
+    // ✅ Cek apakah exception karena data kosong atau error sungguhan
+    final errorString = e.toString().toLowerCase();
+    if (errorString.contains('no topups') || 
+        errorString.contains('not found') ||
+        errorString.contains('empty')) {
+      _topups = [];
+      _errorMessage = null; // Bukan error, hanya kosong
+    } else {
+      _errorMessage = 'Terjadi kesalahan: $e';
+    }
+    
+    setLoading(false);
+    notifyListeners();
+    return false;
   }
+}
 
   // Refresh topup history
   Future<void> refreshTopupHistory(String token) async {

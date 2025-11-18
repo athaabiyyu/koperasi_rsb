@@ -4,8 +4,15 @@ import 'package:http/http.dart' as http;
 import 'package:koperasi_rsb/config/api_config.dart';
 import 'package:koperasi_rsb/config/api_endpoint/topup_endpoints.dart';
 import 'package:koperasi_rsb/models/topup_model.dart';
+import 'package:koperasi_rsb/models/withdraw_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/shared_preferences_helper.dart';
 
 class TopupService {
+  Future<String?> getToken() async {
+    return await SharedPreferencesHelper.getToken();
+  }
+
   static Future<Map<String, dynamic>> payTopup({
     required String token,
     required String namaBank,
@@ -80,83 +87,81 @@ class TopupService {
     }
   }
 
-  // ✅ NEW: Pay Simpanan Wajib
- // Tambahkan method baru di class TopupService
-static Future<Map<String, dynamic>> paySimpananWajib({
-  required String token,
-  required String namaBank,
-  required String noRekening,
-  required String namaPemilikRekening,
-  required File buktiPembayaran,
-}) async {
-  try {
-    if (!buktiPembayaran.existsSync()) {
+  static Future<Map<String, dynamic>> paySimpananWajib({
+    required String token,
+    required String namaBank,
+    required String noRekening,
+    required String namaPemilikRekening,
+    required File buktiPembayaran,
+  }) async {
+    try {
+      if (!buktiPembayaran.existsSync()) {
+        return {
+          'success': false,
+          'message': 'File bukti pembayaran tidak ditemukan',
+        };
+      }
+
+      final url = Uri.parse('${TopupEndpoints.paySimpananWajib}');
+      var request = http.MultipartRequest('POST', url);
+
+      final headers = ApiConfig.getAuthHeaders(token);
+      request.headers.addAll(headers);
+      request.fields['nama_bank'] = namaBank;
+      request.fields['no_rekening'] = noRekening;
+      request.fields['nama_pemilik_rekening'] = namaPemilikRekening;
+      request.fields['nominal'] = '120000'; // Statis 120.000
+
+      final multipartFile = await http.MultipartFile.fromPath(
+        'bukti_pembayaran',
+        buktiPembayaran.path,
+      );
+      request.files.add(multipartFile);
+    
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        try {
+          final responseData = json.decode(response.body);
+          final message = responseData['message'] ?? 'Simpanan Wajib created, awaiting payment confirmation';
+          
+          return {
+            'success': true,
+            'message': message,
+          };
+        } catch (parseError) {
+          return {
+            'success': false,
+            'message': 'Gagal memproses response dari server',
+          };
+        }
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          final errorMessage = errorData['message'] ?? 'Gagal melakukan pembayaran simpanan wajib';
+          
+          return {
+            'success': false,
+            'message': errorMessage,
+          };
+        } catch (parseError) {
+          return {
+            'success': false,
+            'message': 'Server error: ${response.statusCode}',
+          };
+        }
+      }
+    } catch (e) {
       return {
         'success': false,
-        'message': 'File bukti pembayaran tidak ditemukan',
+        'message': 'Terjadi kesalahan: $e',
       };
     }
-
-    final url = Uri.parse('${TopupEndpoints.paySimpananWajib}');
-    var request = http.MultipartRequest('POST', url);
-
-    final headers = ApiConfig.getAuthHeaders(token);
-    request.headers.addAll(headers);
-    request.fields['nama_bank'] = namaBank;
-    request.fields['no_rekening'] = noRekening;
-    request.fields['nama_pemilik_rekening'] = namaPemilikRekening;
-    request.fields['nominal'] = '120000'; // Statis 120.000
-
-    final multipartFile = await http.MultipartFile.fromPath(
-      'bukti_pembayaran',
-      buktiPembayaran.path,
-    );
-    request.files.add(multipartFile);
-  
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      try {
-        final responseData = json.decode(response.body);
-        final message = responseData['message'] ?? 'Simpanan Wajib created, awaiting payment confirmation';
-        
-        return {
-          'success': true,
-          'message': message,
-        };
-      } catch (parseError) {
-        return {
-          'success': false,
-          'message': 'Gagal memproses response dari server',
-        };
-      }
-    } else {
-      try {
-        final errorData = json.decode(response.body);
-        final errorMessage = errorData['message'] ?? 'Gagal melakukan pembayaran simpanan wajib';
-        
-        return {
-          'success': false,
-          'message': errorMessage,
-        };
-      } catch (parseError) {
-        return {
-          'success': false,
-          'message': 'Server error: ${response.statusCode}',
-        };
-      }
-    }
-  } catch (e) {
-    return {
-      'success': false,
-      'message': 'Terjadi kesalahan: $e',
-    };
   }
-}
 
   // Get topup history by user ID
-  static Future<Map<String, dynamic>> getTopupByUserId(String token) async {
+  Future<Map<String, dynamic>> getTopupByUserId(String token) async {
     try {
       final url = Uri.parse(TopupEndpoints.getUserTopups);
       final response = await http.get(
@@ -359,6 +364,32 @@ static Future<Map<String, dynamic>> paySimpananWajib({
         'message': 'Terjadi kesalahan: $e',
         'total': 0,
       };
+    }
+  }
+
+  // POST: Withdraw Saldo
+  Future<Map<String, dynamic>> withdrawSaldo(WithdrawRequest request) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login kembali.');
+      }
+
+      final url = Uri.parse('${ApiConfig.baseUrl}/topup/withdraw');
+      final response = await http.post(
+        url,
+        headers: ApiConfig.getAuthHeaders(token),
+        body: json.encode(request.toJson()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Gagal mengajukan penarikan');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
     }
   }
 }

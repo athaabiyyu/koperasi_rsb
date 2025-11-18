@@ -9,6 +9,7 @@ class TopupModel {
   final String? jenis;             
   final String status;
   final String? paymentMethod;
+  final String? buktiPembayaran;  // Path dari backend
   final String? paymentProof;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -24,6 +25,7 @@ class TopupModel {
     this.namaPemilikRekening,
     required this.nominal,
     this.jenis,
+    this.buktiPembayaran,
     required this.status,
     this.paymentMethod,
     this.paymentProof,
@@ -34,7 +36,6 @@ class TopupModel {
   });
 
   factory TopupModel.fromJson(Map<String, dynamic> json) {
-    // Handle nested structure from backend
     final topupData = json['topup'] ?? json;
     final walletData = json['wallet'];
     final userData = json['user'];
@@ -50,7 +51,8 @@ class TopupModel {
       jenis: topupData['jenis'],                            
       status: topupData['status'] ?? 'MENUNGGU KONFIRMASI',
       paymentMethod: topupData['payment_method'],
-      paymentProof: topupData['bukti_pembayaran'] ?? topupData['payment_proof'],
+      buktiPembayaran: topupData['bukti_pembayaran'],  // ✅ Ambil dari backend
+      paymentProof: topupData['payment_proof'],
       createdAt: DateTime.parse(topupData['created_at'] ?? DateTime.now().toIso8601String()),
       updatedAt: topupData['updated_at'] != null 
           ? DateTime.parse(topupData['updated_at']) 
@@ -60,7 +62,6 @@ class TopupModel {
     );
   }
 
-  // ✅ FIXED: Handle uppercase status dari backend
   bool get isSuccess => status.toUpperCase() == 'SUKSES' || 
                         status.toLowerCase() == 'success' || 
                         status.toLowerCase() == 'berhasil';
@@ -114,6 +115,25 @@ class TopupModel {
       (Match m) => '${m[1]}.',
     )}';
   }
+
+  // ✅ Getter untuk URL lengkap bukti pembayaran (untuk ditampilkan)
+  String? get buktiPembayaranUrl {
+    if (buktiPembayaran == null || buktiPembayaran!.isEmpty) {
+      return null;
+    }
+    
+    // Jika sudah full URL, return as is
+    if (buktiPembayaran!.startsWith('http')) {
+      return buktiPembayaran;
+    }
+    
+    const baseUrl = 'http://192.168.60.78:3001/'; 
+    return '$baseUrl${buktiPembayaran}';
+  }
+
+  // ✅ Check apakah bukti pembayaran tersedia
+  bool get hasBuktiPembayaran => 
+      buktiPembayaran != null && buktiPembayaran!.isNotEmpty;
 }
 
 class WalletData {

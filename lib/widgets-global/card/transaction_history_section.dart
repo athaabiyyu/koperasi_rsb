@@ -5,8 +5,6 @@ import 'package:koperasi_rsb/providers/topup_provider.dart';
 import 'package:koperasi_rsb/widgets-global/colors.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/pagination_table.dart';
 import 'package:koperasi_rsb/widgets-global/transaction-history.dart';
-import 'package:koperasi_rsb/widgets-global/dialog/detail-pembayaran-awal.dart';
-import 'package:koperasi_rsb/widgets-global/card/card-detail-pembayaran.dart';
 import 'package:provider/provider.dart';
 
 enum TransactionHistoryVariant { premium, regular }
@@ -16,7 +14,7 @@ class TransactionHistorySection extends StatelessWidget {
     super.key,
     required this.variant,
     this.itemsPerPageForRegular = 3,
-    this.maxItemsForPremium = 6,
+    this.maxItemsForPremium = 5,
   });
 
   final TransactionHistoryVariant variant;
@@ -98,7 +96,6 @@ class TransactionHistorySection extends StatelessWidget {
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
-            isPremium: false,
             title: 'Riwayat Transaksi',
             child: _EmptyTransactionState(
               deviceWidth: deviceWidth,
@@ -113,7 +110,6 @@ class TransactionHistorySection extends StatelessWidget {
           return _SectionContainer(
             deviceWidth: deviceWidth,
             deviceHeight: deviceHeight,
-            isPremium: false,
             title: 'Riwayat Transaksi',
             child: Column(
               children: [
@@ -122,7 +118,7 @@ class TransactionHistorySection extends StatelessWidget {
                   (index) => Column(
                     children: [
                       transactions[index],
-                      const Divider(),
+                      if (index < transactions.length - 1) const Divider(),
                     ],
                   ),
                 ),
@@ -150,7 +146,6 @@ class TransactionHistorySection extends StatelessWidget {
               return _SectionContainer(
                 deviceWidth: deviceWidth,
                 deviceHeight: deviceHeight,
-                isPremium: false,
                 title: 'Riwayat Transaksi',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,13 +156,16 @@ class TransactionHistorySection extends StatelessWidget {
                         (index) => Column(
                           children: [
                             visibleTransactions[index],
-                            const Divider(),
+                            if (index < visibleTransactions.length - 1)
+                              const Divider(),
                           ],
                         ),
                       ),
                     ),
-                    SizedBox(height: deviceHeight * 0.02),
-                    if (totalPages > 1)
+                    if (totalPages > 1) ...[
+                      SizedBox(height: deviceHeight * 0.02),
+                      const Divider(height: 1),
+                      SizedBox(height: deviceHeight * 0.02),
                       PaginationWidget(
                         currentPage: currentPage,
                         totalPages: totalPages,
@@ -182,6 +180,7 @@ class TransactionHistorySection extends StatelessWidget {
                           });
                         },
                       ),
+                    ],
                   ],
                 ),
               );
@@ -252,7 +251,6 @@ class _EmptyTransactionState extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: deviceHeight * 0.025),
-          
         ],
       ),
     );
@@ -263,37 +261,14 @@ class _SectionContainer extends StatelessWidget {
   const _SectionContainer({
     required this.deviceWidth,
     required this.deviceHeight,
-    required this.isPremium,
     required this.title,
     required this.child,
   });
 
   final double deviceWidth;
   final double deviceHeight;
-  final bool isPremium;
   final String title;
   final Widget child;
-
-  void _showPaymentDialog(BuildContext context) {
-    DetailPembayaranAwalMember.show(
-      context,
-      alertTitle: 'Detail Pembayaran',
-      alertMessage: 'Pastikan data pembayaran sudah benar.',
-      paymentTitle: 'Pembayaran Simpanan Wajib',
-      paymentHeader: 'Informasi Pembayaran',
-      paymentItems: [PaymentItem(title: 'Simpanan Wajib', price: 'Rp 120.000')],
-      totalPrice: 'Rp 120.000',
-      onPressed: () {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pembayaran diproses'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,53 +292,14 @@ class _SectionContainer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                  flex: 3,
-                  child: AutoSizeText(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: deviceWidth * 0.04,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    minFontSize: 14,
-                  ),
-                ),
-                SizedBox(width: deviceWidth * 0.02),
-                if (isPremium)
-                  Flexible(
-                    flex: 2,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: darkGreen,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: deviceWidth * 0.025,
-                          vertical: deviceHeight * 0.008,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 0,
-                      ),
-                      onPressed: () => _showPaymentDialog(context),
-                      child: AutoSizeText(
-                        'Bayar Simpanan Wajib',
-                        style: GoogleFonts.poppins(
-                          fontSize: deviceWidth * 0.032,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        minFontSize: 11,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
+            AutoSizeText(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: deviceWidth * 0.04,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+              minFontSize: 14,
             ),
             SizedBox(height: deviceHeight * 0.015),
             const Divider(height: 1),

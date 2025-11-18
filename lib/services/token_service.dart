@@ -57,17 +57,10 @@ class TokenService {
   Future<List<TokenUsageDetail>> getTokenUsageDetails(String token) async {
     try {
       final url = Uri.parse(TokenEndpoints.tokenUsageDetails());
-
-      print('\n📊 === FETCHING TOKEN USAGE DETAILS ===');
-      print('URL: $url');
-
       final response = await http.get(
         url,
         headers: ApiConfig.getAuthHeaders(token),
       );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);

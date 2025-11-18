@@ -204,9 +204,6 @@ class ProjectService {
 
     request.headers['Authorization'] = 'Bearer $token';
 
-    print('\n🔄 === UPDATE PROJECT SERVICE ===');
-    print('Project ID: $projectId');
-
     // Add project ID to body
     request.fields['id'] = projectId;
 
@@ -232,23 +229,19 @@ class ProjectService {
     // ✅ TAMBAHAN: Kirim existing dokumen yang masih di-keep
     if (existingDokumen != null && existingDokumen.isNotEmpty) {
       request.fields['existing_dokumen'] = json.encode(existingDokumen);
-      print('📋 Existing dokumen to keep: $existingDokumen');
     }
 
     // ✅ Add NEW dokumen files
     if (dokumenFiles != null && dokumenFiles.isNotEmpty) {
-      print('📎 Adding ${dokumenFiles.length} new dokumen files');
       for (var file in dokumenFiles) {
         request.files.add(
           await http.MultipartFile.fromPath('dokumen', file.path),
         );
-        print('  - ${file.path.split('/').last}');
       }
     }
 
     // ✅ Add brosur file ONLY if new file uploaded
     if (brosurProdukFile != null) {
-      print('📎 Adding new brosur_produk');
       request.files.add(
         await http.MultipartFile.fromPath(
           'brosur_produk',
@@ -256,12 +249,10 @@ class ProjectService {
         ),
       );
     } else {
-      print('⚠️ No new brosur_produk - keeping existing');
     }
 
     // ✅ Add dokumen proyeksi ONLY if new file uploaded
     if (dokumenProyeksiFile != null) {
-      print('📎 Adding new dokumen_proyeksi');
       request.files.add(
         await http.MultipartFile.fromPath(
           'dokumen_proyeksi',
@@ -269,16 +260,11 @@ class ProjectService {
         ),
       );
     } else {
-      print('⚠️ No new dokumen_proyeksi - keeping existing');
     }
 
-    print('🚀 Sending update request...');
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
-
-    print('📥 Response status: ${response.statusCode}');
-    print('📥 Response body: ${response.body}');
 
     // Check for 200 OR 201 status code
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -286,7 +272,6 @@ class ProjectService {
 
       // Handle response that only has "message" field
       if (data is Map && data.containsKey('message')) {
-        print('✅ Update successful: ${data['message']}');
         return ProjectResponse(
           message: data['message'] as String,
           data: null,
@@ -302,7 +287,6 @@ class ProjectService {
       );
     }
   } catch (e) {
-    print('❌ Update failed: $e');
     rethrow;
   }
 }

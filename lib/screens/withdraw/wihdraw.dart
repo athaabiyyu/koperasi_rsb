@@ -5,7 +5,11 @@ import 'package:koperasi_rsb/widgets-global/button/green-button.dart';
 import 'package:koperasi_rsb/widgets-global/form/textFormField.dart';
 import 'package:koperasi_rsb/widgets-global/navigation/pagination_table.dart';
 import 'package:koperasi_rsb/widgets-global/tabel/tabel-penarikan-saldo.dart';
-
+import 'package:koperasi_rsb/widgets-global/dialog/dialog-proses-verifikasi.dart';
+import 'package:koperasi_rsb/services/topup_service.dart';
+import 'package:koperasi_rsb/models/topup_model.dart';
+import 'package:koperasi_rsb/models/withdraw_model.dart';
+import 'package:koperasi_rsb/utils/format_helper.dart';
 
 class WithdrawPage extends StatefulWidget {
   const WithdrawPage({super.key});
@@ -19,6 +23,8 @@ class _WithdrawPageState extends State<WithdrawPage>
   int activeTab = 0;
 
   final _formKey = GlobalKey<FormState>();
+  final TopupService _topupService = TopupService();
+  final FormatHelper _formatHelper = FormatHelper();
 
   final TextEditingController namaController = TextEditingController();
   final TextEditingController noRekController = TextEditingController();
@@ -31,66 +37,25 @@ class _WithdrawPageState extends State<WithdrawPage>
   final List<String> bankList = ['BCA', 'BNI', 'BRI', 'Mandiri', 'BSI', 'CIMB'];
 
   /// PAGINATION
-  int _itemsPerPage = 5;
+  int _itemsPerPage = 10;
 
   int _currentPageMenunggu = 1;
   int _currentPageBerhasil = 1;
   int _currentPageGagal = 1;
 
-  /// DUMMY TRANSAKSI - Sesuaikan dengan struktur tabel
-  final List<Map<String, String>> dataMenunggu = [
-    {
-      "tanggal": "14 Nov 2025",
-      "nama": "Agung",
-      "nominal": "Rp 300.000",
-      "jenis": "Penarikan",
-      "status": "Menunggu",
-      "bukti pembayaran": "-"
-    },
-    {
-      "tanggal": "13 Nov 2025",
-      "nama": "Rifki",
-      "nominal": "Rp 500.000",
-      "jenis": "Penarikan",
-      "status": "Menunggu",
-      "bukti pembayaran": "-"
-    },
-  ];
+  /// DATA DARI BACKEND
+  List<Map<String, String>> dataMenunggu = [];
+  List<Map<String, String>> dataBerhasil = [];
+  List<Map<String, String>> dataGagal = [];
 
-  final List<Map<String, String>> dataBerhasil = [
-    {
-      "tanggal": "12 Nov 2025",
-      "nama": "Rudi",
-      "nominal": "Rp 150.000",
-      "jenis": "Penarikan",
-      "status": "Berhasil",
-      "bukti pembayaran": "Lihat"
-    },
-    {
-      "tanggal": "10 Nov 2025",
-      "nama": "Suci",
-      "nominal": "Rp 200.000",
-      "jenis": "Penarikan",
-      "status": "Berhasil",
-      "bukti pembayaran": "Lihat"
-    },
-  ];
-
-  final List<Map<String, String>> dataGagal = [
-    {
-      "tanggal": "08 Nov 2025",
-      "nama": "Rendi",
-      "nominal": "Rp 100.000",
-      "jenis": "Penarikan",
-      "status": "Gagal",
-      "bukti pembayaran": "-"
-    },
-  ];
+  bool _isLoading = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadRiwayatTransaksi();
   }
 
   @override
@@ -100,6 +65,205 @@ class _WithdrawPageState extends State<WithdrawPage>
     noRekController.dispose();
     jumlahController.dispose();
     super.dispose();
+  }
+
+  // Load riwayat transaksi dari backend
+  Future<void> _loadRiwayatTransaksi() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final token = await _topupService.getToken();
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login kembali.');
+      }
+
+      final result = await _topupService.getTopupByUserId(token);
+
+      if (result['success'] == true) {
+        final List<TopupModel> topupList = result['data'] as List<TopupModel>;
+
+        setState(() {
+          dataMenunggu = _formatHelper.filterByStatus(topupList, 'Menunggu');
+          dataBerhasil = _formatHelper.filterByStatus(topupList, 'Berhasil');
+          dataGagal = _formatHelper.filterByStatus(topupList, 'Gagal');
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Gagal memuat riwayat'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat riwayat: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // ✅ Validasi form dulu, lalu tampilkan pop-up konfirmasi
+  void _handleAjukanPenarikan() {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (selectedBank == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Silakan pilih bank"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // ✅ Tampilkan pop-up konfirmasi sebelum submit
+    _showConfirmationDialog();
+  }
+
+  // ✅ Pop-up konfirmasi persis seperti KonfirmasiPembayaran
+  void _showConfirmationDialog() {
+    final title = "Konfirmasi Penarikan Saldo";
+    final description = 
+        "Apakah Anda yakin ingin mengajukan penarikan saldo?\n\n"
+        "Setelah Anda konfirmasi, pengajuan akan dikirim ke Admin untuk diverifikasi. "
+        "Proses verifikasi memakan waktu hingga 2x24 jam.\n\n"
+        "Dana akan ditransfer ke rekening Anda setelah admin menyetujui pengajuan ini.";
+
+    showCustomDialog(
+      context: context,
+      title: title,
+      description: description,
+      imagePath: "assets/images/ava-proses-verifikasi.png",
+      buttonText: "Ya, Ajukan Sekarang",
+      onButtonPressed: () {
+        Navigator.of(context).pop(); // Tutup dialog
+        _submitWithdraw(); // Lanjutkan submit
+      },
+      bottomText: "Batal",
+      onBottomTextTap: () {
+        Navigator.of(context).pop(); // Tutup dialog tanpa submit
+      },
+    );
+  }
+
+  // ✅ Submit penarikan saldo (dipanggil setelah user konfirmasi di dialog)
+  Future<void> _submitWithdraw() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // Parsing nominal (hapus format Rupiah)
+      final nominalStr = jumlahController.text
+          .replaceAll('Rp', '')
+          .replaceAll('.', '')
+          .replaceAll(',', '')
+          .trim();
+      final nominal = int.tryParse(nominalStr) ?? 0;
+
+      if (nominal <= 0) {
+        throw Exception('Nominal tidak valid');
+      }
+
+      final request = WithdrawRequest(
+        namaBank: selectedBank!,
+        noRekening: noRekController.text,
+        namaPemilikRekening: namaController.text,
+        nominal: nominal,
+      );
+
+      final response = await _topupService.withdrawSaldo(request);
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (mounted) {
+        if (response['success'] == true) {
+          // ✅ Tampilkan dialog sukses setelah submit berhasil
+          _showSuccessDialog();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Pengajuan gagal'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengajukan penarikan: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // ✅ Dialog sukses setelah submit
+  void _showSuccessDialog() {
+    final title = "Penarikan Saldo Sedang Diproses";
+    final description = 
+        "Pengajuan penarikan saldo Anda sedang diverifikasi oleh Admin. "
+        "Tunggu hingga 2x24 jam.\n\n"
+        "Dana akan ditransfer ke rekening Anda setelah admin mengkonfirmasi penarikan.";
+
+    showCustomDialog(
+      context: context,
+      title: title,
+      description: description,
+      imagePath: "assets/images/ava-proses-verifikasi.png",
+      buttonText: "Saya Mengerti",
+      onButtonPressed: () {
+        Navigator.of(context).pop(); // Tutup dialog
+        
+        // Reset form
+        _formKey.currentState!.reset();
+        namaController.clear();
+        noRekController.clear();
+        jumlahController.clear();
+        setState(() {
+          selectedBank = null;
+        });
+
+        // Reload riwayat
+        _loadRiwayatTransaksi();
+
+        // Pindah ke tab riwayat
+        setState(() {
+          activeTab = 1;
+        });
+      },
+      bottomText: "Butuh bantuan? Hubungi Admin",
+      onBottomTextTap: () {
+        print("User klik Hubungi Admin");
+      },
+    );
   }
 
   @override
@@ -275,23 +439,12 @@ class _WithdrawPageState extends State<WithdrawPage>
           SizedBox(
             width: double.infinity,
             height: 50,
-            child: CustomButton(
-              text: "Ajukan Penarikan",
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  if (selectedBank == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Silakan pilih bank"), backgroundColor: Colors.red),
-                    );
-                    return;
-                  }
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Pengajuan penarikan diproses"), backgroundColor: Colors.green),
-                  );
-                }
-              },
-            ),
+            child: _isSubmitting
+                ? const Center(child: CircularProgressIndicator())
+                : CustomButton(
+                    text: "Ajukan Penarikan",
+                    onPressed: _handleAjukanPenarikan, // ✅ Panggil pop-up dulu
+                  ),
           ),
 
           const SizedBox(height: 20),
@@ -303,16 +456,30 @@ class _WithdrawPageState extends State<WithdrawPage>
   Widget _buildRiwayat() {
     _tabController ??= TabController(length: 3, vsync: this);
 
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Riwayat Transaksi",
-          style: GoogleFonts.poppins(
-            fontSize: 25,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Riwayat Transaksi",
+              style: GoogleFonts.poppins(
+                fontSize: 25,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh, color: darkGreen),
+              onPressed: _loadRiwayatTransaksi,
+              tooltip: 'Refresh',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
 
@@ -334,7 +501,7 @@ class _WithdrawPageState extends State<WithdrawPage>
         const SizedBox(height: 12),
 
         SizedBox(
-          height: 400, 
+          height: 400,
           child: TabBarView(
             controller: _tabController!,
             children: [
@@ -382,44 +549,57 @@ class _WithdrawPageState extends State<WithdrawPage>
         ? data.length
         : (startIndex + _itemsPerPage);
 
-    final visibleData = data.sublist(startIndex, endIndex);
+    final List<Map<String, String>> visibleData = data.isNotEmpty 
+        ? data.sublist(startIndex, endIndex).cast<Map<String, String>>()
+        : [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PenarikanSaldoTable(status: status, data: visibleData),
+        data.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'Tidak ada data',
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  ),
+                ),
+              )
+            : PenarikanSaldoTable(status: status, data: visibleData),
         const SizedBox(height: 8),
 
-        PaginationWidget(
-          currentPage: currentPage,
-          totalPages: totalPages,
-          onPrevious: currentPage > 1
-              ? () {
-                  setState(() {
-                    if (status == "Menunggu Konfirmasi") {
-                      _currentPageMenunggu--;
-                    } else if (status == "Berhasil") {
-                      _currentPageBerhasil--;
-                    } else {
-                      _currentPageGagal--;
-                    }
-                  });
-                }
-              : null,
-          onNext: currentPage < totalPages
-              ? () {
-                  setState(() {
-                    if (status == "Menunggu Konfirmasi") {
-                      _currentPageMenunggu++;
-                    } else if (status == "Berhasil") {
-                      _currentPageBerhasil++;
-                    } else {
-                      _currentPageGagal++;
-                    }
-                  });
-                }
-              : null,
-        ),
+        if (data.isNotEmpty)
+          PaginationWidget(
+            currentPage: currentPage,
+            totalPages: totalPages,
+            onPrevious: currentPage > 1
+                ? () {
+                    setState(() {
+                      if (status == "Menunggu Konfirmasi") {
+                        _currentPageMenunggu--;
+                      } else if (status == "Berhasil") {
+                        _currentPageBerhasil--;
+                      } else {
+                        _currentPageGagal--;
+                      }
+                    });
+                  }
+                : null,
+            onNext: currentPage < totalPages
+                ? () {
+                    setState(() {
+                      if (status == "Menunggu Konfirmasi") {
+                        _currentPageMenunggu++;
+                      } else if (status == "Berhasil") {
+                        _currentPageBerhasil++;
+                      } else {
+                        _currentPageGagal++;
+                      }
+                    });
+                  }
+                : null,
+          ),
       ],
     );
   }
