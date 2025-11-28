@@ -3,26 +3,24 @@ import 'package:provider/provider.dart'; // ✅ ADD THIS
 import '../../providers/project_provider.dart';
 
 class MyProjectCard extends StatefulWidget {
-  final String projectId; // ✅ ADD THIS
+  final String projectId; 
   final String imageUrl;
   final String status;
   final String title;
   final int tokenDitawarkan;
   final int minBeli;
-  // ❌ REMOVE: final int terkumpul;
   final int sisaHari;
   final bool isDraft;
   final VoidCallback onTap;
 
   const MyProjectCard({
     super.key,
-    required this.projectId, // ✅ ADD THIS
+    required this.projectId, 
     required this.imageUrl,
     required this.status,
     required this.title,
     required this.tokenDitawarkan,
     required this.minBeli,
-    // ❌ REMOVE: required this.terkumpul,
     required this.sisaHari,
     required this.isDraft,
     required this.onTap,
@@ -223,14 +221,14 @@ class _MyProjectCardState extends State<MyProjectCard> {
                       height: 10,
                       child: LinearProgressIndicator(
                         backgroundColor: Colors.grey.shade200,
-                        color: Colors.blue,
+                        color: const Color(0xFFF38E09),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     )
                   : LinearProgressIndicator(
                       value: progress,
                       backgroundColor: Colors.grey.shade200,
-                      color: Colors.orange,
+                      color: const Color(0xFF12B76A),
                       minHeight: 10,
                       borderRadius: BorderRadius.circular(4),
                     ),

@@ -279,24 +279,22 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(
-                height: _deviceHeight * 0.27,
-                child: cardLoginRegisWidget(
-                  title: "Selamat Datang!",
-                  subtitle: "Silahkan masuk untuk melanjutkan",
-                  deviceWidth: _deviceWidth,
-                ),
+        child: Column(
+          children: [
+            SizedBox(
+              height: _deviceHeight * 0.27,
+              child: cardLoginRegisWidget(
+                title: "Selamat Datang!",
+                subtitle: "Silahkan masuk untuk melanjutkan",
+                deviceWidth: _deviceWidth,
               ),
-              Container(
+            ),
+            Expanded(
+              child: Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: _deviceWidth * 0.07),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height,
-                  ),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -418,13 +416,14 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 25),
                       ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

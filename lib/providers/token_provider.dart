@@ -132,6 +132,7 @@ class TokenProvider extends ChangeNotifier {
     required String token,
     required String projectId,
     required int jumlahToken,
+    required String projectName,
     bool autoClear = true,
     bool refreshGlobal =
         true, // refresh dashboard & project lists after success
@@ -163,7 +164,7 @@ class TokenProvider extends ChangeNotifier {
         try {
           NotificationService().showPurchaseSuccess(
             jumlahToken: jumlahToken,
-            projectId: projectId,
+            projectName: projectName,
           );
         } catch (e) {
           debugPrint('Gagal menampilkan notifikasi lokal: $e');

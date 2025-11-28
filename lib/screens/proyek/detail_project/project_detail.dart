@@ -277,6 +277,7 @@ class _ProjectDetailPageState extends State<ProjectDetailPage> {
       await tp.buyToken(
         token: token,
         projectId: widget.projectId,
+        projectName: _projectDetail!.judul,
         jumlahToken: jumlahToken,
       );
     });

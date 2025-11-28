@@ -39,13 +39,15 @@ class _ProjectListCardState extends State<ProjectListCard> {
 
   Future<void> _loadTokenData() async {
     if (!mounted) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       // Load investors untuk mendapatkan token terkumpul
-      await context.read<ProjectProvider>().loadProjectInvestors(widget.projectId);
-      
+      await context.read<ProjectProvider>().loadProjectInvestors(
+        widget.projectId,
+      );
+
       if (mounted) {
         final collected = context.read<ProjectProvider>().collectedToken;
         setState(() {
@@ -189,25 +191,17 @@ class _ProjectListCardState extends State<ProjectListCard> {
                       LinearProgressIndicator(
                         value: progress,
                         backgroundColor: Colors.grey.shade200,
-                        color: Colors.orange,
+                        color: const Color(0xFF12B76A),
                         minHeight: 8,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       // Loading indicator overlay
                       if (_isLoading)
                         Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Center(
-                              child: SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
+                          child: LinearProgressIndicator(
+                            backgroundColor: Colors.grey.shade200,
+                            color: const Color(0xFFF38E09),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                     ],

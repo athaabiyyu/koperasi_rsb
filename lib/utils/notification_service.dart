@@ -74,13 +74,13 @@ class NotificationService {
 
   Future<void> showPurchaseSuccess({
     required int jumlahToken,
-    required String projectId,
+    required String projectName,
   }) async {
     if (!_initialized) return;
     await _plugin.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       'Pembelian token berhasil',
-      'Anda membeli $jumlahToken token untuk proyek #$projectId',
+      'Anda membeli $jumlahToken token untuk proyek #$projectName',
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'purchase_channel',

@@ -136,7 +136,7 @@ class ProjectHeaderInfo extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       backgroundColor: Colors.grey.shade300,
-                      color: Colors.orange,
+                      color: const Color(0xFF12B76A),
                       minHeight: 16,
                     ),
                   ),

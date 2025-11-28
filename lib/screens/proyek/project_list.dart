@@ -19,7 +19,7 @@
   class _ProjectListPageState extends State<ProjectListPage> {
     final TextEditingController _searchController = TextEditingController();
     Timer? _debounce;
-    String _viewMode = 'grid'; // 'grid', 'list', 'masonry'
+    String _viewMode = 'grid'; 
 
     @override
     void initState() {
@@ -245,11 +245,6 @@
                                 mode: 'list',
                                 isSelected: _viewMode == 'list',
                               ),
-                              _buildViewModeButton(
-                                icon: Icons.dashboard,
-                                mode: 'masonry',
-                                isSelected: _viewMode == 'masonry',
-                              ),
                             ],
                           ),
                         ),
@@ -335,34 +330,6 @@
                         );
                       },
                       childCount: projects.length,
-                    ),
-                  );
-                } else if (_viewMode == 'masonry') {
-                  // Staggered grid (masonry style)
-                  return SliverPadding(
-                    padding: EdgeInsets.all(deviceWidth * 0.02),
-                    sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.72, // Slightly taller cards
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final p = projects[index];
-                          return ProjectListCard(
-                            projectId: p.id,
-                            imageUrl: p.mainImageUrl,
-                            status: p.statusDisplay,
-                            title: p.judul,
-                            owner: p.user.name,
-                            remainingDays: p.sisaHari,
-                            maxToken: p.tokenDitawarkan,
-                          );
-                        },
-                        childCount: projects.length,
-                      ),
                     ),
                   );
                 } else {
