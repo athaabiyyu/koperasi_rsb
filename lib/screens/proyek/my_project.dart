@@ -9,6 +9,7 @@ import 'package:koperasi_rsb/providers/auth_provider.dart';
 import 'package:koperasi_rsb/providers/project_provider.dart';
 import 'package:koperasi_rsb/models/project_list_model.dart';
 import 'package:provider/provider.dart';
+import 'package:koperasi_rsb/widgets-global/navigation/pagination_table.dart';
 
 class MyProjectPage extends StatefulWidget {
   final bool fromProjectList;
@@ -23,6 +24,17 @@ class _MyProjectPageState extends State<MyProjectPage>
     with SingleTickerProviderStateMixin {
   int _sortIndex = 0; // 0 = Terbaru, 1 = Terlama
   bool _isInitialized = false;
+  
+  // Pagination state untuk setiap tab
+  final Map<String, int> _currentPages = {
+    'PROSES_VERIFIKASI': 1,
+    'PENDANAAN DIBUKA': 1,
+    'BERJALAN': 1,
+    'SELESAI': 1,
+    'DIBATALKAN': 1,
+    'DRAFT': 1,
+  };
+  final int _itemsPerPage = 5;
 
   @override
   void didChangeDependencies() {
@@ -43,6 +55,63 @@ class _MyProjectPageState extends State<MyProjectPage>
 
   Future<void> _refreshProjects() async {
     await _loadProjects();
+    // Reset semua halaman ke 1 setelah refresh
+    setState(() {
+      _currentPages.updateAll((key, value) => 1);
+    });
+  }
+
+  void _goToNextPage(String statusFilter) {
+    final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+    final totalItems = _getProjectsByFilter(statusFilter, projectProvider).length;
+    final totalPages = (totalItems / _itemsPerPage).ceil();
+    
+    if (_currentPages[statusFilter]! < totalPages) {
+      setState(() {
+        _currentPages[statusFilter] = _currentPages[statusFilter]! + 1;
+      });
+    }
+  }
+
+  void _goToPreviousPage(String statusFilter) {
+    if (_currentPages[statusFilter]! > 1) {
+      setState(() {
+        _currentPages[statusFilter] = _currentPages[statusFilter]! - 1;
+      });
+    }
+  }
+
+  List<ProjectListItem> _getProjectsByFilter(String statusFilter, ProjectProvider projectProvider) {
+    if (statusFilter == "PROSES_VERIFIKASI") {
+      return projectProvider.getProjectsByStatuses([
+        'PROSES VERIFIKASI',
+        'REVISI',
+        'APPROVAL',
+        'TTD KONTRAK',
+        'DITOLAK',
+      ], newest: _sortIndex == 0);
+    } else if (statusFilter == "BERJALAN") {
+      final allProjects = projectProvider.userProjects;
+      var projects = allProjects
+          .where(
+            (p) =>
+                p.status == 'BERJALAN' ||
+                p.status.startsWith('BERJALAN SIKLUS'),
+          )
+          .toList();
+
+      if (_sortIndex == 0) {
+        projects.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      } else {
+        projects.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      }
+      return projects;
+    } else {
+      return projectProvider.getProjectsByStatus(
+        statusFilter,
+        newest: _sortIndex == 0,
+      );
+    }
   }
 
   @override
@@ -64,7 +133,6 @@ class _MyProjectPageState extends State<MyProjectPage>
     final pendanaanDibukaCount = projectProvider.getProjectCountByStatus(
       'PENDANAAN DIBUKA',
     );
-    // Count BERJALAN including all cycles
     final berjalanCount = projectProvider.userProjects
         .where(
           (p) =>
@@ -84,21 +152,17 @@ class _MyProjectPageState extends State<MyProjectPage>
       'DITOLAK',
     ]);
 
-    // Auto refresh disabled per request; rely on manual refresh and provider updates
-
     return WillPopScope(
       onWillPop: () async {
         if (widget.fromProjectList) {
-          // Kembali ke halaman sebelumnya (Daftar Proyek) jika datang dari Project List
           Navigator.pop(context);
           return false;
         }
-        // Default: arahkan ke home sesuai role
         Navigator.pushReplacementNamed(context, homeRoute);
         return false;
       },
       child: DefaultTabController(
-        length: 6, // ✅ Tambah jadi 6 tab
+        length: 6,
         child: Scaffold(
           backgroundColor: const Color(0xFFF3FFFA),
           bottomNavigationBar: (isPlatinum && widget.fromProjectList)
@@ -124,7 +188,7 @@ class _MyProjectPageState extends State<MyProjectPage>
           body: SafeArea(
             child: Column(
               children: [
-                // Header + Tabs unified in one white background
+                // Header + Tabs
                 Container(
                   color: Colors.white,
                   width: double.infinity,
@@ -184,6 +248,20 @@ class _MyProjectPageState extends State<MyProjectPage>
                         labelPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                         ),
+                        onTap: (index) {
+                          // Reset halaman ke 1 saat pindah tab
+                          final filters = [
+                            'PROSES_VERIFIKASI',
+                            'PENDANAAN DIBUKA',
+                            'BERJALAN',
+                            'SELESAI',
+                            'DIBATALKAN',
+                            'DRAFT'
+                          ];
+                          setState(() {
+                            _currentPages[filters[index]] = 1;
+                          });
+                        },
                         tabs: [
                           Tab(
                             child: Column(
@@ -299,6 +377,8 @@ class _MyProjectPageState extends State<MyProjectPage>
                           onTap: () {
                             setState(() {
                               _sortIndex = 0;
+                              // Reset semua halaman ke 1
+                              _currentPages.updateAll((key, value) => 1);
                             });
                           },
                           child: Container(
@@ -329,6 +409,8 @@ class _MyProjectPageState extends State<MyProjectPage>
                           onTap: () {
                             setState(() {
                               _sortIndex = 1;
+                              // Reset semua halaman ke 1
+                              _currentPages.updateAll((key, value) => 1);
                             });
                           },
                           child: Container(
@@ -355,7 +437,7 @@ class _MyProjectPageState extends State<MyProjectPage>
                   ),
                 ),
 
-                // Info banner shown while processing (white background as requested)
+                // Info banner
                 if (projectProvider.status == ProjectStatus.loading)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -408,7 +490,7 @@ class _MyProjectPageState extends State<MyProjectPage>
                     ),
                   ),
 
-                // Content area with loading/error handling
+                // Content area
                 Expanded(
                   child: projectProvider.isLoadingProjects
                       ? const Center(child: CircularProgressIndicator())
@@ -472,7 +554,7 @@ class _MyProjectPageState extends State<MyProjectPage>
                     onPressed: () {
                       final provider = context.read<ProjectProvider>();
                       provider.clearEditMode();
-                      provider.clearFormData(); // Clear form data juga
+                      provider.clearFormData();
 
                       Navigator.push(
                         context,
@@ -498,45 +580,10 @@ class _MyProjectPageState extends State<MyProjectPage>
   Widget _buildProjectList(String statusFilter) {
     final projectProvider = Provider.of<ProjectProvider>(context);
 
-    // Get projects with sorting
-    List<ProjectListItem> projects;
+    // Get all projects
+    List<ProjectListItem> allProjects = _getProjectsByFilter(statusFilter, projectProvider);
 
-    // Handle special filter for verification process
-    if (statusFilter == "PROSES_VERIFIKASI") {
-      projects = projectProvider.getProjectsByStatuses([
-        'PROSES VERIFIKASI',
-        'REVISI',
-        'APPROVAL',
-        'TTD KONTRAK',
-        'DITOLAK',
-      ], newest: _sortIndex == 0);
-    }
-    // Handle BERJALAN status (include all cycles)
-    else if (statusFilter == "BERJALAN") {
-      // Get all projects with BERJALAN or BERJALAN SIKLUS X
-      final allProjects = projectProvider.userProjects;
-      projects = allProjects
-          .where(
-            (p) =>
-                p.status == 'BERJALAN' ||
-                p.status.startsWith('BERJALAN SIKLUS'),
-          )
-          .toList();
-
-      // Sort
-      if (_sortIndex == 0) {
-        projects.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      } else {
-        projects.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      }
-    } else {
-      projects = projectProvider.getProjectsByStatus(
-        statusFilter,
-        newest: _sortIndex == 0,
-      );
-    }
-
-    if (projects.isEmpty) {
+    if (allProjects.isEmpty) {
       return const Center(
         child: Text(
           "Belum ada proyek",
@@ -545,63 +592,85 @@ class _MyProjectPageState extends State<MyProjectPage>
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _refreshProjects,
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * 0.01,
-          vertical: MediaQuery.of(context).size.height * 0.015,
-        ),
-        itemCount: projects.length,
-        itemBuilder: (context, index) {
-          final project = projects[index];
+    // Calculate pagination
+    final currentPage = _currentPages[statusFilter] ?? 1;
+    final totalPages = (allProjects.length / _itemsPerPage).ceil();
+    final startIndex = (currentPage - 1) * _itemsPerPage;
+    final endIndex = (startIndex + _itemsPerPage).clamp(0, allProjects.length);
+    final paginatedProjects = allProjects.sublist(startIndex, endIndex);
 
-          return MyProjectCard(
-            projectId: project.id,
-            imageUrl: project.mainImageUrl,
-            status: project.statusDisplay,
-            title: project.judul,
-            tokenDitawarkan: project.tokenDitawarkan,
-            minBeli: project.minBeli,
-            sisaHari: project.sisaHari,
-            isDraft: project.isDraft,
-            onTap: () {
-              if (project.isDraft) {
-                // Open AddProjectPage for editing draft
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AddProjectPage(
-                      isEditingDraft: true,
-                      draftData: _convertProjectToMap(project),
-                    ),
-                  ),
-                ).then((_) => _refreshProjects());
-              } else {
-                // Open ProjectDetailPage with projectId
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ProjectDetailPage(
-                      projectId: project.id,
-                      imageUrl: project.mainImageUrl,
-                      status: project.statusDisplay,
-                      title: project.judul,
-                      owner: project.user.name,
-                      remainingDays: project.sisaHari,
-                      maxToken: project.tokenDitawarkan,
-                    ),
-                  ),
+    return Column(
+      children: [
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _refreshProjects,
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.01,
+                vertical: MediaQuery.of(context).size.height * 0.015,
+              ),
+              itemCount: paginatedProjects.length,
+              itemBuilder: (context, index) {
+                final project = paginatedProjects[index];
+
+                return MyProjectCard(
+                  projectId: project.id,
+                  imageUrl: project.mainImageUrl,
+                  status: project.statusDisplay,
+                  title: project.judul,
+                  tokenDitawarkan: project.tokenDitawarkan,
+                  minBeli: project.minBeli,
+                  sisaHari: project.sisaHari,
+                  isDraft: project.isDraft,
+                  onTap: () {
+                    if (project.isDraft) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AddProjectPage(
+                            isEditingDraft: true,
+                            draftData: _convertProjectToMap(project),
+                          ),
+                        ),
+                      ).then((_) => _refreshProjects());
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProjectDetailPage(
+                            projectId: project.id,
+                            imageUrl: project.mainImageUrl,
+                            status: project.statusDisplay,
+                            title: project.judul,
+                            owner: project.user.name,
+                            remainingDays: project.sisaHari,
+                            maxToken: project.tokenDitawarkan,
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 );
-              }
-            },
-          );
-        },
-      ),
+              },
+            ),
+          ),
+        ),
+        // Pagination widget
+        if (totalPages > 1)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: Colors.white,
+            child: PaginationWidget(
+              currentPage: currentPage,
+              totalPages: totalPages,
+              onNext: () => _goToNextPage(statusFilter),
+              onPrevious: () => _goToPreviousPage(statusFilter),
+            ),
+          ),
+      ],
     );
   }
 
-  // Helper to convert ProjectListItem to Map for draft editing
   Map<String, dynamic> _convertProjectToMap(ProjectListItem project) {
     return {
       'id': project.id,

@@ -54,7 +54,6 @@ class NotificationService {
   Future<void> _requestPermissions() async {
     try {
       if (Platform.isAndroid) {
-        // Android 13 (API 33) requires POST_NOTIFICATIONS permission
         if (await Permission.notification.isDenied) {
           await Permission.notification.request();
         }
@@ -77,10 +76,13 @@ class NotificationService {
     required String projectName,
   }) async {
     if (!_initialized) return;
+    
+    final notificationId = DateTime.now().millisecondsSinceEpoch.remainder(2147483647);
+    
     await _plugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      'Pembelian token berhasil',
-      'Anda membeli $jumlahToken token untuk proyek #$projectName',
+      notificationId,
+      'Pembelian Token Berhasil! 🎉',
+      'Pembelian sejumlah $jumlahToken token untuk proyek $projectName telah berhasil dilakukan.',
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'purchase_channel',
@@ -89,8 +91,15 @@ class NotificationService {
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
+          // Tambahan untuk membuat notifikasi lebih menarik
+          playSound: true,
+          enableVibration: true,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
     );
   }

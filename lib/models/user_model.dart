@@ -55,7 +55,7 @@ class UserModel {
       'kecamatan': kecamatan ?? '',
       'alamat': alamat ?? '',
       'nik': nik ?? '',
-      'role': role, // ⭐ TAMBAHKAN ROLE
+      'role': role, 
     };
   }
 

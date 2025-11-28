@@ -200,9 +200,8 @@ Future<bool> fetchTopupHistory(String token) async {
           errorMsg.toLowerCase().contains('tidak ada') ||
           errorMsg.toLowerCase().contains('belum ada')) {
         _topups = [];
-        _errorMessage = null; // ✅ Tidak ada error, hanya kosong
-      } else {
-        _errorMessage = errorMsg; // Error sebenarnya
+        _errorMessage = null; 
+        _errorMessage = errorMsg;
       }
       
       setLoading(false);
@@ -212,7 +211,6 @@ Future<bool> fetchTopupHistory(String token) async {
   } catch (e) {
     print('❌ Exception: $e');
     
-    // ✅ Cek apakah exception karena data kosong atau error sungguhan
     final errorString = e.toString().toLowerCase();
     if (errorString.contains('no topups') || 
         errorString.contains('not found') ||

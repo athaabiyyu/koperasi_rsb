@@ -189,8 +189,6 @@ class ProjectListItem {
   // Helper: Calculate funding progress (if you have funding data)
   double get fundingProgress {
     if (nominalDisetujui == null || nominalDisetujui == 0) return 0;
-    // This would need actual collected amount from funding transactions
-    // For now, return 0 as placeholder
     return 0;
   }
   

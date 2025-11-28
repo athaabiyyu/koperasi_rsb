@@ -11,7 +11,6 @@ import 'package:koperasi_rsb/screens/proyek/detail_project/investors_section.dar
 import 'package:koperasi_rsb/screens/proyek/detail_project/funding_history_section.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/buy_token_dialog.dart';
 import 'package:koperasi_rsb/widgets-global/dialog/confirm_purchase_dialog.dart';
-// import 'package:koperasi_rsb/services/token_service.dart';
 import 'package:koperasi_rsb/services/prospectus_service.dart';
 import 'package:koperasi_rsb/providers/wallet_provider.dart';
 import 'package:koperasi_rsb/providers/token_provider.dart';
