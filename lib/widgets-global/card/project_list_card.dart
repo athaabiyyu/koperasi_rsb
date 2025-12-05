@@ -101,7 +101,7 @@ class _ProjectListCardState extends State<ProjectListCard> {
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
             BoxShadow(
-              color: Color(0x0F4C577D).withOpacity(0.8),
+              color: const Color(0x0F4C577D).withOpacity(0.8),
               blurRadius: 2,
               offset: const Offset(0, 2),
             ),
@@ -109,7 +109,7 @@ class _ProjectListCardState extends State<ProjectListCard> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             // Gambar
             ClipRRect(
@@ -139,19 +139,23 @@ class _ProjectListCardState extends State<ProjectListCard> {
               ),
             ),
 
-            // Konten dengan Flexible untuk mencegah overflow
-            Flexible(
+            // Konten
+            Expanded(
               child: Padding(
-                padding: EdgeInsets.all(deviceWidth * 0.025),
+                padding: EdgeInsets.symmetric(
+                  horizontal: deviceWidth * 0.02,
+                  vertical: deviceWidth * 0.016,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Status
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: deviceWidth * 0.02,
-                        vertical: 3,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
@@ -161,27 +165,21 @@ class _ProjectListCardState extends State<ProjectListCard> {
                         widget.status,
                         style: TextStyle(
                           color: Colors.green,
-                          fontSize: (10 * textScale.clamp(1.0, 1.1)).clamp(
-                            9.0,
-                            12.0,
-                          ),
+                          fontSize: 12 * textScale.clamp(1.0, 1.2),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    SizedBox(height: deviceWidth * 0.01),
+                    const SizedBox(height: 4),
 
                     // Judul
                     Text(
                       widget.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: (13 * textScale.clamp(1.0, 1.1)).clamp(
-                          12.0,
-                          14.0,
-                        ),
+                        fontSize: 14,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
 
@@ -189,57 +187,50 @@ class _ProjectListCardState extends State<ProjectListCard> {
                     Text(
                       widget.owner,
                       style: TextStyle(
-                        fontSize: (10 * textScale.clamp(1.0, 1.1)).clamp(
-                          9.0,
-                          11.0,
-                        ),
+                        fontSize: 11,
                         color: Colors.grey.shade600,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: deviceWidth * 0.015),
+                    const SizedBox(height: 6),
 
                     // Progress
-                    SizedBox(
-                      height: 8,
-                      child: Stack(
-                        children: [
-                          LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: Colors.grey.shade200,
-                            color: const Color(0xFF12B76A),
-                            minHeight: 8,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          // Loading indicator overlay
-                          if (_isLoading)
-                            Positioned.fill(
-                              child: LinearProgressIndicator(
-                                backgroundColor: Colors.grey.shade200,
-                                color: const Color(0xFFF38E09),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
+                    Stack(
+                      children: [
+                        LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey.shade200,
+                          color: const Color(0xFF12B76A),
+                          minHeight: 8,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        // Loading indicator overlay
+                        if (_isLoading)
+                          Positioned.fill(
+                            child: LinearProgressIndicator(
+                              backgroundColor: Colors.grey.shade200,
+                              color: const Color(0xFFF38E09),
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
-                    SizedBox(height: deviceWidth * 0.015),
+                    const SizedBox(height: 6),
 
                     // Token dan sisa hari
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Flexible(
+                          fit: FlexFit.tight,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
+                              const Text(
                                 "Terkumpul",
                                 style: TextStyle(
-                                  fontSize: (10 * textScale.clamp(1.0, 1.1))
-                                      .clamp(9.0, 11.0),
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.grey,
                                 ),
@@ -247,29 +238,28 @@ class _ProjectListCardState extends State<ProjectListCard> {
                               const SizedBox(height: 2),
                               Text(
                                 "$_collectedToken Token",
-                                style: TextStyle(
-                                  fontSize: (12 * textScale.clamp(1.0, 1.1))
-                                      .clamp(11.0, 13.0),
-                                  fontWeight: FontWeight.w600,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                   color: Colors.black,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                softWrap: false,
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 8),
                         Flexible(
+                          fit: FlexFit.tight,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
+                              const Text(
                                 "Sisa Hari",
                                 style: TextStyle(
-                                  fontSize: (10 * textScale.clamp(1.0, 1.1))
-                                      .clamp(9.0, 11.0),
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.grey,
                                 ),
@@ -277,12 +267,14 @@ class _ProjectListCardState extends State<ProjectListCard> {
                               const SizedBox(height: 2),
                               Text(
                                 "${widget.remainingDays}",
-                                style: TextStyle(
-                                  fontSize: (12 * textScale.clamp(1.0, 1.1))
-                                      .clamp(11.0, 13.0),
-                                  fontWeight: FontWeight.w600,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                   color: Colors.black,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
                               ),
                             ],
                           ),
