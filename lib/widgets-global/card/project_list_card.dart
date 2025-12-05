@@ -109,6 +109,7 @@ class _ProjectListCardState extends State<ProjectListCard> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Gambar
             ClipRRect(
@@ -138,127 +139,158 @@ class _ProjectListCardState extends State<ProjectListCard> {
               ),
             ),
 
-            // Konten
-            Padding(
-              padding: EdgeInsets.all(deviceWidth * 0.02),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Status
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: deviceWidth * 0.02,
-                      vertical: 4,
+            // Konten dengan Flexible untuk mencegah overflow
+            Flexible(
+              child: Padding(
+                padding: EdgeInsets.all(deviceWidth * 0.025),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Status
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: deviceWidth * 0.02,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.status,
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: (10 * textScale.clamp(1.0, 1.1)).clamp(
+                            9.0,
+                            12.0,
+                          ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      widget.status,
+                    SizedBox(height: deviceWidth * 0.01),
+
+                    // Judul
+                    Text(
+                      widget.title,
                       style: TextStyle(
-                        color: Colors.green,
-                        fontSize: 12 * textScale.clamp(1.0, 1.2),
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
+                        fontSize: (13 * textScale.clamp(1.0, 1.1)).clamp(
+                          12.0,
+                          14.0,
+                        ),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 4),
 
-                  // Judul
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  // Owner
-                  Text(
-                    widget.owner,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Progress
-                  Stack(
-                    children: [
-                      LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.grey.shade200,
-                        color: const Color(0xFF12B76A),
-                        minHeight: 8,
-                        borderRadius: BorderRadius.circular(4),
+                    // Owner
+                    Text(
+                      widget.owner,
+                      style: TextStyle(
+                        fontSize: (10 * textScale.clamp(1.0, 1.1)).clamp(
+                          9.0,
+                          11.0,
+                        ),
+                        color: Colors.grey.shade600,
                       ),
-                      // Loading indicator overlay
-                      if (_isLoading)
-                        Positioned.fill(
-                          child: LinearProgressIndicator(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: deviceWidth * 0.015),
+
+                    // Progress
+                    SizedBox(
+                      height: 8,
+                      child: Stack(
+                        children: [
+                          LinearProgressIndicator(
+                            value: progress,
                             backgroundColor: Colors.grey.shade200,
-                            color: const Color(0xFFF38E09),
+                            color: const Color(0xFF12B76A),
+                            minHeight: 8,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
+                          // Loading indicator overlay
+                          if (_isLoading)
+                            Positioned.fill(
+                              child: LinearProgressIndicator(
+                                backgroundColor: Colors.grey.shade200,
+                                color: const Color(0xFFF38E09),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: deviceWidth * 0.015),
 
-                  // Token dan sisa hari
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Terkumpul",
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey,
-                            ),
+                    // Token dan sisa hari
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "Terkumpul",
+                                style: TextStyle(
+                                  fontSize: (10 * textScale.clamp(1.0, 1.1))
+                                      .clamp(9.0, 11.0),
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "$_collectedToken Token",
+                                style: TextStyle(
+                                  fontSize: (12 * textScale.clamp(1.0, 1.1))
+                                      .clamp(11.0, 13.0),
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            "$_collectedToken Token",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "Sisa Hari",
+                                style: TextStyle(
+                                  fontSize: (10 * textScale.clamp(1.0, 1.1))
+                                      .clamp(9.0, 11.0),
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${widget.remainingDays}",
+                                style: TextStyle(
+                                  fontSize: (12 * textScale.clamp(1.0, 1.1))
+                                      .clamp(11.0, 13.0),
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text(
-                            "Sisa Hari",
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            "${widget.remainingDays}",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
